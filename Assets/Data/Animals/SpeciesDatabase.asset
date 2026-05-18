@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: SpeciesDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::SpeciesDatabase
+  allSpecies:
+  - speciesId: squirrel
+    displayName: "\uB2E4\uB78C\uC950"
+    stage: 0
+    dietType: 0
+    activityCycle: 0
+    floorNoiseProbability: 0
+    wallNoiseProbability: 0
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: roe_deer
+    displayName: "\uACE0\uB77C\uB2C8"
+    stage: 0
+    dietType: 0
+    activityCycle: 0
+    floorNoiseProbability: 30
+    wallNoiseProbability: 50
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: mouse
+    displayName: "\uC950"
+    stage: 0
+    dietType: 0
+    activityCycle: 1
+    floorNoiseProbability: 10
+    wallNoiseProbability: 10
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 1
+  - speciesId: rabbit
+    displayName: "\uD1A0\uB07C"
+    stage: 0
+    dietType: 0
+    activityCycle: 0
+    floorNoiseProbability: 70
+    wallNoiseProbability: 0
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: sheep
+    displayName: "\uC591"
+    stage: 1
+    dietType: 0
+    activityCycle: 0
+    floorNoiseProbability: 20
+    wallNoiseProbability: 10
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: cat
+    displayName: "\uACE0\uC591\uC774"
+    stage: 1
+    dietType: 1
+    activityCycle: 1
+    floorNoiseProbability: 5
+    wallNoiseProbability: 5
+    surroundNoiseProbability: 10
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: skunk
+    displayName: "\uC2A4\uCEF9\uD06C"
+    stage: 1
+    dietType: 1
+    activityCycle: 1
+    floorNoiseProbability: 0
+    wallNoiseProbability: 0
+    surroundNoiseProbability: 0
+    requiresSpecialRoom: 0
+    leavesOdour: 1
+    causesDamage: 0
+  - speciesId: wolf
+    displayName: "\uB291\uB300"
+    stage: 1
+    dietType: 1
+    activityCycle: 1
+    floorNoiseProbability: 30
+    wallNoiseProbability: 20
+    surroundNoiseProbability: 40
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: tiger
+    displayName: "\uD638\uB791\uC774"
+    stage: 2
+    dietType: 1
+    activityCycle: 1
+    floorNoiseProbability: 50
+    wallNoiseProbability: 30
+    surroundNoiseProbability: 20
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
+  - speciesId: chicken
+    displayName: "\uB2ED"
+    stage: 2
+    dietType: 0
+    activityCycle: 0
+    floorNoiseProbability: 10
+    wallNoiseProbability: 5
+    surroundNoiseProbability: 30
+    requiresSpecialRoom: 0
+    leavesOdour: 0
+    causesDamage: 0
