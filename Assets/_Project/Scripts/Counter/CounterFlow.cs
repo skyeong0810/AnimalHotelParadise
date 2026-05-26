@@ -1,49 +1,51 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace AnimalHotel.Counter
 {
-    /// <summary>
-    /// Counter 씬의 손님 응대 흐름.
-    /// 종소리 → 문 열림 → 발소리 + 손님 솟아오름 → 문 닫힘 → 손님 말풍선 → 답변 옵션
-    /// </summary>
     public class CounterFlow : MonoBehaviour
     {
         [Header("Scene References")]
-        [SerializeField] private DoorAnimator         door;
-        [SerializeField] private SimpleCustomerSlot   customerSlot;
-        [SerializeField] private SpeechBubble         customerBubble;
-        [SerializeField] private SimpleResponseBubble responseBubble;
+        [SerializeField] private DoorAnimator door;
+        [SerializeField] private SimpleCustomerSlot customerSlot;
+        [SerializeField] private SpeechBubble customerBubble;
+
+        [Header("Dialogue System")]
+        [SerializeField] private DialogueManager dialogueManager;
+
+        [Header("Data")]
+        [SerializeField] private DayManager dayManager;
 
         [Header("Audio")]
         [SerializeField] private AudioSource sfxSource;
-        [SerializeField] private AudioClip   doorBellSfx;
-        [Tooltip("손님이 카운터로 다가올 때 재생되는 발소리 (지금은 모든 손님 공통, 나중에 동물 데이터 별로 분리 예정)")]
-        [SerializeField] private AudioClip   footstepSfx;
+        [SerializeField] private AudioClip doorBellSfx;
+        [SerializeField] private AudioClip footstepSfx;
+        [SerializeField] private AudioClip exitBellSfx;
 
         [Header("Timing")]
-        [SerializeField] private float delayBeforeStart       = 0.5f;
-        [SerializeField] private float delayAfterDoorOpen     = 0.15f;
-        [SerializeField] private float delayBeforeDialogue    = 0.35f;
-        [SerializeField] private float delayBeforeOptions     = 0.3f;
-        [SerializeField] private float delayAfterResponse     = 0.4f;
-        [SerializeField] private float delayBetweenCustomers  = 1.0f;
-        [SerializeField] private bool  autoStartOnPlay        = true;
-        [SerializeField] private bool  autoSpawnNextCustomer  = true;
+        [SerializeField] private float delayBeforeStart = 0.5f;
+        [SerializeField] private float delayAfterDoorOpen = 0.15f;
+        [SerializeField] private float delayBeforeDialogue = 0.35f;
+        [SerializeField] private float delayAfterResponse = 0.4f;
+        [SerializeField] private float delayBetweenCustomers = 1.0f;
+        [SerializeField] private bool autoStartOnPlay = true;
+        [SerializeField] private bool autoSpawnNextCustomer = true;
 
-        [Header("Placeholder Data (나중에 동물/대사 데이터로 교체)")]
-        [TextArea(1, 3)]
-        [SerializeField] private string[] customerLines = new string[] { "", "", "" };
-        [SerializeField] private List<string> responseOptions = new List<string> { "", "", "" };
-
-        private int  _selectedIndex;
-        private bool _gotResponse;
         private bool _isSpawning;
+        private int _guestIndex;
+        private bool _dialogueFinished;
+        private string _exitNodeId;
 
         private void Start()
         {
+            if (dialogueManager != null) dialogueManager.OnDialogueEnd += OnDialogueEnd;
             if (autoStartOnPlay) StartCoroutine(DelayedStart());
+        }
+
+        private void OnDestroy()
+        {
+            if (dialogueManager != null) dialogueManager.OnDialogueEnd -= OnDialogueEnd;
         }
 
         private IEnumerator DelayedStart()
@@ -52,66 +54,46 @@ namespace AnimalHotel.Counter
             yield return SpawnCustomerRoutine();
         }
 
-        [ContextMenu("▶ Spawn Customer (테스트)")]
-        public void TriggerSpawn()
-        {
-            if (!Application.isPlaying)
-            {
-                Debug.LogWarning("Play 모드에서만 테스트 가능합니다.");
-                return;
-            }
-            StartCoroutine(SpawnCustomerRoutine());
-        }
-
         public IEnumerator SpawnCustomerRoutine()
         {
             if (_isSpawning) yield break;
             _isSpawning = true;
-
             if (customerBubble != null) customerBubble.HideImmediate();
-            if (responseBubble != null) responseBubble.HideImmediate();
 
-            // 1. Doorbell + Door open
+            Animal guest = GetNextGuest();
+            if (guest == null)
+            {
+                Debug.Log("[CounterFlow] 오늘의 손님이 모두 방문했습니다.");
+                _isSpawning = false;
+                yield break;
+            }
+
+            Debug.Log(string.Format("[CounterFlow] 손님 등장: {0} ({1}) 예약:{2}", guest.guestName, guest.species.displayName, guest.hasReservation));
+
             PlaySfx(doorBellSfx);
             if (door != null) yield return door.Open();
-
-            // 2. Footsteps + Customer rises
             if (delayAfterDoorOpen > 0f) yield return new WaitForSeconds(delayAfterDoorOpen);
             PlaySfx(footstepSfx);
             if (customerSlot != null) yield return customerSlot.Spawn();
-
-            // 3. Door close
             if (door != null) yield return door.Close();
 
-            // 4. Customer dialogue (box-only for now)
-            if (customerBubble != null && customerLines != null && customerLines.Length > 0)
+            if (delayBeforeDialogue > 0f) yield return new WaitForSeconds(delayBeforeDialogue);
+            if (dialogueManager != null)
             {
-                if (delayBeforeDialogue > 0f) yield return new WaitForSeconds(delayBeforeDialogue);
-                string line = customerLines[Random.Range(0, customerLines.Length)];
-                yield return customerBubble.ShowWithText(line);
+                _dialogueFinished = false;
+                _exitNodeId = null;
+                bool claimsReservation = guest.hasReservation;
+                dialogueManager.StartDialogue(guest, claimsReservation);
+                yield return new WaitUntil(() => _dialogueFinished);
+                Debug.Log("[CounterFlow] 대화 종료: " + _exitNodeId);
             }
 
-            // 5. Player response options
-            if (responseBubble != null && responseOptions != null && responseOptions.Count > 0)
-            {
-                if (delayBeforeOptions > 0f) yield return new WaitForSeconds(delayBeforeOptions);
-                _gotResponse = false;
-                _selectedIndex = -1;
-                responseBubble.OnOptionSelected += OnSelected;
-                responseBubble.Show(responseOptions);
-                yield return new WaitUntil(() => _gotResponse);
-                responseBubble.OnOptionSelected -= OnSelected;
-                Debug.Log("[CounterFlow] Selected option index: " + _selectedIndex);
-            }
-
-            // 6. Customer leaves
             if (delayAfterResponse > 0f) yield return new WaitForSeconds(delayAfterResponse);
             if (customerBubble != null) customerBubble.HideImmediate();
+            PlaySfx(exitBellSfx);
             if (customerSlot != null) yield return customerSlot.Sink();
-
             _isSpawning = false;
 
-            // 7. Next customer
             if (autoSpawnNextCustomer && Application.isPlaying)
             {
                 yield return new WaitForSeconds(delayBetweenCustomers);
@@ -119,16 +101,17 @@ namespace AnimalHotel.Counter
             }
         }
 
-        private void OnSelected(int index)
+        private Animal GetNextGuest()
         {
-            _selectedIndex = index;
-            _gotResponse = true;
+            if (dayManager == null) { Debug.LogWarning("[CounterFlow] DayManager 미연결"); return null; }
+            if (dayManager.TodaysGuests == null || _guestIndex >= dayManager.TodaysGuests.Count) return null;
+            var guest = dayManager.TodaysGuests[_guestIndex];
+            _guestIndex++;
+            dayManager.GuestArrived(guest.guestName);
+            return guest;
         }
 
-        private void PlaySfx(AudioClip clip)
-        {
-            if (sfxSource != null && clip != null)
-                sfxSource.PlayOneShot(clip);
-        }
+        private void OnDialogueEnd(string exitNodeId) { _exitNodeId = exitNodeId; _dialogueFinished = true; }
+        private void PlaySfx(AudioClip clip) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip); }
     }
 }

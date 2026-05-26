@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -43,11 +43,13 @@ namespace AnimalHotel.Counter
         public IEnumerator TypeText(string text)
         {
             if (label == null) yield break;
-            label.text = string.Empty;
+            label.text = text;
+            label.alignment = TMPro.TextAlignmentOptions.Center;
+            label.maxVisibleCharacters = 0;
             float charDelay = 1f / Mathf.Max(typeCharsPerSec, 0.1f);
             for (int i = 0; i < text.Length; i++)
             {
-                label.text += text[i];
+                label.maxVisibleCharacters = i + 1;
                 if (charDelay > 0f) yield return new WaitForSeconds(charDelay);
             }
         }

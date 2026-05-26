@@ -6,7 +6,7 @@ using TMPro;
 namespace AnimalHotel.Counter
 {
     /// <summary>
-    /// 답변 옵션 풍선. 옵션 텍스트 리스트 받아서 버튼+라벨 동적 생성.
+    /// 답변 옵션 풍선. 옵션 클릭 시 ui click 사운드 재생.
     /// 클릭/호버는 Update 기반 (새 Input System / 옛 Input Manager 둘 다 지원).
     /// </summary>
     public class SimpleResponseBubble : MonoBehaviour
@@ -15,6 +15,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private GameObject backgroundObj;
         [SerializeField] private Transform optionContainer;
         [SerializeField] private Sprite buttonSprite;
+
+        [Header("Audio")]
+        [SerializeField] private AudioSource sfxSource;
+        [Tooltip("답변 옵션 버튼 클릭 시 재생되는 사운드")]
+        [SerializeField] private AudioClip clickSfx;
 
         [Header("Button Layout")]
         [SerializeField] private float buttonWidth = 4.0f;
@@ -111,8 +116,15 @@ namespace AnimalHotel.Counter
 
         private void OnButtonClicked(int index)
         {
+            PlaySfx(clickSfx);
             OnOptionSelected?.Invoke(index);
             HideImmediate();
+        }
+
+        private void PlaySfx(AudioClip clip)
+        {
+            if (sfxSource != null && clip != null)
+                sfxSource.PlayOneShot(clip);
         }
 
         private void ClearButtons()

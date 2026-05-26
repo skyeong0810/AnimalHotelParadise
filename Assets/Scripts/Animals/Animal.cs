@@ -1,8 +1,8 @@
 using UnityEngine;
 
-// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  Runtime animal instance
-// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// <summary>
 /// Represents one individual animal guest that visits the hotel.
@@ -10,14 +10,14 @@ using UnityEngine;
 /// to its species' shared <see cref="SpeciesData"/> for all static traits.
 ///
 /// Usage:
-///   var guest = new Animal(db.Get("rabbit"), "±èÅä²¤ÀÌ", hasReservation: true);
+///   var guest = new Animal(db.Get("rabbit"), "ê¹€í† ê¹½ì´", hasReservation: true);
 /// </summary>
 [System.Serializable]
 public class Animal
 {
-    // ¦¡¦¡ Instance identity ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Instance identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    /// <summary>Randomly generated guest name (aname). E.g. "±èÅä²¤ÀÌ".</summary>
+    /// <summary>Randomly generated guest name (aname). E.g. "ê¹€í† ê¹½ì´".</summary>
     public string guestName;
 
     /// <summary>Whether this animal is on today's reservation list (rbook).</summary>
@@ -26,7 +26,7 @@ public class Animal
     /// <summary>Reference to the shared, species-wide data.</summary>
     public SpeciesData species;
 
-    // ¦¡¦¡ Convenience pass-throughs ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Convenience pass-throughs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //    These let other systems read traits without drilling into .species
 
     public string SpeciesId => species?.speciesId;
@@ -41,7 +41,7 @@ public class Animal
     public bool IsCarnivore => DietType == DietType.Carnivore;
     public bool IsNocturnal => Activity == ActivityCycle.Nocturnal;
 
-    // ¦¡¦¡ Constructor ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Constructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public Animal(SpeciesData speciesData, string name, bool hasReservation)
     {
@@ -52,6 +52,6 @@ public class Animal
 
     public override string ToString() =>
         $"[{species?.displayName ?? "?"}] {guestName} | " +
-        $"¿¹¾à:{hasReservation} ½Ä¼º:{DietType} È°µ¿:{Activity} " +
-        $"Ãş°£:{FloorNoise}% º®°£:{WallNoise}% »ç¹æ:{SurroundNoise}%";
+        $"ì˜ˆì•½:{hasReservation} ì‹ì„±:{DietType} í™œë™:{Activity} " +
+        $"ì¸µê°„:{FloorNoise}% ë²½ê°„:{WallNoise}% ì‚¬ë°©:{SurroundNoise}%";
 }

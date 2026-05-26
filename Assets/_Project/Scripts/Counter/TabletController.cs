@@ -4,25 +4,26 @@ namespace AnimalHotel.Counter
 {
     /// <summary>
     /// 태블릿 패널 열기/닫기 컨트롤러.
-    /// - Monitor 클릭 → 열림 (오버레이 + 패널 활성화)
-    /// - 패널 바깥(오버레이만 있는 영역) 클릭 → 닫힘
-    /// 새 Input System / 옛 Input Manager 둘 다 지원.
+    /// - Monitor 클릭 → 열림 + 진입 사운드
+    /// - 패널 바깥(오버레이) 클릭 → 닫힘 + 종료 사운드
     /// </summary>
     public class TabletController : MonoBehaviour
     {
         [Header("Click Areas")]
-        [Tooltip("닫혔을 때 클릭하면 태블릿이 열리는 영역 (보통 Monitor의 Collider2D)")]
         [SerializeField] private Collider2D monitorClickArea;
-
-        [Tooltip("패널 내부 영역. 여기 클릭은 닫기 신호로 처리하지 않음.")]
         [SerializeField] private Collider2D panelClickArea;
-
-        [Tooltip("화면 전체를 덮는 오버레이. 여기 클릭(패널 바깥) = 닫기.")]
         [SerializeField] private Collider2D overlayClickArea;
 
         [Header("Show/Hide Targets")]
         [SerializeField] private GameObject overlayObj;
         [SerializeField] private GameObject panelObj;
+
+        [Header("Audio")]
+        [SerializeField] private AudioSource sfxSource;
+        [Tooltip("태블릿 열릴 때 사운드 (키보드 두드리는 느낌)")]
+        [SerializeField] private AudioClip openSfx;
+        [Tooltip("태블릿 닫힐 때 사운드 (옷 스치는 듯한 부드러운 음)")]
+        [SerializeField] private AudioClip closeSfx;
 
         [Header("Behavior")]
         [SerializeField] private bool startOpen = false;
@@ -33,18 +34,33 @@ namespace AnimalHotel.Counter
 
         private void Awake()
         {
-            SetOpen(startOpen);
+            // Awake에서는 사운드 재생 안 함 (게임 시작 시 의도치 않은 재생 방지)
+            IsOpen = startOpen;
+            if (overlayObj != null) overlayObj.SetActive(startOpen);
+            if (panelObj   != null) panelObj.SetActive(startOpen);
         }
 
-        public void Open()  => SetOpen(true);
-        public void Close() => SetOpen(false);
-        public void Toggle() => SetOpen(!IsOpen);
+        public void Open()  => SetOpen(true,  true);
+        public void Close() => SetOpen(false, true);
+        public void Toggle() => SetOpen(!IsOpen, true);
 
-        private void SetOpen(bool open)
+        private void SetOpen(bool open, bool playSound)
         {
+            if (IsOpen == open) return;
             IsOpen = open;
             if (overlayObj != null) overlayObj.SetActive(open);
             if (panelObj   != null) panelObj.SetActive(open);
+
+            if (playSound)
+            {
+                PlaySfx(open ? openSfx : closeSfx);
+            }
+        }
+
+        private void PlaySfx(AudioClip clip)
+        {
+            if (sfxSource != null && clip != null)
+                sfxSource.PlayOneShot(clip);
         }
 
         private void Update()
