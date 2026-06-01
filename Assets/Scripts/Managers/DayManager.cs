@@ -4,7 +4,9 @@ using UnityEngine;
 
 /// <summary>
 /// Manages one hotel day:
-///   - Generates today's guest list at day start
+///   - Runs a fixed morning phase (MorningDuration seconds) then an afternoon phase (AfternoonDuration seconds)
+///   - On morning start: generates a fresh guest list (discarding the previous day's)
+///   - Day 1 morning: first guest is always a rabbit with a reservation
 ///   - Holds the reservation list the UI and dialogue system read from
 ///   - Marks animals as arrived when they show up
 ///
@@ -25,11 +27,27 @@ public class DayManager : MonoBehaviour
     [Tooltip("Which content stages are currently unlocked.")]
     public List<ContentStage> unlockedStages = new List<ContentStage> { ContentStage.S1 };
 
+    [Tooltip("Length of the morning phase in seconds.")]
+    public float morningDuration = 5f;
+
+    [Tooltip("Length of the afternoon phase in seconds.")]
+    public float afternoonDuration = 5f;
+
     // ── Runtime state ─────────────────────────────────────────────────────────
+
+    /// <summary>Which day we are currently on (starts at 1).</summary>
+    public int CurrentDay { get; private set; } = 0;
+
+    /// <summary>True while the morning phase is active; false during afternoon.</summary>
+    public bool IsMorning { get; private set; } = true;
+
+    /// <summary>Seconds remaining in the current phase (0–morningDuration or 0–afternoonDuration).</summary>
+    public float PhaseTimeRemaining { get; private set; }
 
     /// <summary>
     /// All animals generated for today — both reserved and walk-ins.
     /// This is the single source of truth the whole game reads from.
+    /// Replaced entirely at the start of each morning; previous day's list is discarded.
     /// </summary>
     public List<Animal> TodaysGuests { get; private set; } = new List<Animal>();
 
@@ -43,27 +61,59 @@ public class DayManager : MonoBehaviour
 
     private void Start()
     {
-        StartNewDay();
+        StartMorning();
+    }
+
+    private void Update()
+    {
+        PhaseTimeRemaining -= Time.deltaTime;
+
+        if (PhaseTimeRemaining <= 0f)
+        {
+            if (IsMorning)
+                StartAfternoon();
+            else
+                StartMorning();
+        }
+    }
+
+    // ── Phase transitions ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Begins a new morning: increments the day counter, discards yesterday's guest list,
+    /// generates a fresh one, and resets the phase timer.
+    /// On Day 1 the very first guest is always a rabbit with a reservation.
+    /// </summary>
+    private void StartMorning()
+    {
+        IsMorning = true;
+        CurrentDay++;
+        PhaseTimeRemaining = morningDuration;
+
+        ArrivedGuests.Clear();
+
+        TodaysGuests = AnimalFactory.CreateAnimals(
+            speciesDatabase,
+            unlockedStages,
+            guestsPerDay,
+            isFirstDay: CurrentDay == 1
+        );
+
+        Debug.Log($"[DayManager] Day {CurrentDay} morning started. " +
+                  $"{TodaysGuests.Count} guests generated, " +
+                  $"{ReservationList.Count} with reservations.");
+    }
+
+    /// <summary>Transitions from morning to afternoon and resets the phase timer.</summary>
+    private void StartAfternoon()
+    {
+        IsMorning = false;
+        PhaseTimeRemaining = afternoonDuration;
+
+        Debug.Log($"[DayManager] Day {CurrentDay} afternoon started.");
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Call this at the beginning of each new day.
-    /// Clears yesterday's data and generates a fresh guest list.
-    /// </summary>
-    public void StartNewDay()
-    {
-        ArrivedGuests.Clear();
-
-        TodaysGuests = AnimalFactory.CreateAnimals(speciesDatabase, unlockedStages, guestsPerDay);
-
-        Debug.Log($"[DayManager] New day started. {TodaysGuests.Count} guests generated. " +
-                  $"{ReservationList.Count} have reservations.");
-
-        // Uncomment to print every guest to the console for testing:
-        // foreach (var g in TodaysGuests) Debug.Log(g);
-    }
 
     /// <summary>
     /// Call this when an animal physically arrives at the front desk.
@@ -77,8 +127,7 @@ public class DayManager : MonoBehaviour
 
         if (guest == null)
         {
-            Debug.LogWarning($"[DayManager] '{guestName}' arrived but wasn't in today's guest list. Adding as walk-in.");
-            // Walk-in not on list — still track them
+            Debug.LogWarning($"[DayManager] '{guestName}' arrived but wasn't in today's guest list.");
             return null;
         }
 

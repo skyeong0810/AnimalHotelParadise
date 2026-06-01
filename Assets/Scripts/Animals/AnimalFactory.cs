@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// Generates random Animal instances.
 /// Pure static utility — no scene object needed, no MonoBehaviour.
-/// Call AnimalFactory.CreateAnimal() from anywhere.
+/// Call AnimalFactory.CreateAnimals() from DayManager.
 /// </summary>
 public static class AnimalFactory
 {
@@ -28,8 +28,7 @@ public static class AnimalFactory
     // ── Reservation probability ───────────────────────────────────────────────
 
     /// <summary>
-    /// Probability (0–1) that a generated animal has a reservation.
-    /// Tweak this or pass it in per day if you want dynamic rates.
+    /// Probability (0–1) that a randomly generated animal has a reservation.
     /// </summary>
     private const float ReservationChance = 0.6f;
 
@@ -38,12 +37,8 @@ public static class AnimalFactory
     /// <summary>
     /// Creates one random Animal from the unlocked species in the database.
     /// </summary>
-    /// <param name="database">The SpeciesDatabase ScriptableObject asset.</param>
-    /// <param name="unlockedStages">Which content stages are currently unlocked.</param>
-    /// <returns>A fully populated Animal instance.</returns>
     public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages)
     {
-        // 1. Filter to unlocked species only
         var pool = database.allSpecies
             .Where(s => unlockedStages.Contains(s.stage))
             .ToList();
@@ -54,18 +49,14 @@ public static class AnimalFactory
             return null;
         }
 
-        // 2. Pick a random species
         SpeciesData species = pool[Random.Range(0, pool.Count)];
 
-        // 3. Build a random name
-        string lastName  = LastNames[Random.Range(0, LastNames.Length)];
+        string lastName = LastNames[Random.Range(0, LastNames.Length)];
         string firstName = FirstNames[Random.Range(0, FirstNames.Length)];
-        string fullName  = lastName + firstName;
+        string fullName = lastName + firstName;
 
-        // 4. Decide reservation status
         bool hasReservation = Random.value < ReservationChance;
 
-        // 5. Construct and return
         return new Animal(species, fullName, hasReservation);
     }
 
@@ -73,16 +64,43 @@ public static class AnimalFactory
     /// Creates a batch of random animals in one call.
     /// </summary>
     /// <param name="count">How many animals to generate.</param>
-    public static List<Animal> CreateAnimals(SpeciesDatabase database, List<ContentStage> unlockedStages, int count)
+    /// <param name="isFirstDay">
+    /// When true, the very first guest in the returned list is always a rabbit
+    /// with a reservation, and the remaining (count - 1) slots are filled randomly.
+    /// </param>
+    public static List<Animal> CreateAnimals(
+        SpeciesDatabase database,
+        List<ContentStage> unlockedStages,
+        int count,
+        bool isFirstDay = false)
     {
         var result = new List<Animal>();
-        for (int i = 0; i < count; i++)
+
+        if (isFirstDay)
+        {
+            // Guaranteed first guest: a rabbit with a reservation.
+            SpeciesData rabbitData = database.Get("rabbit");
+            if (rabbitData == null)
+                Debug.LogError("AnimalFactory: 'rabbit' not found in SpeciesDatabase. Check speciesId.");
+            else
+            {
+                string lastName = LastNames[Random.Range(0, LastNames.Length)];
+                string firstName = FirstNames[Random.Range(0, FirstNames.Length)];
+                result.Add(new Animal(rabbitData, lastName + firstName, hasReservation: true));
+            }
+        }
+
+        int remaining = count - result.Count;
+        for (int i = 0; i < remaining; i++)
         {
             var animal = CreateAnimal(database, unlockedStages);
             if (animal != null)
                 result.Add(animal);
         }
-        foreach (var animal in result) Debug.Log(animal.ToString());
+
+        foreach (var animal in result)
+            Debug.Log(animal.ToString());
+
         return result;
     }
 }
