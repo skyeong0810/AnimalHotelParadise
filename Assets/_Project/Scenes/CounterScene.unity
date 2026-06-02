@@ -1075,9 +1075,6 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
-  iconBg: {fileID: 926909026}
-  normalColor: {r: 1, g: 1, b: 1, a: 0}
-  hoverColor: {r: 0.95, g: 0.9, b: 0.8, a: 0.5}
 --- !u!61 &319298033
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2073,9 +2070,6 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
-  iconBg: {fileID: 201208494}
-  normalColor: {r: 1, g: 1, b: 1, a: 0}
-  hoverColor: {r: 0.95, g: 0.9, b: 0.8, a: 0.5}
 --- !u!61 &1083809076
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2812,9 +2806,6 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
-  iconBg: {fileID: 86255353}
-  normalColor: {r: 1, g: 1, b: 1, a: 0}
-  hoverColor: {r: 0.95, g: 0.9, b: 0.8, a: 0.5}
 --- !u!61 &1515544112
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3211,9 +3202,6 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
-  iconBg: {fileID: 345636987}
-  normalColor: {r: 1, g: 1, b: 1, a: 0}
-  hoverColor: {r: 0.95, g: 0.9, b: 0.8, a: 0.5}
 --- !u!61 &1846225687
 BoxCollider2D:
   m_ObjectHideFlags: 0
