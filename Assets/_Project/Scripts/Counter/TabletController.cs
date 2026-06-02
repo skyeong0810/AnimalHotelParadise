@@ -25,6 +25,11 @@ namespace AnimalHotel.Counter
         [Tooltip("태블릿 닫힐 때 사운드 (옷 스치는 듯한 부드러운 음)")]
         [SerializeField] private AudioClip closeSfx;
 
+        [Header("Audio Volumes")]
+        [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float openVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float closeVolume = 1f;
+
         [Header("Behavior")]
         [SerializeField] private bool startOpen = false;
 
@@ -53,14 +58,14 @@ namespace AnimalHotel.Counter
 
             if (playSound)
             {
-                PlaySfx(open ? openSfx : closeSfx);
+                PlaySfx(open ? openSfx : closeSfx, open ? openVolume : closeVolume);
             }
         }
 
-        private void PlaySfx(AudioClip clip)
+private void PlaySfx(AudioClip clip, float volume = 1f)
         {
             if (sfxSource != null && clip != null)
-                sfxSource.PlayOneShot(clip);
+                sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume));
         }
 
         private void Update()

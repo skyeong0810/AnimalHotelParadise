@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -46,6 +46,8 @@ namespace AnimalHotel.Counter
         [Header("Audio")]
         [SerializeField] private AudioSource sfxSource;
         [SerializeField] private AudioClip clickSfx;
+        [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float clickVolume = 1f;
 
         public event Action<int> OnOptionSelected;
         public bool IsVisible => backgroundObj != null && backgroundObj.activeSelf;
@@ -204,7 +206,7 @@ namespace AnimalHotel.Counter
 
         private void OnButtonClicked(int index)
         {
-            PlaySfx(clickSfx);
+            PlaySfx(clickSfx, clickVolume);
             _selectedIndex = index;
             _waitingForChoice = false;
             OnOptionSelected?.Invoke(index);
@@ -222,7 +224,7 @@ namespace AnimalHotel.Counter
             _currentHover = null;
         }
 
-        private void PlaySfx(AudioClip clip) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip); }
+private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume)); }
 
         private void Update()
         {

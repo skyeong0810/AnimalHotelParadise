@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace AnimalHotel.Counter
 {
@@ -15,6 +15,8 @@ namespace AnimalHotel.Counter
         [Header("오디오")]
         [SerializeField] private AudioSource sfxSource;
         [SerializeField] private AudioClip clickSfx;
+        [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float clickVolume = 1f;
 
         private Camera _cachedCam;
 
@@ -33,7 +35,7 @@ namespace AnimalHotel.Counter
             var col = GetComponent<BoxCollider2D>();
             if (col != null && col.OverlapPoint(wp) && tabletUI != null)
             {
-                if (sfxSource != null && clickSfx != null) sfxSource.PlayOneShot(clickSfx);
+                if (sfxSource != null && clickSfx != null) sfxSource.PlayOneShot(clickSfx, Mathf.Clamp01(clickVolume * masterSfxVolume));
                 tabletUI.OnMenuButtonClicked(pageKey);
             }
         }

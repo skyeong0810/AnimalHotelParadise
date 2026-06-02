@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +22,12 @@ namespace AnimalHotel.Counter
         [SerializeField] private AudioClip doorBellSfx;
         [SerializeField] private AudioClip footstepSfx;
         [SerializeField] private AudioClip exitBellSfx;
+
+        [Header("Audio Volumes")]
+        [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float doorBellVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float footstepVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float exitBellVolume = 1f;
 
         [Header("Timing")]
         [SerializeField] private float delayBeforeStart = 0.5f;
@@ -70,10 +76,10 @@ namespace AnimalHotel.Counter
 
             Debug.Log(string.Format("[CounterFlow] 손님 등장: {0} ({1}) 예약:{2}", guest.guestName, guest.species.displayName, guest.hasReservation));
 
-            PlaySfx(doorBellSfx);
+            PlaySfx(doorBellSfx, doorBellVolume);
             if (door != null) yield return door.Open();
             if (delayAfterDoorOpen > 0f) yield return new WaitForSeconds(delayAfterDoorOpen);
-            PlaySfx(footstepSfx);
+            PlaySfx(footstepSfx, footstepVolume);
             if (customerSlot != null) yield return customerSlot.Spawn();
             if (door != null) yield return door.Close();
 
@@ -90,7 +96,7 @@ namespace AnimalHotel.Counter
 
             if (delayAfterResponse > 0f) yield return new WaitForSeconds(delayAfterResponse);
             if (customerBubble != null) customerBubble.HideImmediate();
-            PlaySfx(exitBellSfx);
+            PlaySfx(exitBellSfx, exitBellVolume);
             if (customerSlot != null) yield return customerSlot.Sink();
             _isSpawning = false;
 
@@ -112,6 +118,6 @@ namespace AnimalHotel.Counter
         }
 
         private void OnDialogueEnd(string exitNodeId) { _exitNodeId = exitNodeId; _dialogueFinished = true; }
-        private void PlaySfx(AudioClip clip) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip); }
+private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume)); }
     }
 }

@@ -1075,6 +1075,8 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
 --- !u!61 &319298033
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1885,6 +1887,10 @@ MonoBehaviour:
   doorBellSfx: {fileID: 8300000, guid: f0542a4fbc3a3458bacdaaf86840d131, type: 3}
   footstepSfx: {fileID: 8300000, guid: b4a9d0d579b14419e8c856afcba18df1, type: 3}
   exitBellSfx: {fileID: 8300000, guid: 49fdf3ca063a249c0a0912972e39aa12, type: 3}
+  masterSfxVolume: 1
+  doorBellVolume: 1
+  footstepVolume: 1
+  exitBellVolume: 1
   delayBeforeStart: 0.5
   delayAfterDoorOpen: 0.15
   delayBeforeDialogue: 0.35
@@ -2070,6 +2076,8 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
 --- !u!61 &1083809076
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2806,6 +2814,8 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
 --- !u!61 &1515544112
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2995,8 +3005,11 @@ MonoBehaviour:
   overlayObj: {fileID: 280149424}
   panelObj: {fileID: 1350080788}
   sfxSource: {fileID: 978852833}
-  openSfx: {fileID: 8300000, guid: b16c9751055124864b9a534fcf605d87, type: 3}
-  closeSfx: {fileID: 8300000, guid: 95cfb17fb0b8f49f5b05493ce1c24d9b, type: 3}
+  openSfx: {fileID: 8300000, guid: f87c149b81f27488385657ee5dabf4f7, type: 3}
+  closeSfx: {fileID: 8300000, guid: 77b6382546f724bcca074ca42dce957b, type: 3}
+  masterSfxVolume: 1
+  openVolume: 1
+  closeVolume: 1
   startOpen: 0
 --- !u!1 &1805285291
 GameObject:
@@ -3202,6 +3215,8 @@ MonoBehaviour:
   tabletUI: {fileID: 1350080792}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
 --- !u!61 &1846225687
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3392,6 +3407,8 @@ MonoBehaviour:
   buttonSprite: {fileID: 21300000, guid: 9b8520adca6884ed3b41a411dfd4f8d5, type: 3}
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
   buttonWidth: 3.8
   buttonHeight: 0.55
   buttonSpacing: 1
@@ -3436,6 +3453,8 @@ MonoBehaviour:
   charsPerSecond: 20
   sfxSource: {fileID: 978852833}
   clickSfx: {fileID: 8300000, guid: 29ff7477a0eeb42b18b48fb446cdf132, type: 3}
+  masterSfxVolume: 1
+  clickVolume: 1
 --- !u!1 &1944828180
 GameObject:
   m_ObjectHideFlags: 0

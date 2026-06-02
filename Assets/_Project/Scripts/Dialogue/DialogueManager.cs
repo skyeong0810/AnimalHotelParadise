@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,7 +30,7 @@ namespace AnimalHotel.Counter
         {
             if (_isRunning) return;
             CurrentGuest = guest;
-            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation);
+            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation, guest.species.speciesId);
             StartCoroutine(RunDialogue());
         }
 

@@ -20,6 +20,8 @@ namespace AnimalHotel.Counter
         [SerializeField] private AudioSource sfxSource;
         [Tooltip("답변 옵션 버튼 클릭 시 재생되는 사운드")]
         [SerializeField] private AudioClip clickSfx;
+        [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
+        [Range(0f, 1f)] [SerializeField] private float clickVolume = 1f;
 
         [Header("Button Layout")]
         [SerializeField] private float buttonWidth = 4.0f;
@@ -116,15 +118,15 @@ namespace AnimalHotel.Counter
 
         private void OnButtonClicked(int index)
         {
-            PlaySfx(clickSfx);
+            PlaySfx(clickSfx, clickVolume);
             OnOptionSelected?.Invoke(index);
             HideImmediate();
         }
 
-        private void PlaySfx(AudioClip clip)
+private void PlaySfx(AudioClip clip, float volume = 1f)
         {
             if (sfxSource != null && clip != null)
-                sfxSource.PlayOneShot(clip);
+                sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume));
         }
 
         private void ClearButtons()
