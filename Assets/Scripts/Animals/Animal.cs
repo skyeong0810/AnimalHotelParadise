@@ -1,8 +1,8 @@
 using UnityEngine;
 
-// ������������������������������������������������������������������������������������������
+// ─────────────────────────────────────────────
 //  Runtime animal instance
-// ������������������������������������������������������������������������������������������
+// ─────────────────────────────────────────────
 
 /// <summary>
 /// Represents one individual animal guest that visits the hotel.
@@ -10,14 +10,14 @@ using UnityEngine;
 /// to its species' shared <see cref="SpeciesData"/> for all static traits.
 ///
 /// Usage:
-///   var guest = new Animal(db.Get("rabbit"), "���䲤��", hasReservation: true, checkInDay: 1, stayNights: 2);
+///   var guest = new Animal(db.Get("rabbit"), "김토깽이", hasReservation: true, checkInDay: 1, stayNights: 2);
 /// </summary>
 [System.Serializable]
 public class Animal
 {
-    // ���� Instance identity ������������������������������������������
+    // ── Instance identity ─────────────────────
 
-    /// <summary>Randomly generated guest name (aname). E.g. "���䲤��".</summary>
+    /// <summary>Randomly generated guest name (aname). E.g. "김토깽이".</summary>
     public string guestName;
 
     /// <summary>Whether this animal is on today's reservation list (rbook).</summary>
@@ -26,7 +26,7 @@ public class Animal
     /// <summary>Reference to the shared, species-wide data.</summary>
     public SpeciesData species;
 
-    // ���� Stay duration ��������������������������������������������������
+    // ── Stay duration ─────────────────────────
 
     /// <summary>
     /// The day number this guest checks in.
@@ -47,7 +47,7 @@ public class Animal
     /// </summary>
     public int CheckOutDay => checkInDay + stayNights;
 
-    // ���� Convenience pass-throughs ��������������������������
+    // ── Convenience pass-throughs ─────────────
     //    These let other systems read traits without drilling into .species
 
     public string SpeciesId => species?.speciesId;
@@ -62,7 +62,7 @@ public class Animal
     public bool IsCarnivore => DietType == DietType.Carnivore;
     public bool IsNocturnal => Activity == ActivityCycle.Nocturnal;
 
-    // ���� Constructor ������������������������������������������������������
+    // ── Constructor ───────────────────────────
 
     public Animal(SpeciesData speciesData, string name, bool hasReservation, int checkInDay, int stayNights)
     {

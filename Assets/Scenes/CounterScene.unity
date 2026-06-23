@@ -2087,6 +2087,7 @@ MonoBehaviour:
   delayBetweenCustomers: 1
   autoStartOnPlay: 1
   autoSpawnNextCustomer: 1
+  _isSpawning: 0
 --- !u!82 &978852833
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3141,11 +3142,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1529ab21f5f473c4697d86840a818c5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayManager
+  counterFlow: {fileID: 0}
   speciesDatabase: {fileID: 11400000, guid: c0031a49eeb23f84da9f479ef7797ae6, type: 2}
   guestsPerDay: 10
   unlockedStages: 00000000
-  morningDuration: 10000
-  afternoonDuration: 10000
+  morningDuration: 10
+  afternoonDuration: 10
   roomRatePerNight: 10
 --- !u!4 &1571367192
 Transform:

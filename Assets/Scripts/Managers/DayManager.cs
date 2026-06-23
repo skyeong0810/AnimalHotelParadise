@@ -1,3 +1,4 @@
+using AnimalHotel.Counter;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,6 +17,9 @@ using UnityEngine;
 public class DayManager : MonoBehaviour
 {
     // ── Inspector fields ──────────────────────────────────────────────────────
+
+    [Tooltip("Reference to the CounterFlow in the scene.")]
+    public CounterFlow counterFlow;
 
     [Tooltip("The SpeciesDatabase ScriptableObject asset.")]
     public SpeciesDatabase speciesDatabase;
@@ -63,7 +67,19 @@ public class DayManager : MonoBehaviour
     /// <summary>Subset of TodaysGuests who have a reservation.</summary>
     public List<Animal> ReservationList => TodaysGuests.Where(a => a.hasReservation).ToList();
 
-    /// <summary>Subset of TodaysGuests who have actually arrived so far today.</summary>
+    /// <summary>
+    /// Diurnal guests scheduled to arrive this morning.
+    /// Populated at the start of each morning; cleared when the morning phase ends.
+    /// </summary>
+    public List<Animal> MorningArrivals { get; private set; } = new List<Animal>();
+
+    /// <summary>
+    /// Nocturnal guests scheduled to arrive this afternoon.
+    /// Populated at the start of each morning; cleared when the afternoon phase ends.
+    /// </summary>
+    public List<Animal> AfternoonArrivals { get; private set; } = new List<Animal>();
+
+    /// <summary>Subset of TodaysGuests who have actually checked in so far today.</summary>
     public List<Animal> ArrivedGuests { get; private set; } = new List<Animal>();
 
     /// <summary>Guests who checked out at the start of this morning. Cleared each morning.</summary>
@@ -78,18 +94,19 @@ public class DayManager : MonoBehaviour
 
     private void Update()
     {
-        PhaseTimeRemaining -= Time.deltaTime;
-
-        if (PhaseTimeRemaining <= 0f)
-        {
-            if (IsMorning)
-                StartAfternoon();
-            else
-                StartMorning();
-        }
+        if (PhaseTimeRemaining > 0f)
+            PhaseTimeRemaining -= Time.deltaTime;
     }
 
     // ── Phase transitions ─────────────────────────────────────────────────────
+    public void TryAdvancePhase()
+    {
+        if (PhaseTimeRemaining <= 0f)
+        {
+            if (IsMorning) StartAfternoon();
+            else StartMorning();
+        }
+    }
 
     /// <summary>
     /// Begins a new morning:
@@ -100,6 +117,13 @@ public class DayManager : MonoBehaviour
     /// </summary>
     private void StartMorning()
     {
+        // Purge any nocturnal guests from yesterday's afternoon who never checked in.
+        if (AfternoonArrivals.Count > 0)
+        {
+            Debug.Log($"[DayManager] {AfternoonArrivals.Count} afternoon guest(s) never checked in — discarding.");
+            AfternoonArrivals.Clear();
+        }
+
         IsMorning = true;
         CurrentDay++;
         PhaseTimeRemaining = morningDuration;
@@ -123,7 +147,10 @@ public class DayManager : MonoBehaviour
                       $"Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
         }
 
-        // 2. Generate new arrivals for this morning.
+        // 2. Generate new arrivals and sort them into morning / afternoon queues.
+        MorningArrivals.Clear();
+        AfternoonArrivals.Clear();
+
         var newArrivals = AnimalFactory.CreateAnimals(
             speciesDatabase,
             unlockedStages,
@@ -131,53 +158,92 @@ public class DayManager : MonoBehaviour
             currentDay: CurrentDay,
             isFirstDay: CurrentDay == 1
         );
-        TodaysGuests.AddRange(newArrivals);
+
+        foreach (var a in newArrivals)
+        {
+            if (a.IsNocturnal) AfternoonArrivals.Add(a);
+            else MorningArrivals.Add(a);
+        }
+
+        // Note: new arrivals are NOT added to TodaysGuests yet — they join only after
+        // checking in at the counter (via CheckIn).
 
         Debug.Log($"[DayManager] Day {CurrentDay} morning started. " +
-                  $"{departing.Count} checked out, {newArrivals.Count} new arrivals, " +
-                  $"{TodaysGuests.Count} total guests in hotel.");
+                  $"{departing.Count} checked out, {MorningArrivals.Count} morning / " +
+                  $"{AfternoonArrivals.Count} afternoon arrivals expected, " +
+                  $"{TodaysGuests.Count} continuing guests in hotel.");
     }
 
-    /// <summary>Transitions from morning to afternoon and resets the phase timer.</summary>
+    /// <summary>
+    /// Transitions from morning to afternoon.
+    /// Any diurnal guests still in MorningArrivals never checked in — discard them.
+    /// </summary>
     private void StartAfternoon()
     {
         IsMorning = false;
         PhaseTimeRemaining = afternoonDuration;
 
-        Debug.Log($"[DayManager] Day {CurrentDay} afternoon started.");
+        if (MorningArrivals.Count > 0)
+        {
+            Debug.Log($"[DayManager] {MorningArrivals.Count} morning guest(s) never checked in — discarding.");
+            MorningArrivals.Clear();
+        }
+
+        Debug.Log($"[DayManager] Day {CurrentDay} afternoon started. " +
+                  $"{AfternoonArrivals.Count} nocturnal guest(s) expected.");
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Call this when an animal physically arrives at the front desk.
-    /// Looks them up from TodaysGuests and marks them as arrived.
-    /// Returns the Animal so the dialogue system can use it immediately.
+    /// Call this when an animal walks up to the front desk counter.
+    /// Finds the guest in the appropriate arrival queue and returns them
+    /// so the dialogue system can start a conversation.
+    /// Does NOT add them to TodaysGuests or charge payment yet — call CheckIn() for that.
     /// </summary>
     public Animal GuestArrived(string guestName)
     {
-        var guest = TodaysGuests.FirstOrDefault(a => a.guestName == guestName);
+        // Search whichever queue is active for the current phase.
+        var queue = IsMorning ? MorningArrivals : AfternoonArrivals;
+        var guest = queue.FirstOrDefault(a => a.guestName == guestName);
 
         if (guest == null)
         {
-            Debug.LogWarning($"[DayManager] '{guestName}' arrived but wasn't in today's guest list.");
+            Debug.LogWarning($"[DayManager] '{guestName}' not found in the current arrival queue.");
             return null;
         }
 
+        Debug.Log($"[DayManager] {guest.guestName} ({guest.species.displayName}) approached the counter.");
+        return guest;
+    }
+
+    /// <summary>
+    /// Call this after the player completes check-in dialogue and confirms the guest's stay.
+    /// Removes the guest from the arrival queue, adds them to TodaysGuests and ArrivedGuests,
+    /// and collects payment.
+    /// </summary>
+    public void CheckIn(Animal guest)
+    {
+        if (guest == null) return;
+
+        // Remove from whichever queue they came from.
+        bool removed = MorningArrivals.Remove(guest) || AfternoonArrivals.Remove(guest);
+        if (!removed)
+            Debug.LogWarning($"[DayManager] CheckIn called for {guest.guestName} but they weren't in any arrival queue.");
+
+        if (!TodaysGuests.Contains(guest))
+            TodaysGuests.Add(guest);
+
         if (!ArrivedGuests.Contains(guest))
-        {
             ArrivedGuests.Add(guest);
 
-            float payment = guest.stayNights * roomRatePerNight;
-            TotalMoney += payment;
+        float payment = guest.stayNights * roomRatePerNight;
+        TotalMoney += payment;
 
-            Debug.Log($"[DayManager] {guest.guestName} paid {payment} on arrival.");
-        }
-
-
-        Debug.Log($"[DayManager] {guest.guestName} ({guest.species.displayName}) has arrived. " +
-                  $"Staying until Day {guest.CheckOutDay}.");
-        return guest;
+        Debug.Log($"[DayManager] {guest.guestName} checked in. " +
+                  $"Paid {payment} ({guest.stayNights} night(s)). " +
+                  $"Staying until Day {guest.CheckOutDay}. " +
+                  $"Hotel total: {TotalMoney}");
     }
 
     /// <summary>
