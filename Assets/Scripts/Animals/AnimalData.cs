@@ -55,21 +55,21 @@ public class SpeciesData
     [Tooltip("Diurnal or Nocturnal (anight). Set per-species, never changed at runtime.")]
     public ActivityCycle activityCycle;
 
-    // ── Noise probabilities (0–100) ───────────
-    [Tooltip("Probability (0–100) of causing floor noise / stomping (vnoise). " +
+    // ── Nuisance probabilities (0–100) ────────
+    [Tooltip("Probability (0–100) of causing floor nuisance / stomping (vnoise). " +
              "E.g. Squirrel = 0, Rabbit = 70.")]
     [Range(0, 100)]
-    public int floorNoiseProbability;
+    public int floorNuisanceProbability;
 
-    [Tooltip("Probability (0–100) of causing wall noise (hnoise). " +
+    [Tooltip("Probability (0–100) of causing wall nuisance (hnoise). " +
              "E.g. Squirrel = 0, Roe Deer = 50.")]
     [Range(0, 100)]
-    public int wallNoiseProbability;
+    public int wallNuisanceProbability;
 
-    [Tooltip("Probability (0–100) of causing all-around noise (anoise). " +
+    [Tooltip("Probability (0–100) of causing all-around nuisance (anoise). " +
              "E.g. Squirrel = 0, Wolf = 40.")]
     [Range(0, 100)]
-    public int surroundNoiseProbability;
+    public int surroundNuisanceProbability;
 
     // ── Special room flag ─────────────────────
     [Tooltip("Whether this species requires a dedicated / special room (sroom). " +

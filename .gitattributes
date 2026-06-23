@@ -1,1 +1,5 @@
+# Let git handle line endings automatically by default
 * text=auto
+
+# Force all C# files to LF line endings and UTF-8 — prevents Korean corruption
+*.cs text eol=lf working-tree-encoding=UTF-8
