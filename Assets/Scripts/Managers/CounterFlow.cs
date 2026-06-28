@@ -44,6 +44,8 @@ namespace AnimalHotel.Counter
         private string _exitNodeId;
         private Animal _currentGuest;
 
+        public Animal GetCurrentGuest() => _currentGuest;
+
         private void Start()
         {
             if (dialogueManager != null) dialogueManager.OnDialogueEnd += OnDialogueEnd;
@@ -97,7 +99,7 @@ namespace AnimalHotel.Counter
 
                 // Confirm check-in only when the dialogue result indicates the guest was accepted.
                 // Adjust the exitNodeId string to match whatever your DialogueManager emits.
-                if (_exitNodeId == "checkin_confirmed")
+                if (_exitNodeId == "exit_checkin" || _exitNodeId == "exit_checkin_angry")
                     dayManager.CheckIn(_currentGuest);
             }
 
@@ -124,6 +126,9 @@ namespace AnimalHotel.Counter
         {
             if (dayManager == null) { Debug.LogWarning("[CounterFlow] DayManager 미연결"); return null; }
 
+            // If the phase time has expired, no more new guests can arrive
+            if (dayManager.PhaseTimeRemaining <= 0f) return null;
+
             var queue = dayManager.IsMorning ? dayManager.MorningArrivals : dayManager.AfternoonArrivals;
             if (queue == null || _guestIndex >= queue.Count) return null;
 
@@ -141,7 +146,10 @@ namespace AnimalHotel.Counter
         public void OnPhaseChanged()
         {
             _guestIndex = 0;
-            Debug.Log("[CounterFlow] Phase changed — guest index reset.");
+            if (!_isSpawning && Application.isPlaying)
+            {
+                StartCoroutine(SpawnCustomerRoutine());
+            }
         }
 
         private void OnDialogueEnd(string exitNodeId) { _exitNodeId = exitNodeId; _dialogueFinished = true; }

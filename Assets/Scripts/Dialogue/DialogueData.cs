@@ -128,10 +128,12 @@ namespace AnimalHotel.Counter
             nodes["staff_confirm_info"] = new DialogueNode
             {
                 id = "staff_confirm_info",
-                nodeType = NodeType.Line,
+                nodeType = NodeType.Choice,
                 speaker = Speaker.Staff,
-                text = "네, 방 배정해드렸어요.",
-                nextNodeId = "exit_checkin"
+                choices = new List<DialogueChoice>
+                {
+                    new DialogueChoice { text = "잠시만요, 방 배정해드렸어요.", nextNodeId = "exit_checkin" }
+                }
             };
 
             // ── 예약 거부 시 반응: 실제 예약 여부에 따라 다름 ──

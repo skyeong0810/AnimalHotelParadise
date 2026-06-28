@@ -21,6 +21,9 @@ public class DayManager : MonoBehaviour
     [Tooltip("Reference to the CounterFlow in the scene.")]
     public CounterFlow counterFlow;
 
+    [Tooltip("Reference to the RoomManager in the scene.")]
+    public RoomManager roomManager;
+
     [Tooltip("The SpeciesDatabase ScriptableObject asset.")]
     public SpeciesDatabase speciesDatabase;
 
@@ -95,7 +98,13 @@ public class DayManager : MonoBehaviour
     private void Update()
     {
         if (PhaseTimeRemaining > 0f)
+        {
             PhaseTimeRemaining -= Time.deltaTime;
+        }
+        else
+        {
+            TryAdvancePhase();
+        }
     }
 
     // ── Phase transitions ─────────────────────────────────────────────────────
@@ -103,6 +112,11 @@ public class DayManager : MonoBehaviour
     {
         if (PhaseTimeRemaining <= 0f)
         {
+            if (counterFlow != null && counterFlow.GetCurrentGuest() != null)
+            {
+                return;
+            }
+
             if (IsMorning) StartAfternoon();
             else StartMorning();
         }
@@ -130,22 +144,7 @@ public class DayManager : MonoBehaviour
 
         // 1. Check out guests whose stay has ended.
         CheckedOutToday.Clear();
-        var departing = TodaysGuests.Where(a => a.CheckOutDay == CurrentDay).ToList();
-        foreach (var guest in departing)
-        {
-            TodaysGuests.Remove(guest);
-            ArrivedGuests.Remove(guest);
-            CheckedOutToday.Add(guest);
-            int rating = Random.Range(0, 11); // 0–10 inclusive
-
-            _totalRatingSum += rating;
-            _totalRatingCount++;
-            AverageRating = (float)_totalRatingSum / _totalRatingCount;
-
-            Debug.Log($"[DayManager] {guest.guestName} checked out. " +
-                      $"Rated {rating}/10. " +
-                      $"Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
-        }
+        var departing = CheckOutDepartingGuests(nocturnal: false);
 
         // 2. Generate new arrivals and sort them into morning / afternoon queues.
         MorningArrivals.Clear();
@@ -172,6 +171,11 @@ public class DayManager : MonoBehaviour
                   $"{departing.Count} checked out, {MorningArrivals.Count} morning / " +
                   $"{AfternoonArrivals.Count} afternoon arrivals expected, " +
                   $"{TodaysGuests.Count} continuing guests in hotel.");
+
+        if (counterFlow != null)
+        {
+            counterFlow.OnPhaseChanged();
+        }
     }
 
     /// <summary>
@@ -189,8 +193,45 @@ public class DayManager : MonoBehaviour
             MorningArrivals.Clear();
         }
 
+        // Check out nocturnal guests whose stay has ended.
+        var departingNocturnal = CheckOutDepartingGuests(nocturnal: true);
+
         Debug.Log($"[DayManager] Day {CurrentDay} afternoon started. " +
+                  $"{departingNocturnal.Count} nocturnal guest(s) checked out, " +
                   $"{AfternoonArrivals.Count} nocturnal guest(s) expected.");
+
+        if (counterFlow != null)
+        {
+            counterFlow.OnPhaseChanged();
+        }
+    }
+
+    private List<Animal> CheckOutDepartingGuests(bool nocturnal)
+    {
+        var departing = TodaysGuests.Where(a => a.CheckOutDay == CurrentDay && a.IsNocturnal == nocturnal).ToList();
+        foreach (var guest in departing)
+        {
+            TodaysGuests.Remove(guest);
+            ArrivedGuests.Remove(guest);
+            CheckedOutToday.Add(guest);
+            int rating = Random.Range(0, 11); // 0–10 inclusive
+
+            _totalRatingSum += rating;
+            _totalRatingCount++;
+            AverageRating = (float)_totalRatingSum / _totalRatingCount;
+
+            if (roomManager != null)
+            {
+                var room = roomManager.GetRoomByOccupant(guest);
+                if (room != null) roomManager.VacateRoom(room.roomNumber);
+                else Debug.LogWarning($"[DayManager] No room found for {guest.guestName} on checkout.");
+            }
+
+            Debug.Log($"[DayManager] {guest.guestName} checked out (nocturnal: {nocturnal}). " +
+                      $"Rated {rating}/10. " +
+                      $"Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
+        }
+        return departing;
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -212,8 +253,6 @@ public class DayManager : MonoBehaviour
             Debug.LogWarning($"[DayManager] '{guestName}' not found in the current arrival queue.");
             return null;
         }
-
-        Debug.Log($"[DayManager] {guest.guestName} ({guest.species.displayName}) approached the counter.");
         return guest;
     }
 

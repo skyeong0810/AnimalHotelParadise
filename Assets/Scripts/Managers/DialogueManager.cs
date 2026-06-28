@@ -25,12 +25,23 @@ namespace AnimalHotel.Counter
         private Dictionary<string, DialogueNode> _nodes;
         private DialogueNode _currentNode;
         private bool _isRunning;
+        private bool _roomAssigned = false;
+
+        public void NotifyRoomAssigned()
+        {
+            _roomAssigned = true;
+            if (staffBubble != null)
+            {
+                staffBubble.EnableAssignChoices();
+            }
+        }
 
         public void StartDialogue(Animal guest, bool claimsReservation)
         {
             if (_isRunning) return;
             CurrentGuest = guest;
-            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation, guest.species.speciesId);
+            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation);
+            _roomAssigned = false;
             StartCoroutine(RunDialogue());
         }
 
@@ -92,8 +103,15 @@ namespace AnimalHotel.Counter
             // 손님 말풍선은 그대로 두고 직원 선택지만 표시
             string lineText = node.text != null ? node.text : "";
             var options = new List<string>();
-            foreach (var choice in node.choices) options.Add(choice.text);
-            yield return staffBubble.ShowLineWithChoices(lineText, options);
+            var optionStates = new List<bool>();
+            foreach (var choice in node.choices)
+            {
+                options.Add(choice.text);
+                bool isAssignChoice = choice.text.Contains("방 배정") || choice.text.Contains("배정해");
+                bool isEnabled = !isAssignChoice || _roomAssigned;
+                optionStates.Add(isEnabled);
+            }
+            yield return staffBubble.ShowLineWithChoices(lineText, options, optionStates);
         }
 
         private IEnumerator ProcessTabletCheck(DialogueNode node)

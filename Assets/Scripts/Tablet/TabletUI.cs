@@ -17,7 +17,6 @@ namespace AnimalHotel.Counter
 
         public enum Page
         {
-            MainMenu,
             ReservationList,
             RoomManagement,
             // TODO: Guidebook, Settings
@@ -28,7 +27,6 @@ namespace AnimalHotel.Counter
         // ────────────────────────────────────────
 
         [Header("페이지 루트 오브젝트")]
-        [SerializeField] private GameObject mainMenuPage;
         [SerializeField] private GameObject reservationPage;
         [SerializeField] private GameObject roomManagementPage;
 
@@ -54,7 +52,9 @@ namespace AnimalHotel.Counter
         [SerializeField] private Color textColor = new Color(0.15f, 0.1f, 0.1f, 1f);
 
         [Header("데이터")]
+        [SerializeField] private TabletController tabletController;
         [SerializeField] private DayManager dayManager;
+        [SerializeField] private RoomUI roomUI;
 
         // ────────────────────────────────────────
         //  내부 상태
@@ -70,7 +70,8 @@ namespace AnimalHotel.Counter
 
         private void OnEnable()
         {
-            ShowPage(Page.MainMenu);
+            SetPageActive(reservationPage, false);
+            SetPageActive(roomManagementPage, false);
         }
 
         // ────────────────────────────────────────
@@ -83,16 +84,11 @@ namespace AnimalHotel.Counter
             _currentPage = page;
 
             // 모든 페이지 비활성화
-            SetPageActive(mainMenuPage, false);
             SetPageActive(reservationPage, false);
             SetPageActive(roomManagementPage, false);
 
             switch (page)
             {
-                case Page.MainMenu:
-                    SetPageActive(mainMenuPage, true);
-                    break;
-
                 case Page.ReservationList:
                     SetPageActive(reservationPage, true);
                     RefreshReservationList();
@@ -100,6 +96,7 @@ namespace AnimalHotel.Counter
 
                 case Page.RoomManagement:
                     SetPageActive(roomManagementPage, true);
+                    if (roomUI != null) roomUI.OnPageOpened();
                     break;
             }
         }
@@ -107,7 +104,7 @@ namespace AnimalHotel.Counter
         /// <summary>메인 메뉴로 돌아가기 (뒤로가기 버튼용)</summary>
         public void GoBack()
         {
-            ShowPage(Page.MainMenu);
+            tabletController.Close();
         }
 
         // ────────────────────────────────────────
