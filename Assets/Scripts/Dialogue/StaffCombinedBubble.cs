@@ -49,6 +49,10 @@ namespace AnimalHotel.Counter
         [Range(0f, 1f)] [SerializeField] private float masterSfxVolume = 1f;
         [Range(0f, 1f)] [SerializeField] private float clickVolume = 1f;
 
+        [Header("Tablet Input Guard")]
+        [SerializeField] private TabletController tabletController;
+        [SerializeField] private bool blockInputWhileTabletOpen = true;
+
         public event Action<int> OnOptionSelected;
         public bool IsVisible => backgroundObj != null && backgroundObj.activeSelf;
         public int SelectedIndex => _selectedIndex;
@@ -63,6 +67,7 @@ namespace AnimalHotel.Counter
         private void Awake()
         {
             if (backgroundObj != null) _bgRenderer = backgroundObj.GetComponent<SpriteRenderer>();
+            if (tabletController == null) tabletController = FindFirstObjectByType<TabletController>();
             HideImmediate();
         }
 
@@ -242,10 +247,20 @@ namespace AnimalHotel.Counter
             _currentHover = null;
         }
 
-private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume)); }
+        private void PlaySfx(AudioClip clip, float volume = 1f)
+        {
+            if (sfxSource != null && clip != null)
+                sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume));
+        }
 
         private void Update()
         {
+            if (IsTabletBlockingInput())
+            {
+                ClearHover();
+                return;
+            }
+
             if (!IsVisible || _spawnedButtons.Count == 0) { ClearHover(); return; }
             if (_cachedCam == null) _cachedCam = Camera.main;
             if (_cachedCam == null) return;
@@ -253,8 +268,7 @@ private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null 
             GetMouseInput(out mousePos, out mouseDown);
             Vector3 w3 = _cachedCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
             Vector2 wp = new Vector2(w3.x, w3.y);
-            var hitCol = Physics2D.OverlapPoint(wp);
-            SimpleOptionButton hitBtn = hitCol != null ? hitCol.GetComponent<SimpleOptionButton>() : null;
+            SimpleOptionButton hitBtn = FindHitOptionButton(wp);
             if (hitBtn != _currentHover) { if (_currentHover != null) _currentHover.SetHover(false); if (hitBtn != null) hitBtn.SetHover(true); _currentHover = hitBtn; }
             if (mouseDown && hitBtn != null) { hitBtn.HandleClick(); _currentHover = null; }
         }
@@ -271,6 +285,29 @@ private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null 
 #if ENABLE_LEGACY_INPUT_MANAGER
             pos = Input.mousePosition; downThisFrame = Input.GetMouseButtonDown(0);
 #endif
+        }
+    
+
+        private SimpleOptionButton FindHitOptionButton(Vector2 worldPoint)
+        {
+            Collider2D[] hits = Physics2D.OverlapPointAll(worldPoint);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if (hits[i] == null) continue;
+                SimpleOptionButton candidate = hits[i].GetComponent<SimpleOptionButton>();
+                if (candidate != null && _spawnedButtons.Contains(candidate.gameObject))
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+    
+
+        private bool IsTabletBlockingInput()
+        {
+            return blockInputWhileTabletOpen && tabletController != null && tabletController.IsOpen;
         }
     }
 }

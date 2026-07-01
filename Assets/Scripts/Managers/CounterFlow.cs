@@ -21,6 +21,9 @@ namespace AnimalHotel.Counter
         [SerializeField] private AudioSource sfxSource;
         [SerializeField] private AudioClip doorBellSfx;
         [SerializeField] private AudioClip footstepSfx;
+        [SerializeField] private AudioClip entryWhooshSfx;
+        [SerializeField] private AudioClip rabbitFootstepSfx;
+        [SerializeField] private AudioClip roeDeerFootstepSfx;
         [SerializeField] private AudioClip exitBellSfx;
 
         [Header("Audio Volumes")]
@@ -84,7 +87,11 @@ namespace AnimalHotel.Counter
             PlaySfx(doorBellSfx, doorBellVolume);
             if (door != null) yield return door.Open();
             if (delayAfterDoorOpen > 0f) yield return new WaitForSeconds(delayAfterDoorOpen);
-            PlaySfx(footstepSfx, footstepVolume);
+            AudioClip entryFootstep = GetEntryFootstepSfx(_currentGuest);
+            PlaySfx(entryFootstep, footstepVolume);
+            if (entryFootstep != null) yield return new WaitForSeconds(entryFootstep.length);
+
+            PlaySfx(GetEntryWhooshSfx(), footstepVolume);
             if (customerSlot != null) yield return customerSlot.Spawn();
             if (door != null) yield return door.Close();
 
@@ -154,5 +161,26 @@ namespace AnimalHotel.Counter
 
         private void OnDialogueEnd(string exitNodeId) { _exitNodeId = exitNodeId; _dialogueFinished = true; }
         private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume)); }
+    
+
+        private AudioClip GetEntryFootstepSfx(Animal guest)
+        {
+            string speciesId = guest != null ? guest.SpeciesId : null;
+            switch (speciesId)
+            {
+                case "rabbit":
+                    return rabbitFootstepSfx != null ? rabbitFootstepSfx : footstepSfx;
+                case "roe_deer":
+                    return roeDeerFootstepSfx != null ? roeDeerFootstepSfx : footstepSfx;
+                default:
+                    return footstepSfx;
+            }
+        }
+
+        private AudioClip GetEntryWhooshSfx()
+        {
+            return entryWhooshSfx != null ? entryWhooshSfx : footstepSfx;
+        }
+
     }
 }

@@ -19,7 +19,8 @@ namespace AnimalHotel.Counter
         {
             ReservationList,
             RoomManagement,
-            // TODO: Guidebook, Settings
+            Guidebook,
+            Settings
         }
 
         // ────────────────────────────────────────
@@ -29,6 +30,8 @@ namespace AnimalHotel.Counter
         [Header("페이지 루트 오브젝트")]
         [SerializeField] private GameObject reservationPage;
         [SerializeField] private GameObject roomManagementPage;
+        [SerializeField] private GameObject guidebookPage;
+        [SerializeField] private GameObject settingsPage;
 
         [Header("예약 목록 UI")]
         [SerializeField] private Transform reservationListContainer;
@@ -70,9 +73,14 @@ namespace AnimalHotel.Counter
 
         private void OnEnable()
         {
-            SetPageActive(reservationPage, false);
-            SetPageActive(roomManagementPage, false);
+            HideAllPages();
         }
+
+        private void OnDisable()
+        {
+            HideAllPages();
+        }
+
 
         // ────────────────────────────────────────
         //  페이지 전환
@@ -82,21 +90,25 @@ namespace AnimalHotel.Counter
         public void ShowPage(Page page)
         {
             _currentPage = page;
-
-            // 모든 페이지 비활성화
-            SetPageActive(reservationPage, false);
-            SetPageActive(roomManagementPage, false);
+            HideAllPages();
 
             switch (page)
             {
                 case Page.ReservationList:
                     SetPageActive(reservationPage, true);
-                    RefreshReservationList();
                     break;
 
                 case Page.RoomManagement:
                     SetPageActive(roomManagementPage, true);
                     if (roomUI != null) roomUI.OnPageOpened();
+                    break;
+
+                case Page.Guidebook:
+                    SetPageActive(guidebookPage, true);
+                    break;
+
+                case Page.Settings:
+                    SetPageActive(settingsPage, true);
                     break;
             }
         }
@@ -122,7 +134,12 @@ namespace AnimalHotel.Counter
                 case "room":
                     ShowPage(Page.RoomManagement);
                     break;
-                // TODO: guidebook, settings
+                case "guidebook":
+                    ShowPage(Page.Guidebook);
+                    break;
+                case "settings":
+                    ShowPage(Page.Settings);
+                    break;
             }
         }
 
@@ -235,6 +252,34 @@ namespace AnimalHotel.Counter
         private void SetPageActive(GameObject page, bool active)
         {
             if (page != null) page.SetActive(active);
+        }
+
+
+        private void HideAllPages()
+        {
+            SetPageActive(reservationPage, false);
+            SetPageActive(roomManagementPage, false);
+            SetPageActive(guidebookPage, false);
+            SetPageActive(settingsPage, false);
+        }
+
+
+        public bool CanUseMainMenuButtons()
+        {
+            return isActiveAndEnabled && !HasOpenPage();
+        }
+
+        private bool HasOpenPage()
+        {
+            return IsPageActive(reservationPage)
+                || IsPageActive(roomManagementPage)
+                || IsPageActive(guidebookPage)
+                || IsPageActive(settingsPage);
+        }
+
+        private static bool IsPageActive(GameObject page)
+        {
+            return page != null && page.activeInHierarchy;
         }
     }
 }

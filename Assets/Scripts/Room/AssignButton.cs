@@ -5,22 +5,43 @@ namespace AnimalHotel.Counter
     [RequireComponent(typeof(Collider2D))]
     public class AssignButton : MonoBehaviour
     {
+        private enum RoomAction
+        {
+            Assign,
+            Clean,
+            AdvancedClean
+        }
+
         [SerializeField] private RoomUI roomUI;
+        [SerializeField] private RoomAction action = RoomAction.Assign;
+
 
         private Camera _cachedCam;
 
         private void Update()
         {
             if (_cachedCam == null) _cachedCam = Camera.main;
-            if (_cachedCam == null) return;
+            if (_cachedCam == null || roomUI == null) return;
 
             Vector2 mousePos; bool mouseDown;
             GetMouseInput(out mousePos, out mouseDown);
             if (!mouseDown) return;
 
             Vector3 w3 = _cachedCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
-            if (GetComponent<Collider2D>().OverlapPoint(new Vector2(w3.x, w3.y)))
-                roomUI.OnAssignButtonClicked();
+            if (!GetComponent<Collider2D>().OverlapPoint(new Vector2(w3.x, w3.y))) return;
+
+            switch (action)
+            {
+                case RoomAction.Clean:
+                    roomUI.OnCleanButtonClicked();
+                    break;
+                case RoomAction.AdvancedClean:
+                    roomUI.OnAdvancedCleanButtonClicked();
+                    break;
+                default:
+                    roomUI.OnAssignButtonClicked();
+                    break;
+            }
         }
 
         private static void GetMouseInput(out Vector2 pos, out bool downThisFrame)

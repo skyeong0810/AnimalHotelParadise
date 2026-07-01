@@ -190,6 +190,7 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
         private bool _isEnabled = true;
         private TextMeshPro _tmp;
         private Color _textNormalColor;
+        private Collider2D _collider;
 
         public void Setup(int index, SpriteRenderer sr, Color normal, Color hover, Action<int> onClick)
         {
@@ -198,6 +199,7 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
             _normal = normal;
             _hover = hover;
             _onClick = onClick;
+            _collider = GetComponent<Collider2D>();
             _isEnabled = true;
             SetHover(false);
         }
@@ -211,6 +213,7 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
             _hover = hover;
             _textNormalColor = textNormal;
             _onClick = onClick;
+            _collider = GetComponent<Collider2D>();
 
             SetEnabled(isEnabled);
         }
@@ -218,6 +221,9 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
         public void SetEnabled(bool enabled)
         {
             _isEnabled = enabled;
+            if (_collider == null) _collider = GetComponent<Collider2D>();
+            if (_collider != null) _collider.enabled = enabled;
+
             if (!_isEnabled)
             {
                 if (_sr != null) _sr.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);

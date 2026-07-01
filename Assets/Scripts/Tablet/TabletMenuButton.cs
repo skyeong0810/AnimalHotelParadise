@@ -23,7 +23,7 @@ namespace AnimalHotel.Counter
         private void Update()
         {
             if (_cachedCam == null) _cachedCam = Camera.main;
-            if (_cachedCam == null) return;
+            if (_cachedCam == null || tabletUI == null || !tabletUI.CanUseMainMenuButtons()) return;
 
             Vector2 mousePos; bool mouseDown;
             GetMouseInput(out mousePos, out mouseDown);
@@ -33,7 +33,7 @@ namespace AnimalHotel.Counter
             Vector2 wp = new Vector2(w3.x, w3.y);
 
             var col = GetComponent<BoxCollider2D>();
-            if (col != null && col.OverlapPoint(wp) && tabletUI != null)
+            if (col != null && col.OverlapPoint(wp))
             {
                 if (sfxSource != null && clickSfx != null) sfxSource.PlayOneShot(clickSfx, Mathf.Clamp01(clickVolume * masterSfxVolume));
                 tabletUI.OnMenuButtonClicked(pageKey);
