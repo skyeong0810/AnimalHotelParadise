@@ -1,23 +1,23 @@
 using UnityEngine;
 
-// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  Runtime animal instance
-// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// <summary>
 /// Represents one individual animal guest that visits the hotel.
-/// Holds instance-level data (name, reservation flag) while pointing
+/// Holds instance-level data (name, reservation, stay duration) while pointing
 /// to its species' shared <see cref="SpeciesData"/> for all static traits.
 ///
 /// Usage:
-///   var guest = new Animal(db.Get("rabbit"), "±èÅä²¤ÀÌ", hasReservation: true);
+///   var guest = new Animal(db.Get("rabbit"), "ê¹€í† ê¹½ì´", hasReservation: true, checkInDay: 1, stayNights: 2);
 /// </summary>
 [System.Serializable]
 public class Animal
 {
-    // ¦¡¦¡ Instance identity ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Instance identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    /// <summary>Randomly generated guest name (aname). E.g. "±èÅä²¤ÀÌ".</summary>
+    /// <summary>Randomly generated guest name (aname). E.g. "ê¹€í† ê¹½ì´".</summary>
     public string guestName;
 
     /// <summary>Whether this animal is on today's reservation list (rbook).</summary>
@@ -26,32 +26,56 @@ public class Animal
     /// <summary>Reference to the shared, species-wide data.</summary>
     public SpeciesData species;
 
-    // ¦¡¦¡ Convenience pass-throughs ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Stay duration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    /// <summary>
+    /// The day number this guest checks in.
+    /// Set by AnimalFactory at generation time; equals CurrentDay at the time of creation.
+    /// </summary>
+    public int checkInDay;
+
+    /// <summary>
+    /// How many nights the guest will stay (minimum 1).
+    /// Randomly assigned by AnimalFactory.
+    /// </summary>
+    public int stayNights;
+
+    /// <summary>
+    /// The day number on which this guest should check out.
+    /// A guest who checks in on day 3 and stays 2 nights checks out on day 5.
+    /// DayManager compares CurrentDay against this at the start of each morning.
+    /// </summary>
+    public int CheckOutDay => checkInDay + stayNights;
+
+    // â”€â”€ Convenience pass-throughs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //    These let other systems read traits without drilling into .species
 
     public string SpeciesId => species?.speciesId;
     public DietType DietType => species?.dietType ?? DietType.Herbivore;
     public ActivityCycle Activity => species?.activityCycle ?? ActivityCycle.Diurnal;
-    public int FloorNoise => species?.floorNoiseProbability ?? 0;
-    public int WallNoise => species?.wallNoiseProbability ?? 0;
-    public int SurroundNoise => species?.surroundNoiseProbability ?? 0;
+    public int FloorNuisance => species?.floorNuisanceProbability ?? 0;
+    public int WallNuisance => species?.wallNuisanceProbability ?? 0;
+    public int SurroundNuisance => species?.surroundNuisanceProbability ?? 0;
     public bool RequiresSpecialRoom => species?.requiresSpecialRoom ?? false;
     public bool LeavesOdour => species?.leavesOdour ?? false;
     public bool CausesDamage => species?.causesDamage ?? false;
     public bool IsCarnivore => DietType == DietType.Carnivore;
     public bool IsNocturnal => Activity == ActivityCycle.Nocturnal;
 
-    // ¦¡¦¡ Constructor ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ Constructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    public Animal(SpeciesData speciesData, string name, bool hasReservation)
+    public Animal(SpeciesData speciesData, string name, bool hasReservation, int checkInDay, int stayNights)
     {
         this.species = speciesData;
         this.guestName = name;
         this.hasReservation = hasReservation;
+        this.checkInDay = checkInDay;
+        this.stayNights = stayNights;
     }
 
     public override string ToString() =>
         $"[{species?.displayName ?? "?"}] {guestName} | " +
-        $"¿¹¾à:{hasReservation} ½Ä¼º:{DietType} È°µ¿:{Activity} " +
-        $"Ãş°£:{FloorNoise}% º®°£:{WallNoise}% »ç¹æ:{SurroundNoise}%";
+        $"ì˜ˆì•½:{hasReservation} ì‹ì„±:{DietType} í™œë™:{Activity} " +
+        $"ì¸µê°„:{FloorNuisance}% ë²½ê°„:{WallNuisance}% ì‚¬ë°©:{SurroundNuisance}% " +
+        $"ì²´í¬ì¸:Day {checkInDay} ì²´í¬ì•„ì›ƒ:Day {CheckOutDay}";
 }

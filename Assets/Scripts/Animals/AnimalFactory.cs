@@ -25,11 +25,17 @@ public static class AnimalFactory
         // Add more as needed
     };
 
+    // ── Stay duration range ───────────────────────────────────────────────────
+
+    /// <summary>Minimum number of nights a guest may stay.</summary>
+    private const int MinNights = 1;
+
+    /// <summary>Maximum number of nights a guest may stay.</summary>
+    private const int MaxNights = 3;
+
     // ── Reservation probability ───────────────────────────────────────────────
 
-    /// <summary>
-    /// Probability (0–1) that a randomly generated animal has a reservation.
-    /// </summary>
+    /// <summary>Probability (0–1) that a randomly generated animal has a reservation.</summary>
     private const float ReservationChance = 0.6f;
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -37,7 +43,8 @@ public static class AnimalFactory
     /// <summary>
     /// Creates one random Animal from the unlocked species in the database.
     /// </summary>
-    public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages)
+    /// <param name="currentDay">The day number this animal is being generated for (used as checkInDay).</param>
+    public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages, int currentDay)
     {
         var pool = database.allSpecies
             .Where(s => unlockedStages.Contains(s.stage))
@@ -56,22 +63,25 @@ public static class AnimalFactory
         string fullName = lastName + firstName;
 
         bool hasReservation = Random.value < ReservationChance;
+        int stayNights = Random.Range(MinNights, MaxNights + 1);
 
-        return new Animal(species, fullName, hasReservation);
+        return new Animal(species, fullName, hasReservation, checkInDay: currentDay, stayNights: stayNights);
     }
 
     /// <summary>
     /// Creates a batch of random animals in one call.
     /// </summary>
     /// <param name="count">How many animals to generate.</param>
+    /// <param name="currentDay">The day number guests are being generated for.</param>
     /// <param name="isFirstDay">
     /// When true, the very first guest in the returned list is always a rabbit
-    /// with a reservation, and the remaining (count - 1) slots are filled randomly.
+    /// with a reservation. The remaining (count - 1) slots are filled randomly.
     /// </param>
     public static List<Animal> CreateAnimals(
         SpeciesDatabase database,
         List<ContentStage> unlockedStages,
         int count,
+        int currentDay,
         bool isFirstDay = false)
     {
         var result = new List<Animal>();
@@ -86,14 +96,16 @@ public static class AnimalFactory
             {
                 string lastName = LastNames[Random.Range(0, LastNames.Length)];
                 string firstName = FirstNames[Random.Range(0, FirstNames.Length)];
-                result.Add(new Animal(rabbitData, lastName + firstName, hasReservation: true));
+                int stayNights = Random.Range(MinNights, MaxNights + 1);
+                result.Add(new Animal(rabbitData, lastName + firstName,
+                    hasReservation: true, checkInDay: currentDay, stayNights: stayNights));
             }
         }
 
         int remaining = count - result.Count;
         for (int i = 0; i < remaining; i++)
         {
-            var animal = CreateAnimal(database, unlockedStages);
+            var animal = CreateAnimal(database, unlockedStages, currentDay);
             if (animal != null)
                 result.Add(animal);
         }

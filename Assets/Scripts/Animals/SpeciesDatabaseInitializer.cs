@@ -10,7 +10,7 @@
 //    3. Right-click → "Populate with Default AHP Species"
 //       (or call SpeciesDatabaseInitializer.Populate() from your own editor script).
 //
-//  All noise values are placeholders from the design doc examples —
+//  All nuisance values are placeholders from the design doc examples —
 //  adjust them in the Inspector once the full balance table is ready.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -44,147 +44,147 @@ public static class SpeciesDatabaseInitializer
             // ── S1 ────────────────────────────────────────────────────────
             new SpeciesData
             {
-                speciesId             = "squirrel",
-                displayName           = "다람쥐",
-                stage                 = ContentStage.S1,
-                dietType              = DietType.Herbivore,
-                activityCycle         = ActivityCycle.Diurnal,
-                floorNoiseProbability = 0,   // design doc example: 다람쥐 0%
-                wallNoiseProbability  = 0,
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "squirrel",
+                displayName                = "다람쥐",
+                stage                      = ContentStage.S1,
+                dietType                   = DietType.Herbivore,
+                activityCycle              = ActivityCycle.Diurnal,
+                floorNuisanceProbability   = 0,   // design doc example: 다람쥐 0%
+                wallNuisanceProbability    = 0,
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "roe_deer",
-                displayName           = "고라니",
-                stage                 = ContentStage.S1,
-                dietType              = DietType.Herbivore,
-                activityCycle         = ActivityCycle.Diurnal,
-                floorNoiseProbability = 30,
-                wallNoiseProbability  = 50,  // design doc example: 고라니 50%
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "roe_deer",
+                displayName                = "고라니",
+                stage                      = ContentStage.S1,
+                dietType                   = DietType.Herbivore,
+                activityCycle              = ActivityCycle.Diurnal,
+                floorNuisanceProbability   = 30,
+                wallNuisanceProbability    = 50,  // design doc example: 고라니 50%
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "mouse",
-                displayName           = "쥐",
-                stage                 = ContentStage.S1,
-                dietType              = DietType.Herbivore,    // adjust if design changes
-                activityCycle         = ActivityCycle.Nocturnal,
-                floorNoiseProbability = 10,
-                wallNoiseProbability  = 10,
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = true,  // 쥐 → broken = T
+                speciesId                  = "mouse",
+                displayName                = "쥐",
+                stage                      = ContentStage.S1,
+                dietType                   = DietType.Herbivore,    // adjust if design changes
+                activityCycle              = ActivityCycle.Nocturnal,
+                floorNuisanceProbability   = 10,
+                wallNuisanceProbability    = 10,
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = true,  // 쥐 → broken = T
             },
             new SpeciesData
             {
-                speciesId             = "rabbit",
-                displayName           = "토끼",
-                stage                 = ContentStage.S1,
-                dietType              = DietType.Herbivore,
-                activityCycle         = ActivityCycle.Diurnal,
-                floorNoiseProbability = 70,  // design doc example: 토끼 70%
-                wallNoiseProbability  = 0,
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "rabbit",
+                displayName                = "토끼",
+                stage                      = ContentStage.S1,
+                dietType                   = DietType.Herbivore,
+                activityCycle              = ActivityCycle.Diurnal,
+                floorNuisanceProbability   = 70,  // design doc example: 토끼 70%
+                wallNuisanceProbability    = 0,
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
 
             // ── S2 ────────────────────────────────────────────────────────
             new SpeciesData
             {
-                speciesId             = "sheep",
-                displayName           = "양",
-                stage                 = ContentStage.S2,
-                dietType              = DietType.Herbivore,
-                activityCycle         = ActivityCycle.Diurnal,
-                floorNoiseProbability = 20,
-                wallNoiseProbability  = 10,
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "sheep",
+                displayName                = "양",
+                stage                      = ContentStage.S2,
+                dietType                   = DietType.Herbivore,
+                activityCycle              = ActivityCycle.Diurnal,
+                floorNuisanceProbability   = 20,
+                wallNuisanceProbability    = 10,
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "cat",
-                displayName           = "고양이",
-                stage                 = ContentStage.S2,
-                dietType              = DietType.Carnivore,
-                activityCycle         = ActivityCycle.Nocturnal,
-                floorNoiseProbability = 5,
-                wallNoiseProbability  = 5,
-                surroundNoiseProbability = 10,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "cat",
+                displayName                = "고양이",
+                stage                      = ContentStage.S2,
+                dietType                   = DietType.Carnivore,
+                activityCycle              = ActivityCycle.Nocturnal,
+                floorNuisanceProbability   = 5,
+                wallNuisanceProbability    = 5,
+                surroundNuisanceProbability = 10,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "skunk",
-                displayName           = "스컹크",
-                stage                 = ContentStage.S2,
-                dietType              = DietType.Carnivore,    // adjust if design changes
-                activityCycle         = ActivityCycle.Nocturnal,
-                floorNoiseProbability = 0,
-                wallNoiseProbability  = 0,
-                surroundNoiseProbability = 0,
-                requiresSpecialRoom   = false,
-                leavesOdour           = true,  // 스컹크 → smell = T
-                causesDamage          = false,
+                speciesId                  = "skunk",
+                displayName                = "스컹크",
+                stage                      = ContentStage.S2,
+                dietType                   = DietType.Carnivore,    // adjust if design changes
+                activityCycle              = ActivityCycle.Nocturnal,
+                floorNuisanceProbability   = 0,
+                wallNuisanceProbability    = 0,
+                surroundNuisanceProbability = 0,
+                requiresSpecialRoom        = false,
+                leavesOdour                = true,  // 스컹크 → smell = T
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "wolf",
-                displayName           = "늑대",
-                stage                 = ContentStage.S2,
-                dietType              = DietType.Carnivore,
-                activityCycle         = ActivityCycle.Nocturnal,
-                floorNoiseProbability = 30,
-                wallNoiseProbability  = 20,
-                surroundNoiseProbability = 40,  // design doc example: 늑대 40%
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "wolf",
+                displayName                = "늑대",
+                stage                      = ContentStage.S2,
+                dietType                   = DietType.Carnivore,
+                activityCycle              = ActivityCycle.Nocturnal,
+                floorNuisanceProbability   = 30,
+                wallNuisanceProbability    = 20,
+                surroundNuisanceProbability = 40,  // design doc example: 늑대 40%
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
 
             // ── S3 ────────────────────────────────────────────────────────
             new SpeciesData
             {
-                speciesId             = "tiger",
-                displayName           = "호랑이",
-                stage                 = ContentStage.S3,
-                dietType              = DietType.Carnivore,
-                activityCycle         = ActivityCycle.Nocturnal,
-                floorNoiseProbability = 50,
-                wallNoiseProbability  = 30,
-                surroundNoiseProbability = 20,
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "tiger",
+                displayName                = "호랑이",
+                stage                      = ContentStage.S3,
+                dietType                   = DietType.Carnivore,
+                activityCycle              = ActivityCycle.Nocturnal,
+                floorNuisanceProbability   = 50,
+                wallNuisanceProbability    = 30,
+                surroundNuisanceProbability = 20,
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             new SpeciesData
             {
-                speciesId             = "chicken",
-                displayName           = "닭",
-                stage                 = ContentStage.S3,
-                dietType              = DietType.Herbivore,
-                activityCycle         = ActivityCycle.Diurnal,
-                floorNoiseProbability = 10,
-                wallNoiseProbability  = 5,
-                surroundNoiseProbability = 30,  // 닭 → anoise (디자인 문서 참고)
-                requiresSpecialRoom   = false,
-                leavesOdour           = false,
-                causesDamage          = false,
+                speciesId                  = "chicken",
+                displayName                = "닭",
+                stage                      = ContentStage.S3,
+                dietType                   = DietType.Herbivore,
+                activityCycle              = ActivityCycle.Diurnal,
+                floorNuisanceProbability   = 10,
+                wallNuisanceProbability    = 5,
+                surroundNuisanceProbability = 30,  // 닭 → anoise (디자인 문서 참고)
+                requiresSpecialRoom        = false,
+                leavesOdour                = false,
+                causesDamage               = false,
             },
             // Add more S3 species here as the design doc grows (@...)
         };
