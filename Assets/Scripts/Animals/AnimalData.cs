@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 // ─────────────────────────────────────────────
@@ -44,6 +44,9 @@ public class SpeciesData
 
     [Tooltip("Display name shown to the player (Korean).")]
     public string displayName;
+
+    [Tooltip("The sprite representation of this species.")]
+    public Sprite speciesSprite;
 
     [Tooltip("Content stage this species is unlocked in.")]
     public ContentStage stage;

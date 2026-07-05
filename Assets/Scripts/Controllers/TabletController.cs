@@ -13,10 +13,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private Collider2D monitorClickArea;
         [SerializeField] private Collider2D overlayClickArea;
         [SerializeField] private Collider2D tabletActiveArea;
+        [SerializeField] private Collider2D mainMenuButton;   // 메뉴 패널 열기 버튼
 
         [Header("Show/Hide Targets")]
         [SerializeField] private GameObject overlayObj;
-        [SerializeField] private GameObject menuPanelObj;
+        [SerializeField] private GameObject mainMenuPanelObj;
         [SerializeField] private GameObject roomPanelObj;
 
         [Header("Audio")]
@@ -43,7 +44,7 @@ namespace AnimalHotel.Counter
             // Awake에서는 사운드 재생 안 함 (게임 시작 시 의도치 않은 재생 방지)
             IsOpen = startOpen;
             if (overlayObj != null) overlayObj.SetActive(startOpen);
-            if (menuPanelObj   != null) menuPanelObj.SetActive(startOpen);
+            if (mainMenuPanelObj   != null) mainMenuPanelObj.SetActive(startOpen);
             if (roomPanelObj   != null) roomPanelObj.SetActive(startOpen);
         }
 
@@ -56,7 +57,7 @@ namespace AnimalHotel.Counter
             if (IsOpen == open) return;
             IsOpen = open;
             if (overlayObj != null) overlayObj.SetActive(open);
-            if (menuPanelObj   != null) menuPanelObj.SetActive(open);
+            if (mainMenuPanelObj   != null) mainMenuPanelObj.SetActive(open);
             if (roomPanelObj   != null) roomPanelObj.SetActive(false);
 
             if (playSound)
@@ -91,6 +92,16 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
             }
             else
             {
+                if (mainMenuButton != null && mainMenuButton.OverlapPoint(worldPoint))
+                {
+                    if (roomPanelObj != null && roomPanelObj.activeSelf)
+                    {
+                        roomPanelObj.SetActive(false);
+                        if (mainMenuPanelObj != null) mainMenuPanelObj.SetActive(true);
+                        return;
+                    }
+                }
+
                 bool onPanel = tabletActiveArea != null && tabletActiveArea.OverlapPoint(worldPoint);
                 bool onOverlay = overlayClickArea != null && overlayClickArea.OverlapPoint(worldPoint);
                 if (onOverlay && !onPanel) Close();

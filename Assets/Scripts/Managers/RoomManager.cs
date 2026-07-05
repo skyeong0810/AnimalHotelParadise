@@ -42,6 +42,21 @@ namespace AnimalHotel.Counter
 
         public RoomData GetRoom(int roomNumber) => _rooms[roomNumber - 1];
 
+        /// <summary>Returns the number of rooms that are currently not occupied.</summary>
+        public int GetNonOccupiedRoomCount()
+        {
+            int count = 0;
+            if (_rooms != null)
+            {
+                foreach (var room in _rooms)
+                {
+                    if (room != null && room.status != RoomStatus.Occupied)
+                        count++;
+                }
+            }
+            return count;
+        }
+
         public RoomData GetRoomByOccupant(Animal guest)
         {
             foreach (var room in _rooms)

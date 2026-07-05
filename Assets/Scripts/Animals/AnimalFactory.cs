@@ -44,7 +44,7 @@ public static class AnimalFactory
     /// Creates one random Animal from the unlocked species in the database.
     /// </summary>
     /// <param name="currentDay">The day number this animal is being generated for (used as checkInDay).</param>
-    public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages, int currentDay)
+    public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages, int currentDay, bool forceNoReservation = false)
     {
         var pool = database.allSpecies
             .Where(s => unlockedStages.Contains(s.stage))
@@ -62,31 +62,38 @@ public static class AnimalFactory
         string firstName = FirstNames[Random.Range(0, FirstNames.Length)];
         string fullName = lastName + firstName;
 
-        bool hasReservation = Random.value < ReservationChance;
+        bool hasReservation = !forceNoReservation && (Random.value < ReservationChance);
         int stayNights = Random.Range(MinNights, MaxNights + 1);
 
         return new Animal(species, fullName, hasReservation, checkInDay: currentDay, stayNights: stayNights);
     }
 
     /// <summary>
-    /// Creates a batch of random animals in one call.
+    /// Creates a batch of random animals in one call, limiting the number of reservation guests.
     /// </summary>
     /// <param name="count">How many animals to generate.</param>
     /// <param name="currentDay">The day number guests are being generated for.</param>
+    /// <param name="maxReservations">Maximum number of animals in the batch allowed to have a reservation.</param>
     /// <param name="isFirstDay">
-    /// When true, the very first guest in the returned list is always a rabbit
-    /// with a reservation. The remaining (count - 1) slots are filled randomly.
+    /// When true and in stage 1, the very first guest in the returned list is always a rabbit
+    /// with a reservation. The remaining slots are filled randomly.
     /// </param>
     public static List<Animal> CreateAnimals(
         SpeciesDatabase database,
         List<ContentStage> unlockedStages,
         int count,
         int currentDay,
+        int maxReservations,
         bool isFirstDay = false)
     {
         var result = new List<Animal>();
 
-        if (isFirstDay)
+        bool isStage1 = unlockedStages != null 
+            && unlockedStages.Contains(ContentStage.S1) 
+            && !unlockedStages.Contains(ContentStage.S2) 
+            && !unlockedStages.Contains(ContentStage.S3);
+
+        if (isFirstDay && isStage1)
         {
             // Guaranteed first guest: a rabbit with a reservation.
             SpeciesData rabbitData = database.Get("rabbit");
@@ -102,12 +109,19 @@ public static class AnimalFactory
             }
         }
 
+        int currentReservations = result.Count(a => a.hasReservation);
+
         int remaining = count - result.Count;
         for (int i = 0; i < remaining; i++)
         {
-            var animal = CreateAnimal(database, unlockedStages, currentDay);
+            bool forceNoReservation = currentReservations >= maxReservations;
+            var animal = CreateAnimal(database, unlockedStages, currentDay, forceNoReservation);
             if (animal != null)
+            {
+                if (animal.hasReservation)
+                    currentReservations++;
                 result.Add(animal);
+            }
         }
 
         foreach (var animal in result)

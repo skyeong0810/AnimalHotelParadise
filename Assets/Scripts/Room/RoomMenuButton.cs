@@ -9,7 +9,8 @@ namespace AnimalHotel.Counter
         {
             Assign,
             Clean,
-            AdvancedClean
+            AdvancedClean,
+            Memo
         }
 
         [SerializeField] private RoomUI roomUI;

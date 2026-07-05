@@ -7,7 +7,7 @@ using UnityEngine;
 /// Manages one hotel day:
 ///   - Runs a fixed morning phase (MorningDuration seconds) then an afternoon phase (AfternoonDuration seconds)
 ///   - On morning start: checks out guests whose stay has ended, then generates new arrivals
-///   - Day 1 morning: first guest is always a rabbit with a reservation
+///   - Day 1 morning: first guest is always a rabbit with a reservation (only in Stage 1)
 ///   - Holds the reservation list the UI and dialogue system read from
 ///   - Marks animals as arrived when they show up
 ///
@@ -82,6 +82,9 @@ public class DayManager : MonoBehaviour
     /// </summary>
     public List<Animal> AfternoonArrivals { get; private set; } = new List<Animal>();
 
+    /// <summary>All guests scheduled to arrive today (both diurnal and nocturnal).</summary>
+    public List<Animal> TodaysArrivals { get; private set; } = new List<Animal>();
+
     /// <summary>Subset of TodaysGuests who have actually checked in so far today.</summary>
     public List<Animal> ArrivedGuests { get; private set; } = new List<Animal>();
 
@@ -127,7 +130,7 @@ public class DayManager : MonoBehaviour
     ///   1. Increments the day counter.
     ///   2. Removes any guests whose CheckOutDay equals CurrentDay (they leave this morning).
     ///   3. Generates new arrivals and appends them to TodaysGuests.
-    ///   4. On Day 1 the very first arrival is always a rabbit with a reservation.
+    ///   4. On Day 1 the very first arrival is always a rabbit with a reservation (only in Stage 1).
     /// </summary>
     private void StartMorning()
     {
@@ -149,14 +152,21 @@ public class DayManager : MonoBehaviour
         // 2. Generate new arrivals and sort them into morning / afternoon queues.
         MorningArrivals.Clear();
         AfternoonArrivals.Clear();
+        TodaysArrivals.Clear();
+
+        int nonOccupiedCount = roomManager != null ? roomManager.GetNonOccupiedRoomCount() : 10;
+        int maxReservations = Mathf.FloorToInt(nonOccupiedCount * 0.7f);
 
         var newArrivals = AnimalFactory.CreateAnimals(
             speciesDatabase,
             unlockedStages,
             guestsPerDay,
             currentDay: CurrentDay,
+            maxReservations: maxReservations,
             isFirstDay: CurrentDay == 1
         );
+
+        TodaysArrivals.AddRange(newArrivals);
 
         foreach (var a in newArrivals)
         {

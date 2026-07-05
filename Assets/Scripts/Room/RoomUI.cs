@@ -9,6 +9,12 @@ namespace AnimalHotel.Counter
         [SerializeField] private RoomManager roomManager;
         [SerializeField] private CounterFlow counterFlow;
         [SerializeField] private DialogueManager dialogueManager;
+        [SerializeField] private DayManager dayManager;
+
+        [Header("reservation_list")]
+        [SerializeField] private Transform background;
+        [SerializeField] private float spacing = 1.2f;
+        [SerializeField] private float scale = 1.0f;
 
         [Header("room_buttons")]
         [SerializeField] private List<SpriteRenderer> roomRenderers;
@@ -171,6 +177,102 @@ namespace AnimalHotel.Counter
                 sr.color = GetRoomColor(room);
             }
             RefreshAssignButton();
+            RefreshReservationList();
+        }
+
+        private void RefreshReservationList()
+        {
+            if (background == null) return;
+
+            // Clear existing icons safely (looping backwards to handle child count changes)
+            for (int i = background.childCount - 1; i >= 0; i--)
+            {
+                Transform child = background.GetChild(i);
+                if (child != null)
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
+
+            if (dayManager == null)
+            {
+                dayManager = FindObjectOfType<DayManager>();
+            }
+            if (dayManager == null) return;
+
+            // Gather all reservation guests from today's arrivals
+            List<Animal> reservationGuests = new List<Animal>();
+            if (dayManager.TodaysArrivals != null)
+            {
+                foreach (var a in dayManager.TodaysArrivals)
+                {
+                    if (a.hasReservation && !reservationGuests.Contains(a))
+                        reservationGuests.Add(a);
+                }
+            }
+
+            Debug.Log($"[RoomUI] RefreshReservationList found {reservationGuests.Count} reservation guests.");
+
+            // Instantiate sprites horizontally from right to left
+            float localRightEdge = 0.5f;
+            SpriteRenderer bgSr = background.GetComponent<SpriteRenderer>();
+            if (bgSr != null && bgSr.sprite != null)
+            {
+                localRightEdge = bgSr.sprite.bounds.max.x;
+            }
+
+            Vector3 backgroundLossyScale = background.lossyScale;
+            float parentScaleX = backgroundLossyScale.x != 0f ? backgroundLossyScale.x : 1f;
+
+            // Convert target world scale, spacing, and margin to local X units
+            float localIconWidth = parentScaleX != 0f ? (scale / parentScaleX) : scale;
+            float localSpacing = parentScaleX != 0f ? (spacing / parentScaleX) : spacing;
+            float localMargin = parentScaleX != 0f ? (0.2f / parentScaleX) : 0.2f; // 0.2f world units margin
+
+            // Total local width of the background is 2 * localRightEdge (assuming symmetric)
+            float totalLocalWidth = 2f * localRightEdge;
+            float maxAvailableLocalWidth = totalLocalWidth - localIconWidth - 2f * localMargin;
+
+            // Dynamically shrink local spacing if they don't fit
+            float actualLocalSpacing = localSpacing;
+            int numIcons = reservationGuests.Count;
+            if (numIcons > 1 && maxAvailableLocalWidth > 0f)
+            {
+                float requiredLocalWidth = (numIcons - 1) * localSpacing;
+                if (requiredLocalWidth > maxAvailableLocalWidth)
+                {
+                    actualLocalSpacing = maxAvailableLocalWidth / (numIcons - 1);
+                }
+            }
+
+            // First icon (i = 0) is at the right edge
+            float startLocalX = localRightEdge - (0.5f * localIconWidth) - localMargin;
+
+            for (int i = 0; i < numIcons; i++)
+            {
+                var guest = reservationGuests[i];
+                if (guest.species == null || guest.species.speciesSprite == null) continue;
+
+                GameObject iconObj = new GameObject("ReservationIcon_" + guest.guestName);
+                iconObj.transform.SetParent(background);
+
+                // Position: start from right (startLocalX) and move left (- i * actualLocalSpacing)
+                float posX = startLocalX - (i * actualLocalSpacing);
+
+                iconObj.transform.localPosition = new Vector3(posX, 0f, 0f);
+
+                // Calculate local scale
+                float localX = parentScaleX != 0f ? (scale / parentScaleX) : scale;
+                float localY = backgroundLossyScale.y != 0f ? (scale / backgroundLossyScale.y) : scale;
+                float localZ = backgroundLossyScale.z != 0f ? (scale / backgroundLossyScale.z) : scale;
+                iconObj.transform.localScale = new Vector3(localX, localY, localZ);
+                iconObj.transform.localRotation = Quaternion.identity;
+
+                SpriteRenderer sr = iconObj.AddComponent<SpriteRenderer>();
+                sr.sprite = guest.species.speciesSprite;
+                sr.sortingOrder = 60; // Make sure it's visible on top of panels
+            }
         }
 
         private void RefreshAssignButton()

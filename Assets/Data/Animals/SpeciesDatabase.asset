@@ -15,111 +15,121 @@ MonoBehaviour:
   allSpecies:
   - speciesId: squirrel
     displayName: "\uB2E4\uB78C\uC950"
+    speciesSprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNoiseProbability: 0
-    wallNoiseProbability: 0
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: roe_deer
     displayName: "\uACE0\uB77C\uB2C8"
+    speciesSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNoiseProbability: 30
-    wallNoiseProbability: 50
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: mouse
     displayName: "\uC950"
+    speciesSprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 1
-    floorNoiseProbability: 10
-    wallNoiseProbability: 10
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 1
   - speciesId: rabbit
     displayName: "\uD1A0\uB07C"
+    speciesSprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNoiseProbability: 70
-    wallNoiseProbability: 0
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: sheep
     displayName: "\uC591"
+    speciesSprite: {fileID: 0}
     stage: 1
     dietType: 0
     activityCycle: 0
-    floorNoiseProbability: 20
-    wallNoiseProbability: 10
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: cat
     displayName: "\uACE0\uC591\uC774"
+    speciesSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
-    floorNoiseProbability: 5
-    wallNoiseProbability: 5
-    surroundNoiseProbability: 10
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: skunk
     displayName: "\uC2A4\uCEF9\uD06C"
+    speciesSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
-    floorNoiseProbability: 0
-    wallNoiseProbability: 0
-    surroundNoiseProbability: 0
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 1
     causesDamage: 0
   - speciesId: wolf
     displayName: "\uB291\uB300"
+    speciesSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
-    floorNoiseProbability: 30
-    wallNoiseProbability: 20
-    surroundNoiseProbability: 40
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: tiger
     displayName: "\uD638\uB791\uC774"
+    speciesSprite: {fileID: 0}
     stage: 2
     dietType: 1
     activityCycle: 1
-    floorNoiseProbability: 50
-    wallNoiseProbability: 30
-    surroundNoiseProbability: 20
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
   - speciesId: chicken
     displayName: "\uB2ED"
+    speciesSprite: {fileID: 0}
     stage: 2
     dietType: 0
     activityCycle: 0
-    floorNoiseProbability: 10
-    wallNoiseProbability: 5
-    surroundNoiseProbability: 30
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 0
+    surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
