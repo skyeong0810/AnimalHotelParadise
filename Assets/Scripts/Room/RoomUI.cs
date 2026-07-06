@@ -332,7 +332,74 @@ namespace AnimalHotel.Counter
                 && (room.status == RoomStatus.NeedsExamination || room.status == RoomStatus.NeedsCleaning);
         }
 
+        public void SetSelectedRoomMemoSprite(Sprite memoSprite)
+        {
+            if (_selectedRoomNumber == -1)
+            {
+                Debug.LogWarning("[RoomUI] No room selected to assign memo sprite.");
+                return;
+            }
 
+            if (roomRenderers == null || _selectedRoomNumber < 1 || _selectedRoomNumber > roomRenderers.Count)
+            {
+                Debug.LogWarning("[RoomUI] Selected room number out of range.");
+                return;
+            }
 
+            var roomRenderer = roomRenderers[_selectedRoomNumber - 1];
+            if (roomRenderer == null)
+            {
+                Debug.LogWarning("[RoomUI] Selected room renderer is null.");
+                return;
+            }
+
+            // Find or create the child GameObject for the memo sprite
+            Transform memoTransform = roomRenderer.transform.Find("RoomMemoSprite");
+            GameObject memoObj;
+            SpriteRenderer memoSr;
+
+             if (memoTransform != null)
+            {
+                memoObj = memoTransform.gameObject;
+                memoSr = memoObj.GetComponent<SpriteRenderer>();
+            }
+            else
+            {
+                memoObj = new GameObject("RoomMemoSprite");
+                memoObj.transform.SetParent(roomRenderer.transform);
+                memoSr = memoObj.AddComponent<SpriteRenderer>();
+            }
+
+             if (memoSr != null)
+            {
+                memoSr.sprite = memoSprite;
+                memoSr.sortingLayerID = roomRenderer.sortingLayerID;
+                memoSr.sortingLayerName = roomRenderer.sortingLayerName;
+                memoSr.sortingOrder = roomRenderer.sortingOrder + 10;
+                
+                // Prevent stretching by neutralizing the parent's lossy (world) scale.
+                // We target a uniform world scale of 0.25f for the memo icon.
+                Vector3 parentWorldScale = roomRenderer.transform.lossyScale;
+                float targetWorldScale = 0.35f; 
+                memoObj.transform.localScale = new Vector3(
+                    parentWorldScale.x != 0f ? (targetWorldScale / parentWorldScale.x) : targetWorldScale,
+                    parentWorldScale.y != 0f ? (targetWorldScale / parentWorldScale.y) : targetWorldScale,
+                    1f
+                );
+
+                // Calculate world position to align with top-right corner, shifted inwards
+                Vector3 worldTopRight = roomRenderer.bounds.max;
+                Vector3 worldSize = roomRenderer.bounds.size;
+
+                // Shift left by 15% and down by 25% of the room's world size (to go further down inside)
+                worldTopRight.x -= worldSize.x * 0.15f;
+                worldTopRight.y -= worldSize.y * 0.3f; 
+                worldTopRight.z = roomRenderer.transform.position.z - 0.1f; // Place in front
+
+                memoObj.transform.position = worldTopRight;
+
+                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to Room {roomRenderer.gameObject.name}. WorldPos: {memoObj.transform.position}, LossyScale: {memoObj.transform.lossyScale}");
+            }
+        }
     }
 }
