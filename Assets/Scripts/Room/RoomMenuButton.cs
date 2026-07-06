@@ -22,7 +22,6 @@ namespace AnimalHotel.Counter
 
         private void Start()
         {
-            Debug.Log($"[RoomMenuButton] Start called on {gameObject.name}. Action: {action}");
             if (action == RoomAction.Memo)
             {
                 if (transform.childCount > 0)
@@ -37,7 +36,6 @@ namespace AnimalHotel.Counter
         {
             // Find all SpriteRenderers in children recursively (including inactive ones)
             var childSpriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
-            Debug.Log($"[RoomMenuButton] InitializeMemoChildren found {childSpriteRenderers.Length} sprite renderers in {gameObject.name}.");
 
             foreach (var sr in childSpriteRenderers)
             {
@@ -47,7 +45,6 @@ namespace AnimalHotel.Counter
                 // Skip non-animal sprite objects
                 if (objName == "Background" || objName == "MemoTab")
                 {
-                    Debug.Log($"[RoomMenuButton] Skipping initialization for container/background object: {objName}");
                     continue;
                 }
 
@@ -67,7 +64,6 @@ namespace AnimalHotel.Counter
                     memoOpt = sr.gameObject.AddComponent<MemoOptionButton>();
                 }
                 memoOpt.Initialize(roomUI);
-                Debug.Log($"[RoomMenuButton] Initialized animal sprite: {objName} with BoxCollider2D and MemoOptionButton.");
             }
         }
 
@@ -84,8 +80,6 @@ namespace AnimalHotel.Counter
             Vector3 w3 = _cachedCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
             if (!GetComponent<Collider2D>().OverlapPoint(new Vector2(w3.x, w3.y))) return;
 
-            Debug.Log($"[RoomMenuButton] Clicked parent button: {gameObject.name}, Action: {action}, isMemoOpen: {_isMemoOpen}");
-
             if (action == RoomAction.Memo && _isMemoOpen)
             {
                 bool clickedChild = false;
@@ -97,7 +91,6 @@ namespace AnimalHotel.Counter
 
                     if (col.OverlapPoint(new Vector2(w3.x, w3.y)))
                     {
-                        Debug.Log($"[RoomMenuButton] Click intercepted by child animal sprite: {col.gameObject.name}. Ignoring parent toggle.");
                         clickedChild = true;
                         break;
                     }
@@ -125,7 +118,6 @@ namespace AnimalHotel.Counter
         private void ToggleChildren()
         {
             _isMemoOpen = !_isMemoOpen;
-            Debug.Log($"[RoomMenuButton] Toggling memo menu. New state: {_isMemoOpen}");
             foreach (Transform child in transform)
             {
                 child.gameObject.SetActive(_isMemoOpen);

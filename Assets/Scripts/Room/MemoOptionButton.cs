@@ -48,14 +48,9 @@ namespace AnimalHotel.Counter
             Vector3 w3 = _cachedCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
             if (GetComponent<Collider2D>().OverlapPoint(new Vector2(w3.x, w3.y)))
             {
-                Debug.Log($"[MemoOptionButton] Clicked on memo sprite: {gameObject.name}");
                 if (_spriteRenderer != null && _spriteRenderer.sprite != null)
                 {
                     _roomUI.SetSelectedRoomMemoSprite(_spriteRenderer.sprite);
-                }
-                else
-                {
-                    Debug.LogWarning($"[MemoOptionButton] SpriteRenderer or sprite is null on {gameObject.name}");
                 }
             }
         }

@@ -398,7 +398,7 @@ namespace AnimalHotel.Counter
 
                 memoObj.transform.position = worldTopRight;
 
-                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to Room {roomRenderer.gameObject.name}. WorldPos: {memoObj.transform.position}, LossyScale: {memoObj.transform.lossyScale}");
+                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to Room {roomRenderer.gameObject.name}.");
             }
         }
     }
