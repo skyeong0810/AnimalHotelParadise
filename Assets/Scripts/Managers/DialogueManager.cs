@@ -20,6 +20,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private float tabletCheckMinDelay = 0.5f;
 
         public event Action<string> OnDialogueEnd;
+        public event Action<string> OnChoiceResolved;
         public Animal CurrentGuest { get; private set; }
 
         private Dictionary<string, DialogueNode> _nodes;
@@ -148,7 +149,12 @@ namespace AnimalHotel.Counter
             if (node.nodeType == NodeType.Choice && node.choices != null && staffBubble != null)
             {
                 int idx = staffBubble.SelectedIndex;
-                if (idx >= 0 && idx < node.choices.Count) return node.choices[idx].nextNodeId;
+                if (idx >= 0 && idx < node.choices.Count)
+                {
+                    string nextNodeId = node.choices[idx].nextNodeId;
+                    OnChoiceResolved?.Invoke(nextNodeId);
+                    return nextNodeId;
+                }
             }
             if (node.nodeType == NodeType.Exit) return null;
             return node.nextNodeId;

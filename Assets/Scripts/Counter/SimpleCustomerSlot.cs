@@ -21,9 +21,16 @@ namespace AnimalHotel.Counter
         [Header("Refs (optional)")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
+        [Header("Sprite Fit")]
+        [SerializeField] private bool fitSpriteToSlot = true;
+        [SerializeField] private Vector2 targetSpriteWorldSize = new Vector2(3.1f, 3.35f);
+
+        private Vector3 _initialScale;
+
         private void Awake()
         {
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            _initialScale = transform.localScale;
             SetY(hiddenY);
         }
 
@@ -31,7 +38,10 @@ namespace AnimalHotel.Counter
         public IEnumerator Spawn(Sprite portrait = null)
         {
             if (portrait != null && spriteRenderer != null)
+            {
                 spriteRenderer.sprite = portrait;
+                FitSpriteToSlot();
+            }
 
             SetY(hiddenY);
             yield return MoveY(visibleY, riseDuration);
@@ -62,6 +72,24 @@ namespace AnimalHotel.Counter
                 yield return null;
             }
             transform.position = b;
+        }
+
+        private void FitSpriteToSlot()
+        {
+            if (!fitSpriteToSlot || spriteRenderer == null || spriteRenderer.sprite == null) return;
+
+            Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
+            if (spriteSize.x <= 0f || spriteSize.y <= 0f) return;
+
+            Vector3 parentScale = transform.parent != null ? transform.parent.lossyScale : Vector3.one;
+            float parentScaleX = Mathf.Abs(parentScale.x) > 0f ? Mathf.Abs(parentScale.x) : 1f;
+            float parentScaleY = Mathf.Abs(parentScale.y) > 0f ? Mathf.Abs(parentScale.y) : 1f;
+
+            float xScale = targetSpriteWorldSize.x / (spriteSize.x * parentScaleX);
+            float yScale = targetSpriteWorldSize.y / (spriteSize.y * parentScaleY);
+            float uniformScale = Mathf.Min(xScale, yScale);
+
+            transform.localScale = new Vector3(uniformScale, uniformScale, _initialScale.z);
         }
     }
 }

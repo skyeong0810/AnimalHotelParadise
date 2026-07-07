@@ -51,6 +51,9 @@ public class Animal
     //    These let other systems read traits without drilling into .species
 
     public string SpeciesId => species?.speciesId;
+    public Sprite ReservationIconSprite => species != null && species.reservationIconSprite != null
+        ? species.reservationIconSprite
+        : species?.speciesSprite;
     public DietType DietType => species?.dietType ?? DietType.Herbivore;
     public ActivityCycle Activity => species?.activityCycle ?? ActivityCycle.Diurnal;
     public int FloorNuisance => species?.floorNuisanceProbability ?? 0;
@@ -59,6 +62,7 @@ public class Animal
     public bool RequiresSpecialRoom => species?.requiresSpecialRoom ?? false;
     public bool LeavesOdour => species?.leavesOdour ?? false;
     public bool CausesDamage => species?.causesDamage ?? false;
+    public int DamageProbability => species?.damageProbability ?? 0;
     public bool IsCarnivore => DietType == DietType.Carnivore;
     public bool IsNocturnal => Activity == ActivityCycle.Nocturnal;
 

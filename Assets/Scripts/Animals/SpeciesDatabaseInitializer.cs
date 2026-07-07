@@ -55,6 +55,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -69,6 +70,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -83,6 +85,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = true,  // 쥐 → broken = T
+                damageProbability          = 100,
             },
             new SpeciesData
             {
@@ -97,6 +100,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
 
             // ── S2 ────────────────────────────────────────────────────────
@@ -113,6 +117,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -127,6 +132,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -141,6 +147,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = true,  // 스컹크 → smell = T
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -155,6 +162,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
 
             // ── S3 ────────────────────────────────────────────────────────
@@ -171,6 +179,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             new SpeciesData
             {
@@ -185,6 +194,7 @@ public static class SpeciesDatabaseInitializer
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
                 causesDamage               = false,
+                damageProbability          = 0,
             },
             // Add more S3 species here as the design doc grows (@...)
         };

@@ -222,7 +222,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c53e4fb42e68d234b81bbdfeaaa211fe, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::AnimalHotel.Counter.RoomButton
   roomNumber: 1
   roomUI: {fileID: 2094616067}
@@ -1095,8 +1095,9 @@ GameObject:
   m_Component:
   - component: {fileID: 273473065}
   - component: {fileID: 273473066}
+  - component: {fileID: 273473067}
   m_Layer: 0
-  m_Name: POS_CardReader
+  m_Name: RoomAssignmentKey
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1176,6 +1177,22 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &273473067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 273473064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8519c0b6b764e62a3b576cf8d337ec, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalHotel.Counter.RoomAssignmentKeyAnimator
+  hiddenYOffset: 2
+  hideOnAwake: 1
+  riseDuration: 0.45
+  fadeInWhileRising: 1
 --- !u!1 &280149424
 GameObject:
   m_ObjectHideFlags: 0
@@ -1822,7 +1839,7 @@ SpriteRenderer:
   m_SortingOrder: -2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.65, g: 0.45, b: 0.25, a: 0.85}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1848,6 +1865,8 @@ MonoBehaviour:
   riseDuration: 0.7
   sinkDuration: 0.5
   spriteRenderer: {fileID: 0}
+  fitSpriteToSlot: 1
+  targetSpriteWorldSize: {x: 3.1, y: 3.35}
 --- !u!1 &319298030
 GameObject:
   m_ObjectHideFlags: 0
@@ -4249,6 +4268,7 @@ MonoBehaviour:
   door: {fileID: 191036083}
   customerSlot: {fileID: 313009710}
   customerBubble: {fileID: 1254594635}
+  roomAssignmentKey: {fileID: 273473067}
   dialogueManager: {fileID: 667255564}
   dayManager: {fileID: 1571367191}
   sfxSource: {fileID: 978852833}
@@ -8852,9 +8872,11 @@ MonoBehaviour:
   counterFlow: {fileID: 978852832}
   dialogueManager: {fileID: 667255564}
   dayManager: {fileID: 1571367191}
+  normalCleanDurationSeconds: 0
   background: {fileID: 1883657650}
   spacing: 1.2
   scale: 0.5
+  reservationIconWorldSize: 0.35
   roomRenderers:
   - {fileID: 30827594}
   - {fileID: 1190969917}
@@ -8878,6 +8900,7 @@ MonoBehaviour:
   occupiedRoomColor: {r: 1, g: 1, b: 1, a: 1}
   needsExaminationRoomColor: {r: 1, g: 0.85, b: 0.25, a: 1}
   needsCleaningRoomColor: {r: 0.45, g: 0.8, b: 1, a: 1}
+  advancedCleaningInProgressRoomColor: {r: 0.7, g: 0.45, b: 1, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

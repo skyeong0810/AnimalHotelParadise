@@ -16,6 +16,8 @@ using UnityEngine;
 /// </summary>
 public class DayManager : MonoBehaviour
 {
+    public event System.Action OnPhaseChanged;
+
     // ── Inspector fields ──────────────────────────────────────────────────────
 
     [Tooltip("Reference to the CounterFlow in the scene.")]
@@ -144,6 +146,7 @@ public class DayManager : MonoBehaviour
         IsMorning = true;
         CurrentDay++;
         PhaseTimeRemaining = morningDuration;
+        int completedAdvancedCleanings = CompleteAdvancedCleaningRooms();
 
         // 1. Check out guests whose stay has ended.
         CheckedOutToday.Clear();
@@ -180,12 +183,10 @@ public class DayManager : MonoBehaviour
         Debug.Log($"[DayManager] Day {CurrentDay} morning started. " +
                   $"{departing.Count} checked out, {MorningArrivals.Count} morning / " +
                   $"{AfternoonArrivals.Count} afternoon arrivals expected, " +
-                  $"{TodaysGuests.Count} continuing guests in hotel.");
+                  $"{TodaysGuests.Count} continuing guests in hotel, " +
+                  $"{completedAdvancedCleanings} advanced cleaning(s) completed.");
 
-        if (counterFlow != null)
-        {
-            counterFlow.OnPhaseChanged();
-        }
+        NotifyPhaseChanged();
     }
 
     /// <summary>
@@ -196,6 +197,7 @@ public class DayManager : MonoBehaviour
     {
         IsMorning = false;
         PhaseTimeRemaining = afternoonDuration;
+        int completedAdvancedCleanings = CompleteAdvancedCleaningRooms();
 
         if (MorningArrivals.Count > 0)
         {
@@ -208,7 +210,21 @@ public class DayManager : MonoBehaviour
 
         Debug.Log($"[DayManager] Day {CurrentDay} afternoon started. " +
                   $"{departingNocturnal.Count} nocturnal guest(s) checked out, " +
-                  $"{AfternoonArrivals.Count} nocturnal guest(s) expected.");
+                  $"{AfternoonArrivals.Count} nocturnal guest(s) expected, " +
+                  $"{completedAdvancedCleanings} advanced cleaning(s) completed.");
+
+        NotifyPhaseChanged();
+    }
+
+    private int CompleteAdvancedCleaningRooms()
+    {
+        if (roomManager == null) return 0;
+        return roomManager.CompleteAdvancedCleaningRooms();
+    }
+
+    private void NotifyPhaseChanged()
+    {
+        OnPhaseChanged?.Invoke();
 
         if (counterFlow != null)
         {
@@ -293,6 +309,29 @@ public class DayManager : MonoBehaviour
                   $"Paid {payment} ({guest.stayNights} night(s)). " +
                   $"Staying until Day {guest.CheckOutDay}. " +
                   $"Hotel total: {TotalMoney}");
+    }
+
+    public void RecordRating(Animal guest, int rating, string reason = "")
+    {
+        rating = Mathf.Clamp(rating, 0, 10);
+        _totalRatingSum += rating;
+        _totalRatingCount++;
+        AverageRating = (float)_totalRatingSum / _totalRatingCount;
+
+        string guestName = guest != null ? guest.guestName : "Unknown guest";
+        string reasonText = string.IsNullOrEmpty(reason) ? "" : $" Reason: {reason}.";
+        Debug.Log($"[DayManager] {guestName} rated {rating}/10.{reasonText} Avg rating: {AverageRating:F1}");
+    }
+
+    public void SpendPhaseTime(float seconds, string reason = "")
+    {
+        if (seconds <= 0f) return;
+
+        PhaseTimeRemaining = Mathf.Max(0f, PhaseTimeRemaining - seconds);
+        string reasonText = string.IsNullOrEmpty(reason) ? "" : $" Reason: {reason}.";
+        Debug.Log($"[DayManager] Spent {seconds:F1}s from the current phase.{reasonText} Remaining: {PhaseTimeRemaining:F1}s.");
+
+        TryAdvancePhase();
     }
 
     /// <summary>

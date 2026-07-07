@@ -22,7 +22,8 @@ namespace AnimalHotel.Counter
             BegWalkIn,          // 빌기 (워크인 분기)
             ExitCheckin,        // 체크인 감사 퇴장
             ExitLeave,          // 빌다 거절당해 떠남
-            ExitRejected        // 거절 수긍 퇴장
+            ExitRejected,       // 거절 수긍 퇴장
+            ExitRejectedNoRoom  // 예약했지만 빈 방이 없어 거절당함
         }
 
         private class VoiceSet
@@ -47,6 +48,7 @@ namespace AnimalHotel.Counter
             { Line.ExitCheckin,       "감사합니다!" },
             { Line.ExitLeave,         "알겠습니다..." },
             { Line.ExitRejected,      "네... 알겠습니다." },
+            { Line.ExitRejectedNoRoom,"빈 방이 없다니요...?\n예약했는데... 알겠습니다." },
         };
 
         static CustomerVoiceLines()
@@ -65,6 +67,7 @@ namespace AnimalHotel.Counter
                 { Line.ExitCheckin,       "감사합니다! 오독오독!" },
                 { Line.ExitLeave,         "아... 네, 알겠어요. 오독..." },
                 { Line.ExitRejected,      "네... 알겠습니다. 오독오독." },
+                { Line.ExitRejectedNoRoom,"비, 빈 방이 없다구요...?\n예약했는데... 오독..." },
             });
 
             // 쥐 — 약삭빠르고 까칠, 찍찍
@@ -81,6 +84,7 @@ namespace AnimalHotel.Counter
                 { Line.ExitCheckin,       "어, 고맙수다. 찍찍~" },
                 { Line.ExitLeave,         "쳇, 알았어. 찍찍." },
                 { Line.ExitRejected,      "흥, 알겠다고. 찍찍." },
+                { Line.ExitRejectedNoRoom,"빈 방이 없다고? 찍찍...\n예약까지 했는데 이게 뭐야." },
             });
 
             // 토끼 — 예의 바르고 새침, 쿵쿵
@@ -97,6 +101,7 @@ namespace AnimalHotel.Counter
                 { Line.ExitCheckin,       "감사합니다! 쿵쿵!" },
                 { Line.ExitLeave,         "네... 알겠습니다. 쿵." },
                 { Line.ExitRejected,      "네, 알겠어요... 쿵." },
+                { Line.ExitRejectedNoRoom,"빈 방이 없다니요...?\n예약했는데... 쿵..." },
             });
 
             // 고라니 — 무뚝뚝한데 잘 놀람, 으악~
@@ -113,6 +118,7 @@ namespace AnimalHotel.Counter
                 { Line.ExitCheckin,       "오, 땡큐. ...으악!" },
                 { Line.ExitLeave,         "알겠음... 으악." },
                 { Line.ExitRejected,      "...그래, 알겠어. 으악." },
+                { Line.ExitRejectedNoRoom,"빈 방이 없다고?\n예약했는데. ...으악, 됐다." },
             });
         }
 

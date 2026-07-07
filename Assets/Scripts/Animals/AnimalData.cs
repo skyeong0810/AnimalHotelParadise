@@ -48,6 +48,9 @@ public class SpeciesData
     [Tooltip("The sprite representation of this species.")]
     public Sprite speciesSprite;
 
+    [Tooltip("Small face icon used in reservation lists.")]
+    public Sprite reservationIconSprite;
+
     [Tooltip("Content stage this species is unlocked in.")]
     public ContentStage stage;
 
@@ -85,6 +88,10 @@ public class SpeciesData
 
     [Tooltip("Does this species risk damaging the room? (Mouse → broken = T)")]
     public bool causesDamage;
+
+    [Tooltip("Probability (0-100) that this species actually damages the room on checkout.")]
+    [Range(0, 100)]
+    public int damageProbability;
 }
 
 // ─────────────────────────────────────────────

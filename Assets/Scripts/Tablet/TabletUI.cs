@@ -210,7 +210,7 @@ namespace AnimalHotel.Counter
             if (guest.species.leavesOdour)
                 displayText += "  | <color=#B8860B>냄새</color>";
             if (guest.species.causesDamage)
-                displayText += "  | <color=#CD5C5C>파손</color>";
+                displayText += $"  | <color=#CD5C5C>파손 {guest.species.damageProbability}%</color>";
 
             // 텍스트 오브젝트
             var label = new GameObject("Label");

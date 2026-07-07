@@ -11,10 +11,15 @@ namespace AnimalHotel.Counter
         [SerializeField] private DialogueManager dialogueManager;
         [SerializeField] private DayManager dayManager;
 
+        [Header("cleaning_time")]
+        [Min(0f)]
+        [SerializeField] private float normalCleanDurationSeconds = 0f;
+
         [Header("reservation_list")]
         [SerializeField] private Transform background;
         [SerializeField] private float spacing = 1.2f;
         [SerializeField] private float scale = 1.0f;
+        [SerializeField] private float reservationIconWorldSize = 0.35f;
 
         [Header("room_buttons")]
         [SerializeField] private List<SpriteRenderer> roomRenderers;
@@ -35,6 +40,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private Color occupiedRoomColor = Color.white;
         [SerializeField] private Color needsExaminationRoomColor = new Color(1f, 0.85f, 0.25f, 1f);
         [SerializeField] private Color needsCleaningRoomColor = new Color(0.45f, 0.8f, 1f, 1f);
+        [SerializeField] private Color advancedCleaningInProgressRoomColor = new Color(0.7f, 0.45f, 1f, 1f);
 
 
         public event System.Action OnRoomAssigned;
@@ -43,7 +49,19 @@ namespace AnimalHotel.Counter
 
         private void Awake()
         {
+            if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
             InitializeRoomRenderers();
+        }
+
+        private void OnEnable()
+        {
+            if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
+            if (dayManager != null) dayManager.OnPhaseChanged += RefreshRoomGrid;
+        }
+
+        private void OnDisable()
+        {
+            if (dayManager != null) dayManager.OnPhaseChanged -= RefreshRoomGrid;
         }
 
         private void InitializeRoomRenderers()
@@ -145,7 +163,11 @@ namespace AnimalHotel.Counter
                 return;
             }
 
-            roomManager.CleanRoom(_selectedRoomNumber);
+            bool cleaned = roomManager.CleanRoom(_selectedRoomNumber);
+            if (cleaned)
+            {
+                SpendNormalCleaningTime();
+            }
             RefreshRoomGrid();
         }
 
@@ -162,7 +184,15 @@ namespace AnimalHotel.Counter
             RefreshRoomGrid();
         }
 
-
+        private void SpendNormalCleaningTime()
+        {
+            if (normalCleanDurationSeconds <= 0f) return;
+            if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
+            if (dayManager != null)
+            {
+                dayManager.SpendPhaseTime(normalCleanDurationSeconds, "Normal cleaning");
+            }
+        }
 
         private void RefreshRoomGrid()
         {
@@ -224,9 +254,10 @@ namespace AnimalHotel.Counter
 
             Vector3 backgroundLossyScale = background.lossyScale;
             float parentScaleX = backgroundLossyScale.x != 0f ? backgroundLossyScale.x : 1f;
+            float targetIconWorldSize = GetReservationIconWorldSize();
 
             // Convert target world scale, spacing, and margin to local X units
-            float localIconWidth = parentScaleX != 0f ? (scale / parentScaleX) : scale;
+            float localIconWidth = parentScaleX != 0f ? (targetIconWorldSize / parentScaleX) : targetIconWorldSize;
             float localSpacing = parentScaleX != 0f ? (spacing / parentScaleX) : spacing;
             float localMargin = parentScaleX != 0f ? (0.2f / parentScaleX) : 0.2f; // 0.2f world units margin
 
@@ -252,7 +283,8 @@ namespace AnimalHotel.Counter
             for (int i = 0; i < numIcons; i++)
             {
                 var guest = reservationGuests[i];
-                if (guest.species == null || guest.species.speciesSprite == null) continue;
+                Sprite iconSprite = guest.ReservationIconSprite;
+                if (iconSprite == null) continue;
 
                 GameObject iconObj = new GameObject("ReservationIcon_" + guest.guestName);
                 iconObj.transform.SetParent(background);
@@ -262,17 +294,39 @@ namespace AnimalHotel.Counter
 
                 iconObj.transform.localPosition = new Vector3(posX, 0f, 0f);
 
-                // Calculate local scale
-                float localX = parentScaleX != 0f ? (scale / parentScaleX) : scale;
-                float localY = backgroundLossyScale.y != 0f ? (scale / backgroundLossyScale.y) : scale;
-                float localZ = backgroundLossyScale.z != 0f ? (scale / backgroundLossyScale.z) : scale;
-                iconObj.transform.localScale = new Vector3(localX, localY, localZ);
+                Vector3 iconLocalScale = GetReservationIconLocalScale(iconSprite, backgroundLossyScale, targetIconWorldSize);
+                iconObj.transform.localScale = iconLocalScale;
+                Vector3 centerOffset = Vector3.Scale(iconSprite.bounds.center, iconLocalScale);
+                iconObj.transform.localPosition = new Vector3(posX, 0f, 0f) - centerOffset;
                 iconObj.transform.localRotation = Quaternion.identity;
 
                 SpriteRenderer sr = iconObj.AddComponent<SpriteRenderer>();
-                sr.sprite = guest.species.speciesSprite;
+                sr.sprite = iconSprite;
                 sr.sortingOrder = 60; // Make sure it's visible on top of panels
             }
+        }
+
+        private float GetReservationIconWorldSize()
+        {
+            return reservationIconWorldSize > 0f ? reservationIconWorldSize : scale;
+        }
+
+        private Vector3 GetReservationIconLocalScale(Sprite sprite, Vector3 parentLossyScale, float targetWorldSize)
+        {
+            if (sprite == null) return Vector3.one;
+
+            Vector2 spriteSize = sprite.bounds.size;
+            if (spriteSize.x <= 0f || spriteSize.y <= 0f) return Vector3.one;
+
+            float parentScaleX = Mathf.Abs(parentLossyScale.x) > 0.0001f ? Mathf.Abs(parentLossyScale.x) : 1f;
+            float parentScaleY = Mathf.Abs(parentLossyScale.y) > 0.0001f ? Mathf.Abs(parentLossyScale.y) : 1f;
+            float targetSize = Mathf.Max(0.01f, targetWorldSize);
+
+            float worldScaleX = targetSize / spriteSize.x;
+            float worldScaleY = targetSize / spriteSize.y;
+            float uniformWorldScale = Mathf.Min(worldScaleX, worldScaleY);
+
+            return new Vector3(uniformWorldScale / parentScaleX, uniformWorldScale / parentScaleY, 1f);
         }
 
         private void RefreshAssignButton()
@@ -321,6 +375,8 @@ namespace AnimalHotel.Counter
                     return needsExaminationRoomColor;
                 case RoomStatus.NeedsCleaning:
                     return needsCleaningRoomColor;
+                case RoomStatus.AdvancedCleaningInProgress:
+                    return advancedCleaningInProgressRoomColor;
                 default:
                     return vacantRoomColor;
             }

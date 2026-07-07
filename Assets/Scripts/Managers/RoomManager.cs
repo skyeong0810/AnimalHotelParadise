@@ -7,7 +7,8 @@ namespace AnimalHotel.Counter
         Vacant,
         Occupied,
         NeedsExamination,
-        NeedsCleaning
+        NeedsCleaning,
+        AdvancedCleaningInProgress
     }
 
     public class RoomData
@@ -137,13 +138,39 @@ namespace AnimalHotel.Counter
             var room = GetRoom(roomNumber);
             if (room.status == RoomStatus.NeedsExamination || room.status == RoomStatus.NeedsCleaning)
             {
-                MarkRoomVacant(room);
-                Debug.Log($"[RoomManager] Room {roomNumber} advanced-cleaned - ready for assignment.");
+                room.status = RoomStatus.AdvancedCleaningInProgress;
+                Debug.Log($"[RoomManager] Room {roomNumber} advanced cleaning started.");
                 return true;
+            }
+
+            if (room.status == RoomStatus.AdvancedCleaningInProgress)
+            {
+                Debug.LogWarning($"[RoomManager] Room {roomNumber} is already being advanced-cleaned.");
+                return false;
             }
 
             Debug.LogWarning($"[RoomManager] Room {roomNumber} does not need cleaning.");
             return false;
+        }
+
+        public int CompleteAdvancedCleaningRooms()
+        {
+            int completedCount = 0;
+            foreach (var room in _rooms)
+            {
+                if (room == null || room.status != RoomStatus.AdvancedCleaningInProgress)
+                    continue;
+
+                MarkRoomVacant(room);
+                completedCount++;
+            }
+
+            if (completedCount > 0)
+            {
+                Debug.Log($"[RoomManager] Completed advanced cleaning for {completedCount} room(s).");
+            }
+
+            return completedCount;
         }
 
 
@@ -158,7 +185,13 @@ namespace AnimalHotel.Counter
         private bool RequiresAdvancedCleaning(Animal guest)
         {
             if (guest == null) return false;
-            return guest.LeavesOdour || guest.CausesDamage;
+            if (guest.LeavesOdour) return true;
+            if (!guest.CausesDamage) return false;
+
+            int damageProbability = Mathf.Clamp(guest.DamageProbability, 0, 100);
+            bool causedDamage = Random.Range(0, 100) < damageProbability;
+            Debug.Log($"[RoomManager] Damage roll for {guest.guestName}: {damageProbability}% -> {causedDamage}.");
+            return causedDamage;
         }
 
 

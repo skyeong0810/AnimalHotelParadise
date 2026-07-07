@@ -10,6 +10,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private DoorAnimator door;
         [SerializeField] private SimpleCustomerSlot customerSlot;
         [SerializeField] private SpeechBubble customerBubble;
+        [SerializeField] private RoomAssignmentKeyAnimator roomAssignmentKey;
 
         [Header("Dialogue System")]
         [SerializeField] private DialogueManager dialogueManager;
@@ -51,13 +52,16 @@ namespace AnimalHotel.Counter
 
         private void Start()
         {
+            if (roomAssignmentKey == null) roomAssignmentKey = FindFirstObjectByType<RoomAssignmentKeyAnimator>();
             if (dialogueManager != null) dialogueManager.OnDialogueEnd += OnDialogueEnd;
+            if (dialogueManager != null) dialogueManager.OnChoiceResolved += OnChoiceResolved;
             if (autoStartOnPlay) StartCoroutine(DelayedStart());
         }
 
         private void OnDestroy()
         {
             if (dialogueManager != null) dialogueManager.OnDialogueEnd -= OnDialogueEnd;
+            if (dialogueManager != null) dialogueManager.OnChoiceResolved -= OnChoiceResolved;
         }
 
         private IEnumerator DelayedStart()
@@ -71,6 +75,7 @@ namespace AnimalHotel.Counter
             if (_isSpawning) yield break;
             _isSpawning = true;
             if (customerBubble != null) customerBubble.HideImmediate();
+            if (roomAssignmentKey != null) roomAssignmentKey.HideImmediate();
 
             _currentGuest = GetNextGuest();
             if (_currentGuest == null)
@@ -92,7 +97,7 @@ namespace AnimalHotel.Counter
             if (entryFootstep != null) yield return new WaitForSeconds(entryFootstep.length);
 
             PlaySfx(GetEntryWhooshSfx(), footstepVolume);
-            if (customerSlot != null) yield return customerSlot.Spawn();
+            if (customerSlot != null) yield return customerSlot.Spawn(_currentGuest.species?.speciesSprite);
             if (door != null) yield return door.Close();
 
             if (delayBeforeDialogue > 0f) yield return new WaitForSeconds(delayBeforeDialogue);
@@ -108,6 +113,8 @@ namespace AnimalHotel.Counter
                 // Adjust the exitNodeId string to match whatever your DialogueManager emits.
                 if (_exitNodeId == "exit_checkin" || _exitNodeId == "exit_checkin_angry")
                     dayManager.CheckIn(_currentGuest);
+                else if (_exitNodeId == "exit_rejected_no_room")
+                    dayManager.RecordRating(_currentGuest, 0, "Reservation rejected because no room was available");
             }
 
             if (delayAfterResponse > 0f) yield return new WaitForSeconds(delayAfterResponse);
@@ -160,6 +167,18 @@ namespace AnimalHotel.Counter
         }
 
         private void OnDialogueEnd(string exitNodeId) { _exitNodeId = exitNodeId; _dialogueFinished = true; }
+        private void OnChoiceResolved(string nextNodeId)
+        {
+            if (nextNodeId == "exit_checkin" || nextNodeId == "exit_checkin_angry")
+                StartCoroutine(ShowRoomAssignmentKeyRoutine());
+        }
+
+        private IEnumerator ShowRoomAssignmentKeyRoutine()
+        {
+            if (roomAssignmentKey != null)
+                yield return roomAssignmentKey.Show();
+        }
+
         private void PlaySfx(AudioClip clip, float volume = 1f) { if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume * masterSfxVolume)); }
     
 

@@ -110,6 +110,7 @@ namespace AnimalHotel.Counter
                 choices = new List<DialogueChoice>
                 {
                     new DialogueChoice { text = "네, 방 배정해드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" },
                     new DialogueChoice { text = "죄송하지만, 예약 정보가 확인되지 않네요.", nextNodeId = "customer_react_denied" },
                     new DialogueChoice { text = "예약하신 분 성함과 종을 알려주시겠어요?", nextNodeId = "customer_tell_info" }
                 }
@@ -132,7 +133,8 @@ namespace AnimalHotel.Counter
                 speaker = Speaker.Staff,
                 choices = new List<DialogueChoice>
                 {
-                    new DialogueChoice { text = "잠시만요, 방 배정해드렸어요.", nextNodeId = "exit_checkin" }
+                    new DialogueChoice { text = "잠시만요, 방 배정해드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" }
                 }
             };
 
@@ -169,6 +171,7 @@ namespace AnimalHotel.Counter
                     choices = new List<DialogueChoice>
                     {
                         new DialogueChoice { text = "확인했습니다, 방 배정해드릴게요.", nextNodeId = "exit_checkin_angry" },
+                        new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" },
                         new DialogueChoice { text = "정말 죄송합니다, 확인이 어렵습니다.", nextNodeId = "exit_rejected_angry" }
                     }
                 };
@@ -346,6 +349,15 @@ namespace AnimalHotel.Counter
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
                     text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitRejected)
+                };
+
+            if (!nodes.ContainsKey("exit_rejected_no_room"))
+                nodes["exit_rejected_no_room"] = new DialogueNode
+                {
+                    id = "exit_rejected_no_room",
+                    nodeType = NodeType.Exit,
+                    speaker = Speaker.Customer,
+                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitRejectedNoRoom)
                 };
         }
     }

@@ -15,7 +15,8 @@ MonoBehaviour:
   allSpecies:
   - speciesId: squirrel
     displayName: "\uB2E4\uB78C\uC950"
-    speciesSprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+    speciesSprite: {fileID: 7994791527202228647, guid: aff16d26266ea4ef3b942e3c10e2cb23, type: 3}
+    reservationIconSprite: {fileID: 4457663930487915863, guid: c35dadaf2df524887aba1fe6e5d35e6f, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -25,9 +26,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: roe_deer
     displayName: "\uACE0\uB77C\uB2C8"
-    speciesSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+    speciesSprite: {fileID: -3211196357970331268, guid: 1a64c980cce7145e3b5319eae206467e, type: 3}
+    reservationIconSprite: {fileID: -1878785014404026028, guid: 84bc548f6242043129f2c9833c3fa85a, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -37,9 +40,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: mouse
     displayName: "\uC950"
-    speciesSprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+    speciesSprite: {fileID: -3947334870746072276, guid: 33d79e179449840eca204452065402a7, type: 3}
+    reservationIconSprite: {fileID: 2892949232145319937, guid: c9146c608e55f44248249c93ea8fa1e8, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 1
@@ -49,9 +54,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 1
+    damageProbability: 100
   - speciesId: rabbit
     displayName: "\uD1A0\uB07C"
-    speciesSprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
+    speciesSprite: {fileID: 5881072410746701727, guid: 821221b6e10e24143a36b3b47089ac8a, type: 3}
+    reservationIconSprite: {fileID: -522126531455249227, guid: 0c998fa8bd1e5419facd2005ce888004, type: 3}
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -61,9 +68,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: sheep
     displayName: "\uC591"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 1
     dietType: 0
     activityCycle: 0
@@ -73,9 +82,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: cat
     displayName: "\uACE0\uC591\uC774"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -85,9 +96,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: skunk
     displayName: "\uC2A4\uCEF9\uD06C"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -97,9 +110,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 1
     causesDamage: 0
+    damageProbability: 0
   - speciesId: wolf
     displayName: "\uB291\uB300"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -109,9 +124,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: tiger
     displayName: "\uD638\uB791\uC774"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 2
     dietType: 1
     activityCycle: 1
@@ -121,9 +138,11 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
   - speciesId: chicken
     displayName: "\uB2ED"
     speciesSprite: {fileID: 0}
+    reservationIconSprite: {fileID: 0}
     stage: 2
     dietType: 0
     activityCycle: 0
@@ -133,3 +152,4 @@ MonoBehaviour:
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
+    damageProbability: 0
