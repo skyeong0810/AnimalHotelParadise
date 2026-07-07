@@ -24,7 +24,6 @@ namespace AnimalHotel.Counter
         [Header("room_buttons")]
         [SerializeField] private List<SpriteRenderer> roomRenderers;
         [SerializeField] private Sprite vacantSprite;
-        [SerializeField] private Sprite occupiedPlaceholderSprite;
         [SerializeField] private Sprite selectedSprite;
 
         [Header("assign_button")]
@@ -205,6 +204,66 @@ namespace AnimalHotel.Counter
 
                 sr.sprite = GetRoomSprite(room, i + 1 == _selectedRoomNumber);
                 sr.color = GetRoomColor(room);
+
+                // Handle the occupant sprite overlay
+                Transform occupantTransform = sr.transform.Find("RoomOccupantSprite");
+                if (room != null && room.status == RoomStatus.Occupied && room.occupant != null && room.occupant.species != null && room.occupant.species.speciesSprite != null)
+                {
+                    GameObject occupantObj;
+                    SpriteRenderer occupantSr;
+                    if (occupantTransform != null)
+                    {
+                        occupantObj = occupantTransform.gameObject;
+                        occupantSr = occupantObj.GetComponent<SpriteRenderer>();
+                    }
+                    else
+                    {
+                        occupantObj = new GameObject("RoomOccupantSprite");
+                        occupantObj.transform.SetParent(sr.transform);
+                        occupantSr = occupantObj.AddComponent<SpriteRenderer>();
+                    }
+
+                    if (occupantSr != null)
+                    {
+                        occupantSr.gameObject.SetActive(true);
+                        occupantSr.sprite = room.occupant.species.speciesSprite;
+                        occupantSr.sortingLayerID = sr.sortingLayerID;
+                        occupantSr.sortingLayerName = sr.sortingLayerName;
+                        occupantSr.sortingOrder = sr.sortingOrder + 5; // Render above room button background
+
+                        occupantObj.transform.localPosition = Vector3.zero;
+
+                        // Size the occupant sprite overlay nicely inside the room
+                        Vector3 parentWorldScale = sr.transform.lossyScale;
+                        float targetWorldScale = 0.12f; // Fallback
+                        string spriteNameLower = room.occupant.species.speciesSprite.name.ToLower();
+                        if (spriteNameLower.Contains("squirrel") || spriteNameLower.Contains("mouse"))
+                        {
+                            targetWorldScale = 0.17f;
+                        }
+                        else if (spriteNameLower.Contains("roedeer"))
+                        {
+                            targetWorldScale = 0.03f;
+                        }
+                        else if (spriteNameLower.Contains("rabbit"))
+                        {
+                            targetWorldScale = 0.14f;
+                        }
+
+                        occupantObj.transform.localScale = new Vector3(
+                            parentWorldScale.x != 0f ? (targetWorldScale / parentWorldScale.x) : targetWorldScale,
+                            parentWorldScale.y != 0f ? (targetWorldScale / parentWorldScale.y) : targetWorldScale,
+                            1f
+                        );
+                    }
+                }
+                else
+                {
+                    if (occupantTransform != null)
+                    {
+                        occupantTransform.gameObject.SetActive(false);
+                    }
+                }
             }
             RefreshAssignButton();
             RefreshReservationList();
@@ -361,7 +420,6 @@ namespace AnimalHotel.Counter
         private Sprite GetRoomSprite(RoomData room, bool isSelected)
         {
             if (isSelected && selectedSprite != null) return selectedSprite;
-            if (room != null && room.status == RoomStatus.Occupied && occupiedPlaceholderSprite != null) return occupiedPlaceholderSprite;
             return vacantSprite;
         }
 
