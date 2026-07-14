@@ -32,31 +32,14 @@ namespace AnimalHotel.Counter
             }
         }
 
-        private void OnDisable()
-        {
-            if (action == RoomAction.Memo)
-            {
-                if (transform.childCount > 0)
-                {
-                    transform.GetChild(0).gameObject.SetActive(false);
-                }
-                _isMemoOpen = false;
-            }
-        }
-
         private void InitializeMemoChildren()
         {
             // Find all SpriteRenderers in children recursively (including inactive ones)
             var childSpriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
-            int initializedCount = 0;
 
             foreach (var sr in childSpriteRenderers)
             {
                 if (sr.gameObject == gameObject) continue; // Skip parent
-
-                // ONLY consider GameObjects that have a Collider2D component
-                var col = sr.gameObject.GetComponent<Collider2D>();
-                if (col == null) continue;
 
                 string objName = sr.gameObject.name;
                 // Skip non-animal sprite objects
@@ -65,13 +48,22 @@ namespace AnimalHotel.Counter
                     continue;
                 }
 
+                var box = sr.gameObject.GetComponent<BoxCollider2D>();
+                if (box == null)
+                {
+                    box = sr.gameObject.AddComponent<BoxCollider2D>();
+                }
+
+                // Size box collider to match the sprite's local bounds
+                box.size = sr.localBounds.size;
+                box.offset = sr.localBounds.center;
+
                 var memoOpt = sr.gameObject.GetComponent<MemoOptionButton>();
                 if (memoOpt == null)
                 {
                     memoOpt = sr.gameObject.AddComponent<MemoOptionButton>();
                 }
                 memoOpt.Initialize(roomUI);
-                initializedCount++;
             }
         }
 
@@ -95,7 +87,7 @@ namespace AnimalHotel.Counter
                 foreach (var col in childColliders)
                 {
                     if (col.gameObject == gameObject) continue; // Skip parent
-                    if (col.gameObject.name == "Background" || col.gameObject.name == "MemoTab") continue;
+                    if (col.gameObject.name == "Background") continue; // Background clicks still toggle parent
 
                     if (col.OverlapPoint(new Vector2(w3.x, w3.y)))
                     {
