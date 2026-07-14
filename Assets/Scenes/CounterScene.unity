@@ -9167,13 +9167,14 @@ MonoBehaviour:
   - {fileID: 1347916686}
   - {fileID: 681675328}
   vacantSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  selectedSprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  selectedSprite: {fileID: 5550138871999223739, guid: dd3404aa86ee22449aeda63a20bfae79, type: 3}
   assignButtonRenderer: {fileID: 284881873}
   cleanButtonRenderer: {fileID: 1686208150}
   advancedCleanButtonRenderer: {fileID: 1783034509}
   assignButtonActiveColor: {r: 1, g: 1, b: 1, a: 1}
   assignButtonInactiveColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   vacantRoomColor: {r: 1, g: 1, b: 1, a: 0}
+  selectedRoomColor: {r: 1, g: 0, b: 0, a: 1}
   occupiedRoomColor: {r: 1, g: 1, b: 1, a: 0}
   needsExaminationRoomColor: {r: 1, g: 0.85, b: 0.25, a: 1}
   needsCleaningRoomColor: {r: 0.45, g: 0.8, b: 1, a: 1}

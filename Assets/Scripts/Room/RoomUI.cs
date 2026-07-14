@@ -36,6 +36,7 @@ namespace AnimalHotel.Counter
 
         [Header("room_status_colors")]
         [SerializeField] private Color vacantRoomColor = Color.clear;
+        [SerializeField] private Color selectedRoomColor = Color.red;
         [SerializeField] private Color occupiedRoomColor = Color.clear;
         [SerializeField] private Color needsExaminationRoomColor = new Color(1f, 0.85f, 0.25f, 1f);
         [SerializeField] private Color needsCleaningRoomColor = new Color(0.45f, 0.8f, 1f, 1f);
@@ -216,7 +217,7 @@ namespace AnimalHotel.Counter
                 if (sr == null) continue;
 
                 sr.sprite = GetRoomSprite(room, i + 1 == _selectedRoomNumber);
-                sr.color = GetRoomColor(room);
+                sr.color = GetRoomColor(room, i + 1 == _selectedRoomNumber);
 
                 // Handle the occupant sprite overlay
                 Transform occupantTransform = sr.transform.Find("RoomOccupantSprite");
@@ -436,8 +437,9 @@ namespace AnimalHotel.Counter
             return vacantSprite;
         }
 
-        private Color GetRoomColor(RoomData room)
+        private Color GetRoomColor(RoomData room, bool isSelected)
         {
+            if (isSelected) return selectedRoomColor;
             if (room == null) return vacantRoomColor;
             switch (room.status)
             {
