@@ -634,7 +634,7 @@ SpriteRenderer:
   m_Size: {x: 59.119995, y: 44.34}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &114621820
 GameObject:
@@ -1084,7 +1084,7 @@ SpriteRenderer:
   m_Size: {x: 19.2, y: 10.8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &224406215
 GameObject:
@@ -1791,7 +1791,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -6.64, y: 4.49}
+  m_AnchoredPosition: {x: -7.4, y: 4.49}
   m_SizeDelta: {x: 2.5214, y: 0.5867}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &311130471
@@ -5523,7 +5523,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1205621127
 Transform:
   m_ObjectHideFlags: 0
@@ -8798,8 +8798,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 7.6149, y: 4.5039}
-  m_SizeDelta: {x: 2.3195, y: 0.7918}
+  m_AnchoredPosition: {x: 7.58, y: 4.51}
+  m_SizeDelta: {x: 2.3195, y: 0.6274}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2094406313
 MonoBehaviour:

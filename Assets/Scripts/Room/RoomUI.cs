@@ -146,6 +146,7 @@ namespace AnimalHotel.Counter
             bool success = roomManager.AssignRoom(_selectedRoomNumber, guest);
             if (success)
             {
+                ClearRoomMemos(_selectedRoomNumber);
                 _selectedRoomNumber = -1;
                 RefreshRoomGrid();
                 OnRoomAssigned?.Invoke();
@@ -181,6 +182,18 @@ namespace AnimalHotel.Counter
 
             roomManager.AdvancedCleanRoom(_selectedRoomNumber);
             RefreshRoomGrid();
+        }
+
+        public void OnMemoDeleteButtonClicked()
+        {
+            if (_selectedRoomNumber == -1)
+            {
+                Debug.LogWarning("[RoomUI] No room selected to delete memos.");
+                return;
+            }
+
+            ClearRoomMemos(_selectedRoomNumber);
+            Debug.Log($"[RoomUI] Deleted all memos in room {_selectedRoomNumber}.");
         }
 
         private void SpendNormalCleaningTime()
@@ -447,6 +460,17 @@ namespace AnimalHotel.Counter
                 && (room.status == RoomStatus.NeedsExamination || room.status == RoomStatus.NeedsCleaning);
         }
 
+        private int GetMemoSlotIndex(string spriteName)
+        {
+            if (string.IsNullOrEmpty(spriteName)) return -1;
+            string nameLower = spriteName.ToLower();
+            if (nameLower.Contains("squirrel")) return 0;
+            if (nameLower.Contains("roe_deer")) return 1;
+            if (nameLower.Contains("mouse")) return 2;
+            if (nameLower.Contains("rabbit")) return 3;
+            return -1;
+        }
+
         public void SetSelectedRoomMemoSprite(Sprite memoSprite)
         {
             if (_selectedRoomNumber == -1)
@@ -468,24 +492,49 @@ namespace AnimalHotel.Counter
                 return;
             }
 
-            // Find or create the child GameObject for the memo sprite
-            Transform memoTransform = roomRenderer.transform.Find("RoomMemoSprite");
-            GameObject memoObj;
-            SpriteRenderer memoSr;
-
-             if (memoTransform != null)
+            if (memoSprite == null)
             {
-                memoObj = memoTransform.gameObject;
-                memoSr = memoObj.GetComponent<SpriteRenderer>();
-            }
-            else
-            {
-                memoObj = new GameObject("RoomMemoSprite");
-                memoObj.transform.SetParent(roomRenderer.transform);
-                memoSr = memoObj.AddComponent<SpriteRenderer>();
+                Debug.LogWarning("[RoomUI] Memo sprite is null.");
+                return;
             }
 
-             if (memoSr != null)
+            int slotIndex = GetMemoSlotIndex(memoSprite.name);
+            if (slotIndex == -1)
+            {
+                Debug.LogWarning($"[RoomUI] Unknown memo sprite species: {memoSprite.name}");
+                return;
+            }
+
+            // Clean up old single memo format if it exists to avoid visual clutter
+            Transform oldMemoTransform = roomRenderer.transform.Find("RoomMemoSprite");
+            if (oldMemoTransform != null)
+            {
+                if (Application.isPlaying) Destroy(oldMemoTransform.gameObject);
+                else DestroyImmediate(oldMemoTransform.gameObject);
+            }
+
+            string childName = $"RoomMemoSprite_{slotIndex}";
+            Transform memoTransform = roomRenderer.transform.Find(childName);
+
+            if (memoTransform != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(memoTransform.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(memoTransform.gameObject);
+                }
+                Debug.Log($"[RoomUI] Deleted memo sprite {memoSprite.name} from room {_selectedRoomNumber} slot {slotIndex}.");
+                return;
+            }
+
+            GameObject memoObj = new GameObject(childName);
+            memoObj.transform.SetParent(roomRenderer.transform);
+            SpriteRenderer memoSr = memoObj.AddComponent<SpriteRenderer>();
+
+            if (memoSr != null)
             {
                 memoSr.sprite = memoSprite;
                 memoSr.sortingLayerID = roomRenderer.sortingLayerID;
@@ -493,40 +542,63 @@ namespace AnimalHotel.Counter
                 memoSr.sortingOrder = roomRenderer.sortingOrder + 10;
                 
                 // Prevent stretching by neutralizing the parent's lossy (world) scale.
-                // We target a uniform world scale of 0.2f for the memo icon.
                 Vector3 parentWorldScale = roomRenderer.transform.lossyScale;
-                 float targetWorldScale = 0.05f; // Default fallback scale
-                 string spriteNameLower = memoSprite.name.ToLower();
-                 if (spriteNameLower.Contains("squirrel") || spriteNameLower.Contains("mouse"))
-                 {
-                     targetWorldScale = 0.07f;
-                 }
-                 else if (spriteNameLower.Contains("roedeer"))
-                 {
-                     targetWorldScale = 0.03f;
-                 }
-                 else if (spriteNameLower.Contains("rabbit"))
-                 {
+                float targetWorldScale = 0.05f; // Default fallback scale
+                string spriteNameLower = memoSprite.name.ToLower();
+                if (spriteNameLower.Contains("squirrel") || spriteNameLower.Contains("mouse"))
+                {
+                    targetWorldScale = 0.07f;
+                }
+                else if (spriteNameLower.Contains("roedeer"))
+                {
+                    targetWorldScale = 0.03f;
+                }
+                else if (spriteNameLower.Contains("rabbit"))
+                {
                     targetWorldScale = 0.05f;
-                 }
+                }
+
                 memoObj.transform.localScale = new Vector3(
                     parentWorldScale.x != 0f ? (targetWorldScale / parentWorldScale.x) : targetWorldScale,
                     parentWorldScale.y != 0f ? (targetWorldScale / parentWorldScale.y) : targetWorldScale,
                     1f
                 );
 
-                // Calculate world position to align with top-right corner, shifted inwards
-                Vector3 worldTopRight = roomRenderer.bounds.max;
-                Vector3 worldSize = roomRenderer.bounds.size;
+                // Calculate world position based on slotIndex: squirrel, roedeer, mouse, rabbit (0, 1, 2, 3)
+                float roomMinX = roomRenderer.bounds.min.x;
+                float roomWidth = roomRenderer.bounds.size.x;
+                
+                // Distribute across 4 slots: 0.15f, 0.45f, 0.75f of room width
+                float slotX = roomMinX + roomWidth * (0.15f + slotIndex * 0.25f);
+                float slotY = roomRenderer.bounds.max.y - roomRenderer.bounds.size.y * 0.3f;
+                float slotZ = roomRenderer.transform.position.z - 0.1f; // Place in front
 
-                // Shift left by 15% and down by 25% of the room's world size (to go further down inside)
-                worldTopRight.x -= worldSize.x * 0.15f;
-                worldTopRight.y -= worldSize.y * 0.3f; 
-                worldTopRight.z = roomRenderer.transform.position.z - 0.1f; // Place in front
+                memoObj.transform.position = new Vector3(slotX, slotY, slotZ);
 
-                memoObj.transform.position = worldTopRight;
+                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to {roomRenderer.gameObject.name} at slot {slotIndex}.");
+            }
+        }
 
-                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to {roomRenderer.gameObject.name}.");
+        private void ClearRoomMemos(int roomNumber)
+        {
+            if (roomRenderers == null || roomNumber < 1 || roomNumber > roomRenderers.Count) return;
+            var roomRenderer = roomRenderers[roomNumber - 1];
+            if (roomRenderer == null) return;
+
+            for (int i = roomRenderer.transform.childCount - 1; i >= 0; i--)
+            {
+                Transform child = roomRenderer.transform.GetChild(i);
+                if (child != null && (child.name.StartsWith("RoomMemoSprite_") || child.name == "RoomMemoSprite"))
+                {
+                    if (Application.isPlaying)
+                    {
+                        Destroy(child.gameObject);
+                    }
+                    else
+                    {
+                        DestroyImmediate(child.gameObject);
+                    }
+                }
             }
         }
     }
