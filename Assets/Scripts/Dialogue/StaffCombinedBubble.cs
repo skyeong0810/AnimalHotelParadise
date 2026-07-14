@@ -29,7 +29,6 @@ namespace AnimalHotel.Counter
         [SerializeField] private float lineToChoiceGap = 0.3f;
 
         [Header("Sorting Orders")]
-        [SerializeField] private int bgSortingOrder = 5;
         [SerializeField] private int buttonBgSortingOrder = 6;
         [SerializeField] private int textSortingOrder = 7;
 

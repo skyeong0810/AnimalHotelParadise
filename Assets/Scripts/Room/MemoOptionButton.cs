@@ -14,7 +14,7 @@ namespace AnimalHotel.Counter
             _roomUI = roomUI;
             if (_roomUI == null)
             {
-                _roomUI = FindObjectOfType<RoomUI>();
+                _roomUI = FindFirstObjectByType<RoomUI>();
             }
             _spriteRenderer = GetComponent<SpriteRenderer>();
         }
@@ -23,7 +23,7 @@ namespace AnimalHotel.Counter
         {
             if (_roomUI == null)
             {
-                _roomUI = FindObjectOfType<RoomUI>();
+                _roomUI = FindFirstObjectByType<RoomUI>();
             }
             if (_spriteRenderer == null)
             {
@@ -35,7 +35,7 @@ namespace AnimalHotel.Counter
         {
             if (_roomUI == null)
             {
-                _roomUI = FindObjectOfType<RoomUI>();
+                _roomUI = FindFirstObjectByType<RoomUI>();
             }
             if (_roomUI == null) return;
             if (_cachedCam == null) _cachedCam = Camera.main;
@@ -46,7 +46,8 @@ namespace AnimalHotel.Counter
             if (!mouseDown) return;
 
             Vector3 w3 = _cachedCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
-            if (GetComponent<Collider2D>().OverlapPoint(new Vector2(w3.x, w3.y)))
+            var col = GetComponent<Collider2D>();
+            if (col != null && col.OverlapPoint(new Vector2(w3.x, w3.y)))
             {
                 if (_spriteRenderer != null && _spriteRenderer.sprite != null)
                 {
