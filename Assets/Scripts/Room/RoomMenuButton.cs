@@ -10,7 +10,8 @@ namespace AnimalHotel.Counter
             Assign,
             Clean,
             AdvancedClean,
-            Memo
+            Memo,
+            MemoDelete
         }
 
         [SerializeField] private RoomUI roomUI;
@@ -116,6 +117,9 @@ namespace AnimalHotel.Counter
                     break;
                 case RoomAction.Memo:
                     ToggleChildren();
+                    break;
+                case RoomAction.MemoDelete:
+                    roomUI.OnMemoDeleteButtonClicked();
                     break;
                 default:
                     roomUI.OnAssignButtonClicked();

@@ -20,6 +20,6 @@ public class HotelStatsUI : MonoBehaviour
     {
         moneyText.text = $"₩ {dayManager.TotalMoney:N0}";
         ratingBar.value = dayManager.AverageRating;
-        ratingText.text = $"{dayManager.AverageRating:F1} / 10";
+        ratingText.text = $"{dayManager.AverageRating:F1}";
     }
 }
