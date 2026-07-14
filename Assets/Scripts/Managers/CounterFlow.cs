@@ -97,7 +97,7 @@ namespace AnimalHotel.Counter
             if (entryFootstep != null) yield return new WaitForSeconds(entryFootstep.length);
 
             PlaySfx(GetEntryWhooshSfx(), footstepVolume);
-            if (customerSlot != null) yield return customerSlot.Spawn(_currentGuest.species?.speciesSprite);
+            if (customerSlot != null) yield return customerSlot.Spawn(_currentGuest.species?.speciesSprite, _currentGuest.CounterSpriteScaleMultiplier);
             if (door != null) yield return door.Close();
 
             if (delayBeforeDialogue > 0f) yield return new WaitForSeconds(delayBeforeDialogue);

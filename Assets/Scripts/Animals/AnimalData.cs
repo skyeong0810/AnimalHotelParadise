@@ -51,6 +51,10 @@ public class SpeciesData
     [Tooltip("Small face icon used in reservation lists.")]
     public Sprite reservationIconSprite;
 
+
+    [Tooltip("Multiplier for this species when shown as the counter customer sprite. 1 = default size.")]
+    [Min(0.1f)]
+    public float counterSpriteScaleMultiplier = 1f;
     [Tooltip("Content stage this species is unlocked in.")]
     public ContentStage stage;
 

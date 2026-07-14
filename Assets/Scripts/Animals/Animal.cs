@@ -54,6 +54,7 @@ public class Animal
     public Sprite ReservationIconSprite => species != null && species.reservationIconSprite != null
         ? species.reservationIconSprite
         : species?.speciesSprite;
+    public float CounterSpriteScaleMultiplier => species != null ? Mathf.Max(0.1f, species.counterSpriteScaleMultiplier) : 1f;
     public DietType DietType => species?.dietType ?? DietType.Herbivore;
     public ActivityCycle Activity => species?.activityCycle ?? ActivityCycle.Diurnal;
     public int FloorNuisance => species?.floorNuisanceProbability ?? 0;

@@ -26,6 +26,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private Vector2 targetSpriteWorldSize = new Vector2(3.1f, 3.35f);
 
         private Vector3 _initialScale;
+        private float _currentSpriteScaleMultiplier = 1f;
 
         private void Awake()
         {
@@ -35,8 +36,9 @@ namespace AnimalHotel.Counter
         }
 
         /// <summary>위치 즉시 리셋 + 새 동물 이미지가 있으면 교체 + 솟아오름.</summary>
-        public IEnumerator Spawn(Sprite portrait = null)
+        public IEnumerator Spawn(Sprite portrait = null, float spriteScaleMultiplier = 1f)
         {
+            _currentSpriteScaleMultiplier = Mathf.Max(0.1f, spriteScaleMultiplier);
             if (portrait != null && spriteRenderer != null)
             {
                 spriteRenderer.sprite = portrait;
@@ -85,8 +87,9 @@ namespace AnimalHotel.Counter
             float parentScaleX = Mathf.Abs(parentScale.x) > 0f ? Mathf.Abs(parentScale.x) : 1f;
             float parentScaleY = Mathf.Abs(parentScale.y) > 0f ? Mathf.Abs(parentScale.y) : 1f;
 
-            float xScale = targetSpriteWorldSize.x / (spriteSize.x * parentScaleX);
-            float yScale = targetSpriteWorldSize.y / (spriteSize.y * parentScaleY);
+            Vector2 adjustedTargetSize = targetSpriteWorldSize * _currentSpriteScaleMultiplier;
+            float xScale = adjustedTargetSize.x / (spriteSize.x * parentScaleX);
+            float yScale = adjustedTargetSize.y / (spriteSize.y * parentScaleY);
             float uniformScale = Mathf.Min(xScale, yScale);
 
             transform.localScale = new Vector3(uniformScale, uniformScale, _initialScale.z);

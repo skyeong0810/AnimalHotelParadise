@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace AnimalHotel.Counter
 {
@@ -32,6 +33,13 @@ namespace AnimalHotel.Counter
         [SerializeField] private SpriteRenderer cleanButtonRenderer;
         [SerializeField] private SpriteRenderer advancedCleanButtonRenderer;
 
+        [Header("menu_labels")]
+        [SerializeField] private TMP_FontAsset menuButtonLabelFont;
+        [SerializeField] private Color menuButtonLabelColor = new Color(0.12f, 0.08f, 0.07f, 1f);
+        [SerializeField] private float menuButtonLabelFontSize = 0.55f;
+        [SerializeField] private float menuButtonAdvancedLabelFontSize = 0.42f;
+        [SerializeField] private int menuButtonLabelSortingOffset = 20;
+
         [SerializeField] private Color assignButtonActiveColor = Color.white;
         [SerializeField] private Color assignButtonInactiveColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
@@ -51,6 +59,7 @@ namespace AnimalHotel.Counter
         {
             if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
             InitializeRoomRenderers();
+            EnsureMenuButtonLabels();
         }
 
         private void OnEnable()
@@ -102,6 +111,7 @@ namespace AnimalHotel.Counter
         public void OnPageOpened()
         {
             _selectedRoomNumber = -1;
+            EnsureMenuButtonLabels();
             RefreshRoomGrid();
         }
 
@@ -327,6 +337,75 @@ namespace AnimalHotel.Counter
             float uniformWorldScale = Mathf.Min(worldScaleX, worldScaleY);
 
             return new Vector3(uniformWorldScale / parentScaleX, uniformWorldScale / parentScaleY, 1f);
+        }
+
+        private void EnsureMenuButtonLabels()
+        {
+            EnsureMenuButtonLabel(assignButtonRenderer, "배치", menuButtonLabelFontSize);
+            EnsureMenuButtonLabel(cleanButtonRenderer, "청소", menuButtonLabelFontSize);
+            EnsureMenuButtonLabel(advancedCleanButtonRenderer, "고급 청소", menuButtonAdvancedLabelFontSize);
+
+            var memoRenderer = FindMemoButtonRenderer();
+            EnsureMenuButtonLabel(memoRenderer, "메모", menuButtonLabelFontSize);
+        }
+
+        private SpriteRenderer FindMemoButtonRenderer()
+        {
+            Transform memoTransform = transform.Find("RoomBackground/MenuBackground/Memo");
+            return memoTransform != null ? memoTransform.GetComponent<SpriteRenderer>() : null;
+        }
+
+        private void EnsureMenuButtonLabel(SpriteRenderer buttonRenderer, string label, float fontSize)
+        {
+            if (buttonRenderer == null) return;
+
+            Transform labelTransform = buttonRenderer.transform.Find("ButtonLabel");
+            TextMeshPro labelText;
+            if (labelTransform == null)
+            {
+                GameObject labelObj = new GameObject("ButtonLabel");
+                labelObj.transform.SetParent(buttonRenderer.transform, false);
+                labelText = labelObj.AddComponent<TextMeshPro>();
+                labelTransform = labelText.transform;
+            }
+            else
+            {
+                labelText = labelTransform.GetComponent<TextMeshPro>();
+                if (labelText == null)
+                {
+                    labelText = labelTransform.gameObject.AddComponent<TextMeshPro>();
+                    labelTransform = labelText.transform;
+                }
+            }
+
+
+            labelTransform.localPosition = new Vector3(0f, 0f, -0.05f);
+            labelTransform.localRotation = Quaternion.identity;
+
+            Vector3 parentScale = buttonRenderer.transform.lossyScale;
+            float xScale = Mathf.Abs(parentScale.x) > 0.0001f ? 1f / Mathf.Abs(parentScale.x) : 1f;
+            float yScale = Mathf.Abs(parentScale.y) > 0.0001f ? 1f / Mathf.Abs(parentScale.y) : 1f;
+            labelTransform.localScale = new Vector3(xScale, yScale, 1f);
+
+            if (menuButtonLabelFont != null) labelText.font = menuButtonLabelFont;
+            labelText.text = label;
+            labelText.fontSize = fontSize;
+            labelText.color = menuButtonLabelColor;
+            labelText.alignment = TextAlignmentOptions.Center;
+            labelText.enableWordWrapping = false;
+            labelText.overflowMode = TextOverflowModes.Overflow;
+            labelText.sortingLayerID = buttonRenderer.sortingLayerID;
+            labelText.sortingOrder = buttonRenderer.sortingOrder + menuButtonLabelSortingOffset;
+            labelText.rectTransform.sizeDelta = new Vector2(1.6f, 0.6f);
+
+            var meshRenderer = labelText.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                meshRenderer.sortingLayerID = buttonRenderer.sortingLayerID;
+                meshRenderer.sortingOrder = labelText.sortingOrder;
+            }
+
+            labelText.ForceMeshUpdate();
         }
 
         private void RefreshAssignButton()
