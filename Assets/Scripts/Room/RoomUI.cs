@@ -35,8 +35,8 @@ namespace AnimalHotel.Counter
         [SerializeField] private Color assignButtonInactiveColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
         [Header("room_status_colors")]
-        [SerializeField] private Color vacantRoomColor = Color.white;
-        [SerializeField] private Color occupiedRoomColor = Color.white;
+        [SerializeField] private Color vacantRoomColor = Color.clear;
+        [SerializeField] private Color occupiedRoomColor = Color.clear;
         [SerializeField] private Color needsExaminationRoomColor = new Color(1f, 0.85f, 0.25f, 1f);
         [SerializeField] private Color needsCleaningRoomColor = new Color(0.45f, 0.8f, 1f, 1f);
         [SerializeField] private Color advancedCleaningInProgressRoomColor = new Color(0.7f, 0.45f, 1f, 1f);
