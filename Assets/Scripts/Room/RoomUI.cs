@@ -612,7 +612,7 @@ namespace AnimalHotel.Counter
             }
 
             GameObject memoObj = new GameObject(childName);
-            memoObj.transform.SetParent(roomRenderer.transform);
+            memoObj.transform.SetParent(roomRenderer.transform, false);
             SpriteRenderer memoSr = memoObj.AddComponent<SpriteRenderer>();
 
             if (memoSr != null)
@@ -628,11 +628,11 @@ namespace AnimalHotel.Counter
                 string spriteNameLower = memoSprite.name.ToLower();
                 if (spriteNameLower.Contains("squirrel") || spriteNameLower.Contains("mouse"))
                 {
-                    targetWorldScale = 0.07f;
+                    targetWorldScale = 0.06f;
                 }
                 else if (spriteNameLower.Contains("roedeer"))
                 {
-                    targetWorldScale = 0.03f;
+                    targetWorldScale = 0.01f;
                 }
                 else if (spriteNameLower.Contains("rabbit"))
                 {
@@ -646,17 +646,19 @@ namespace AnimalHotel.Counter
                 );
 
                 // Calculate world position based on slotIndex: squirrel, roedeer, mouse, rabbit (0, 1, 2, 3)
+                // Using world bounds of the roomRenderer ensures correct positioning regardless of custom pivots or sprite dimensions.
                 float roomMinX = roomRenderer.bounds.min.x;
                 float roomWidth = roomRenderer.bounds.size.x;
                 
-                // Distribute across 4 slots: 0.15f, 0.45f, 0.75f of room width
-                float slotX = roomMinX + roomWidth * (0.15f + slotIndex * 0.25f);
-                float slotY = roomRenderer.bounds.max.y - roomRenderer.bounds.size.y * 0.3f;
+                // Distribute across 4 slots: 0.15f, 0.40f, 0.65f, 0.90f of room width
+                float slotX = roomMinX + roomWidth * (0.17f + slotIndex * 0.23f);
+                float slotY = roomRenderer.bounds.max.y - roomRenderer.bounds.size.y * 0.15f;
                 float slotZ = roomRenderer.transform.position.z - 0.1f; // Place in front
 
-                memoObj.transform.position = new Vector3(slotX, slotY, slotZ);
+                Vector3 worldSlotPos = new Vector3(slotX, slotY, slotZ);
+                // Convert world position to parent's local space so that the memo moves dynamically with the room's transform.
+                memoObj.transform.localPosition = roomRenderer.transform.InverseTransformPoint(worldSlotPos);
 
-                Debug.Log($"[RoomUI] Assigned sprite {memoSprite.name} to {roomRenderer.gameObject.name} at slot {slotIndex}.");
             }
         }
 
@@ -682,5 +684,6 @@ namespace AnimalHotel.Counter
                 }
             }
         }
+
     }
 }
