@@ -95,6 +95,11 @@ public class DayManager : MonoBehaviour
 
     // ── Unity lifecycle ───────────────────────────────────────────────────────
 
+    private void Awake()
+    {
+        Application.targetFrameRate = 60;
+    }
+
     private void Start()
     {
         StartMorning();

@@ -37,8 +37,13 @@ namespace AnimalHotel.Counter
         {
             pos = Vector2.zero; downThisFrame = false;
 #if ENABLE_INPUT_SYSTEM
-            var mouse = UnityEngine.InputSystem.Mouse.current;
-            if (mouse != null) { pos = mouse.position.ReadValue(); downThisFrame = mouse.leftButton.wasPressedThisFrame; return; }
+            var pointer = UnityEngine.InputSystem.Pointer.current;
+            if (pointer != null)
+            {
+                pos = pointer.position.ReadValue();
+                downThisFrame = pointer.press.wasPressedThisFrame;
+                return;
+            }
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
             pos = Input.mousePosition; downThisFrame = Input.GetMouseButtonDown(0);

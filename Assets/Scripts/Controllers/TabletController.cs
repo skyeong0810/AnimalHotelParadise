@@ -114,11 +114,11 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
             downThisFrame = false;
 
 #if ENABLE_INPUT_SYSTEM
-            var mouse = UnityEngine.InputSystem.Mouse.current;
-            if (mouse != null)
+            var pointer = UnityEngine.InputSystem.Pointer.current;
+            if (pointer != null)
             {
-                pos = mouse.position.ReadValue();
-                downThisFrame = mouse.leftButton.wasPressedThisFrame;
+                pos = pointer.position.ReadValue();
+                downThisFrame = pointer.press.wasPressedThisFrame;
                 return;
             }
 #endif
