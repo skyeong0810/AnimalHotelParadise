@@ -1,0 +1,12 @@
+# ninja log v5
+128	1015	8058995367260998	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	877c0ab69aca9a72
+1018	2407	8058995381117233	D:/Unity/project/AnimalHotelParadise/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/2i1y242x/obj/arm64-v8a/libswappywrapper.so	affecfa95c412e83
+73	2759	8058995384851985	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	409ba5bec21fc9bf
+60	2769	8058995384887569	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	c8b18e5fc4255cb
+1	2806	8058995385317693	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	9a2d6f63501d5715
+88	2842	8058995385695353	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	3c10d143df898072
+17	2881	8058995386108918	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	ae695177a0875e7
+104	3202	8058995389255258	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	7a2d92e4b3f693cc
+45	3284	8058995390057366	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	c5dcafb4e4f9070e
+30	3492	8058995392156162	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	910fb2a375b7417b
+3492	3637	8058995393695580	D:/Unity/project/AnimalHotelParadise/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/2i1y242x/obj/arm64-v8a/libgame.so	d52ad78fe3d4565b
