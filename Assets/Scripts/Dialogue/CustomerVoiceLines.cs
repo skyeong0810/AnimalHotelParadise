@@ -32,7 +32,7 @@ namespace AnimalHotel.Counter
         }
 
         private static readonly Dictionary<string, VoiceSet> _byId =
-            new Dictionary<string, VoiceSet>();
+            new Dictionary<string, VoiceSet>(System.StringComparer.OrdinalIgnoreCase);
 
         // 기본 대사 (종 매칭 실패 시 폴백) — 기존 DialogueTreeBuilder 문구와 동일
         private static readonly Dictionary<Line, string> _default = new Dictionary<Line, string>

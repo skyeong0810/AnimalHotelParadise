@@ -185,6 +185,7 @@ namespace AnimalHotel.Counter
         private AudioClip GetEntryFootstepSfx(Animal guest)
         {
             string speciesId = guest != null ? guest.SpeciesId : null;
+            if (speciesId != null) speciesId = speciesId.ToLowerInvariant();
             switch (speciesId)
             {
                 case "rabbit":
