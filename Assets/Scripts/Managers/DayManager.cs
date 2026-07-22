@@ -160,6 +160,17 @@ public class DayManager : MonoBehaviour
         int nonOccupiedCount = roomManager != null ? roomManager.GetNonOccupiedRoomCount() : 10;
         int maxReservations = Mathf.FloorToInt(nonOccupiedCount * 0.7f);
 
+        if (unlockedStages == null)
+        {
+            Debug.LogWarning("[DayManager] unlockedStages was null! Initializing to default S1 stage list.");
+            unlockedStages = new List<ContentStage> { ContentStage.S1 };
+        }
+
+        if (speciesDatabase == null)
+        {
+            Debug.LogError("[DayManager] speciesDatabase is null! Please assign a valid SpeciesDatabase in the Inspector.");
+        }
+
         var newArrivals = AnimalFactory.CreateAnimals(
             speciesDatabase,
             unlockedStages,

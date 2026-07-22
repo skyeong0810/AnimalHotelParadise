@@ -46,6 +46,18 @@ public static class AnimalFactory
     /// <param name="currentDay">The day number this animal is being generated for (used as checkInDay).</param>
     public static Animal CreateAnimal(SpeciesDatabase database, List<ContentStage> unlockedStages, int currentDay, bool forceNoReservation = false)
     {
+        if (database == null || database.allSpecies == null)
+        {
+            Debug.LogError("AnimalFactory: SpeciesDatabase or its allSpecies list is null.");
+            return null;
+        }
+
+        if (unlockedStages == null || unlockedStages.Count == 0)
+        {
+            Debug.LogError("AnimalFactory: unlockedStages is null or empty.");
+            return null;
+        }
+
         var pool = database.allSpecies
             .Where(s => unlockedStages.Contains(s.stage))
             .ToList();
@@ -88,8 +100,19 @@ public static class AnimalFactory
     {
         var result = new List<Animal>();
 
-        bool isStage1 = unlockedStages != null 
-            && unlockedStages.Contains(ContentStage.S1) 
+        if (database == null)
+        {
+            Debug.LogError("AnimalFactory: SpeciesDatabase is null.");
+            return result;
+        }
+
+        if (unlockedStages == null || unlockedStages.Count == 0)
+        {
+            Debug.LogWarning("AnimalFactory: unlockedStages is null or empty. Defaulting to S1.");
+            unlockedStages = new List<ContentStage> { ContentStage.S1 };
+        }
+
+        bool isStage1 = unlockedStages.Contains(ContentStage.S1) 
             && !unlockedStages.Contains(ContentStage.S2) 
             && !unlockedStages.Contains(ContentStage.S3);
 
