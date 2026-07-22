@@ -6,26 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="e692e198-3417-4625-ac5a-fa946e9810f1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/cache-v2-0e3b7bd4cc1384d90789.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-c397a8f83e028c70daac.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/index-2026-07-19T15-08-34-0464.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_deps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Animals/SpeciesDatabase.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Animals/SpeciesDatabase.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Animals/AnimalData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Animals/AnimalData.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controllers/TabletController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controllers/TabletController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Dialogue/SimpleResponseBubble.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Dialogue/SimpleResponseBubble.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Dialogue/StaffCombinedBubble.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Dialogue/StaffCombinedBubble.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Room/MemoOptionButton.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Room/MemoOptionButton.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Room/RoomButton.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Room/RoomButton.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Room/RoomMenuButton.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Room/RoomMenuButton.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Tablet/TabletBackButton.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Tablet/TabletBackButton.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Tablet/TabletMenuButton.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Tablet/TabletMenuButton.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,21 +27,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "0723__수경__android",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Unity/project/AnimalHotelParadise",
-    "settings.editor.selected.configurable": "memory.settings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;0723__수경__android&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Unity/project/AnimalHotelParadise&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;memory.settings&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e692e198-3417-4625-ac5a-fa946e9810f1" name="Changes" comment="" />
