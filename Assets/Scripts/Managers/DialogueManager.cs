@@ -41,7 +41,7 @@ namespace AnimalHotel.Counter
         {
             if (_isRunning) return;
             CurrentGuest = guest;
-            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation, guest.SpeciesId);
+            _nodes = DialogueTreeBuilder.Build(guest.guestName, guest.species.displayName, guest.hasReservation, claimsReservation);
             _roomAssigned = false;
             StartCoroutine(RunDialogue());
         }
