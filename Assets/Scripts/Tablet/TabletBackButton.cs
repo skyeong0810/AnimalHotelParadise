@@ -35,14 +35,7 @@ namespace AnimalHotel.Counter
 
         private static void GetMouseInput(out Vector2 pos, out bool downThisFrame)
         {
-            pos = Vector2.zero; downThisFrame = false;
-#if ENABLE_INPUT_SYSTEM
-            var mouse = UnityEngine.InputSystem.Mouse.current;
-            if (mouse != null) { pos = mouse.position.ReadValue(); downThisFrame = mouse.leftButton.wasPressedThisFrame; return; }
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
-            pos = Input.mousePosition; downThisFrame = Input.GetMouseButtonDown(0);
-#endif
+            AnimalHotel.InputHelper.GetInput(out pos, out downThisFrame);
         }
     }
 }
