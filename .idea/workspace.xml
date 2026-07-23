@@ -6,6 +6,41 @@
   <component name="ChangeListManager">
     <list default="true" id="e692e198-3417-4625-ac5a-fa946e9810f1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/cache-v2-acbc8e349528251c8d56.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-077cfc0482329e40753e.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.cmake/api/v1/reply/index-2026-07-22T15-29-08-0706.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/CMakeFiles/CMakeOutput.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/additional_project_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/additional_project_files.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/android_gradle_build.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/android_gradle_build_mini.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/android_gradle_build_mini.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/build.ninja" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/metadata_generation_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/metadata_generation_command.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/prefab_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/arm64-v8a/prefab_config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/.cmake/api/v1/reply/index-2026-07-22T15-29-13-0550.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/CMakeFiles/CMakeOutput.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/additional_project_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/additional_project_files.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/android_gradle_build.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/android_gradle_build_mini.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/android_gradle_build_mini.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/metadata_generation_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/metadata_generation_command.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/prefab_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/armeabi-v7a/prefab_config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/hash_key.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/hash_key.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/game-activity/game-activityConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/game-activity/game-activityConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/6f6t1e6t/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/CounterScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/CounterScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Fonts/AppleGothic SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Fonts/AppleGothic SDF.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,21 +62,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;0723__수경__android&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Unity/project/AnimalHotelParadise&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;memory.settings&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Unity/project/AnimalHotelParadise",
+    "settings.editor.selected.configurable": "memory.settings"
   }
-}</component>
+}]]></component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e692e198-3417-4625-ac5a-fa946e9810f1" name="Changes" comment="" />

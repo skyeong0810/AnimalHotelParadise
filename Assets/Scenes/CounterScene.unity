@@ -298,8 +298,8 @@ Transform:
   m_GameObject: {fileID: 75900116}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: -0.3938, z: 0}
-  m_LocalScale: {x: 15, y: 8.3872, z: 1}
+  m_LocalPosition: {x: -0.006, y: -0.1635, z: 0}
+  m_LocalScale: {x: 15.436278, y: 8.557226, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1742246700}
@@ -381,7 +381,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &124945276
 Transform:
   m_ObjectHideFlags: 0
@@ -916,6 +916,8 @@ MonoBehaviour:
   hideOnAwake: 1
   riseDuration: 0.45
   fadeInWhileRising: 1
+  checkoutAboveYOffset: 2
+  checkoutDropDuration: 0.45
 --- !u!1 &280149424
 GameObject:
   m_ObjectHideFlags: 0
@@ -1233,8 +1235,8 @@ Transform:
   m_GameObject: {fileID: 305507090}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: -0.3938, z: 0}
-  m_LocalScale: {x: 15, y: 8.3872, z: 1}
+  m_LocalPosition: {x: 0.0061, y: -0.1728, z: 0}
+  m_LocalScale: {x: 15.4125, y: 8.5813, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1742246700}
@@ -1587,6 +1589,8 @@ MonoBehaviour:
   visibleY: 1
   riseDuration: 0.7
   sinkDuration: 0.5
+  checkoutStartOffsetX: 6
+  checkoutEnterDuration: 0.65
   spriteRenderer: {fileID: 0}
   fitSpriteToSlot: 1
   targetSpriteWorldSize: {x: 3.1, y: 3.35}
@@ -1944,8 +1948,8 @@ Transform:
   m_GameObject: {fileID: 344448522}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: -0.3938, z: 0}
-  m_LocalScale: {x: 15, y: 8.3872, z: 1}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0}
+  m_LocalScale: {x: 15.394499, y: 8.566687, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1742246700}
@@ -3755,6 +3759,10 @@ MonoBehaviour:
   delayBetweenCustomers: 1
   autoStartOnPlay: 1
   autoSpawnNextCustomer: 1
+  checkoutDelayBeforeKey: 0.25
+  checkoutKeyHoldDuration: 0.45
+  checkoutDelayAfterDoorOpen: 0.15
+  checkoutDelayBetweenGuests: 0.5
   _isSpawning: 0
 --- !u!82 &978852833
 AudioSource:
@@ -5717,6 +5725,7 @@ MonoBehaviour:
   unlockedStages: 00000000
   morningDuration: 10
   afternoonDuration: 10
+  pauseClockDuringCheckout: 1
   roomRatePerNight: 10
 --- !u!4 &1571367192
 Transform:
@@ -8285,8 +8294,8 @@ Transform:
   m_GameObject: {fileID: 2094616064}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2, y: -0.3938, z: 0}
-  m_LocalScale: {x: 15, y: 8.3872, z: 1}
+  m_LocalPosition: {x: -0.0029, y: -0.1886, z: 0}
+  m_LocalScale: {x: 15.394499, y: 8.584299, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1684448559}
