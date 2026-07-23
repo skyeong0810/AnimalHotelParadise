@@ -8371,6 +8371,9 @@ MonoBehaviour:
   dialogueManager: {fileID: 667255564}
   dayManager: {fileID: 1571367191}
   normalCleanDurationSeconds: 0
+  memoSfxSource: {fileID: 0}
+  memoSfx: {fileID: 8300000, guid: d3085595b3d9d4802b4a44e90656c88d, type: 3}
+  memoSfxVolume: 1
   background: {fileID: 1883657650}
   spacing: 1.2
   scale: 0.5

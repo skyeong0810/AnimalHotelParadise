@@ -16,6 +16,12 @@ namespace AnimalHotel.Counter
         [Min(0f)]
         [SerializeField] private float normalCleanDurationSeconds = 0f;
 
+        [Header("memo_sfx")]
+        [SerializeField] private AudioSource memoSfxSource;
+        [SerializeField] private AudioClip memoSfx;
+        [Range(0f, 1f)]
+        [SerializeField] private float memoSfxVolume = 1f;
+
         [Header("reservation_list")]
         [SerializeField] private Transform background;
         [SerializeField] private float spacing = 1.2f;
@@ -58,6 +64,7 @@ namespace AnimalHotel.Counter
         private void Awake()
         {
             if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
+            if (memoSfxSource == null && counterFlow != null) memoSfxSource = counterFlow.GetComponent<AudioSource>();
             InitializeRoomRenderers();
             EnsureMenuButtonLabels();
         }
@@ -203,8 +210,11 @@ namespace AnimalHotel.Counter
                 return;
             }
 
-            ClearRoomMemos(_selectedRoomNumber);
-            Debug.Log($"[RoomUI] Deleted all memos in room {_selectedRoomNumber}.");
+            if (ClearRoomMemos(_selectedRoomNumber))
+            {
+                PlayMemoSfx();
+                Debug.Log($"[RoomUI] Deleted all memos in room {_selectedRoomNumber}.");
+            }
         }
 
         private void SpendNormalCleaningTime()
@@ -608,6 +618,7 @@ namespace AnimalHotel.Counter
                     DestroyImmediate(memoTransform.gameObject);
                 }
                 Debug.Log($"[RoomUI] Deleted memo sprite {memoSprite.name} from room {_selectedRoomNumber} slot {slotIndex}.");
+                PlayMemoSfx();
                 return;
             }
 
@@ -660,19 +671,36 @@ namespace AnimalHotel.Counter
                 memoObj.transform.localPosition = roomRenderer.transform.InverseTransformPoint(worldSlotPos);
 
             }
+
+            PlayMemoSfx();
         }
 
-        private void ClearRoomMemos(int roomNumber)
+        private void PlayMemoSfx()
         {
-            if (roomRenderers == null || roomNumber < 1 || roomNumber > roomRenderers.Count) return;
-            var roomRenderer = roomRenderers[roomNumber - 1];
-            if (roomRenderer == null) return;
+            if (memoSfxSource == null && counterFlow != null)
+            {
+                memoSfxSource = counterFlow.GetComponent<AudioSource>();
+            }
 
+            if (memoSfxSource != null && memoSfx != null)
+            {
+                memoSfxSource.PlayOneShot(memoSfx, Mathf.Clamp01(memoSfxVolume));
+            }
+        }
+
+        private bool ClearRoomMemos(int roomNumber)
+        {
+            if (roomRenderers == null || roomNumber < 1 || roomNumber > roomRenderers.Count) return false;
+            var roomRenderer = roomRenderers[roomNumber - 1];
+            if (roomRenderer == null) return false;
+
+            bool removedAny = false;
             for (int i = roomRenderer.transform.childCount - 1; i >= 0; i--)
             {
                 Transform child = roomRenderer.transform.GetChild(i);
                 if (child != null && (child.name.StartsWith("RoomMemoSprite_") || child.name == "RoomMemoSprite"))
                 {
+                    removedAny = true;
                     if (Application.isPlaying)
                     {
                         Destroy(child.gameObject);
@@ -683,6 +711,8 @@ namespace AnimalHotel.Counter
                     }
                 }
             }
+
+            return removedAny;
         }
 
     }
