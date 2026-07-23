@@ -18,6 +18,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private float riseDuration = 0.7f;
         [SerializeField] private float sinkDuration = 0.5f;
 
+        [Header("Checkout Animation")]
+        [Tooltip("How far left of the counter the animal starts during checkout.")]
+        [SerializeField] private float checkoutStartOffsetX = 6f;
+        [SerializeField] private float checkoutEnterDuration = 0.65f;
+
         [Header("Refs (optional)")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
@@ -25,6 +30,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private bool fitSpriteToSlot = true;
         [SerializeField] private Vector2 targetSpriteWorldSize = new Vector2(3.1f, 3.35f);
 
+        private float _visibleX;
         private Vector3 _initialScale;
         private float _currentSpriteScaleMultiplier = 1f;
 
@@ -32,6 +38,7 @@ namespace AnimalHotel.Counter
         {
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             _initialScale = transform.localScale;
+            _visibleX = transform.position.x;
             SetY(hiddenY);
         }
 
@@ -48,6 +55,25 @@ namespace AnimalHotel.Counter
             SetY(hiddenY);
             yield return MoveY(visibleY, riseDuration);
         }
+
+        /// <summary>
+        /// 체크아웃 손님을 화면 왼쪽에서 카운터 중앙으로 이동시킨다.
+        /// </summary>
+        public IEnumerator EnterFromLeft(Sprite portrait = null, float spriteScaleMultiplier = 1f)
+        {
+            _currentSpriteScaleMultiplier = Mathf.Max(0.1f, spriteScaleMultiplier);
+            if (portrait != null && spriteRenderer != null)
+            {
+                spriteRenderer.sprite = portrait;
+                FitSpriteToSlot();
+            }
+
+            Vector3 start = new Vector3(_visibleX - Mathf.Abs(checkoutStartOffsetX), visibleY, transform.position.z);
+            Vector3 destination = new Vector3(_visibleX, visibleY, transform.position.z);
+            transform.position = start;
+            yield return MoveTo(destination, checkoutEnterDuration);
+        }
+
 
         public IEnumerator Sink()
         {
@@ -75,6 +101,28 @@ namespace AnimalHotel.Counter
             }
             transform.position = b;
         }
+
+        private IEnumerator MoveTo(Vector3 target, float duration)
+        {
+            Vector3 start = transform.position;
+            if (duration <= 0f)
+            {
+                transform.position = target;
+                yield break;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                transform.position = Vector3.Lerp(start, target, k);
+                yield return null;
+            }
+
+            transform.position = target;
+        }
+
 
         private void FitSpriteToSlot()
         {

@@ -21,7 +21,7 @@ public class LobbyTimeVisualController : MonoBehaviour
 
         if (dayManager != null)
         {
-            dayManager.OnPhaseChanged += Refresh;
+            dayManager.OnTimeOfDayChanged += Refresh;
         }
 
         Refresh();
@@ -31,7 +31,7 @@ public class LobbyTimeVisualController : MonoBehaviour
     {
         if (dayManager != null)
         {
-            dayManager.OnPhaseChanged -= Refresh;
+            dayManager.OnTimeOfDayChanged -= Refresh;
         }
     }
 

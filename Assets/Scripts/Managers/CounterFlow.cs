@@ -42,12 +42,19 @@ namespace AnimalHotel.Counter
         [SerializeField] private bool autoStartOnPlay = true;
         [SerializeField] private bool autoSpawnNextCustomer = true;
 
+        [Header("Checkout Timing")]
+        [SerializeField] private float checkoutDelayBeforeKey = 0.25f;
+        [SerializeField] private float checkoutKeyHoldDuration = 0.45f;
+        [SerializeField] private float checkoutDelayAfterDoorOpen = 0.15f;
+        [SerializeField] private float checkoutDelayBetweenGuests = 0.5f;
+
         public bool _isSpawning;
         private int _guestIndex;
         private bool _dialogueFinished;
         private string _exitNodeId;
         private Animal _currentGuest;
 
+        public bool IsBusy => _isSpawning;
         public Animal GetCurrentGuest() => _currentGuest;
 
         private void Start()
@@ -72,7 +79,7 @@ namespace AnimalHotel.Counter
 
         public IEnumerator SpawnCustomerRoutine()
         {
-            if (_isSpawning) yield break;
+            if (_isSpawning || (dayManager != null && dayManager.IsCheckoutInProgress)) yield break;
             _isSpawning = true;
             if (customerBubble != null) customerBubble.HideImmediate();
             if (roomAssignmentKey != null) roomAssignmentKey.HideImmediate();
@@ -130,6 +137,73 @@ namespace AnimalHotel.Counter
                 StartCoroutine(SpawnCustomerRoutine());
             }
         }
+
+        /// <summary>
+        /// 체크아웃 대상 동물들을 한 마리씩 왼쪽에서 입장시키고,
+        /// 카드키 반납 → 문 열림 → 아래로 퇴장 → 문 닫힘 순서로 재생한다.
+        /// </summary>
+        public IEnumerator PlayCheckoutSequence(IList<Animal> departingGuests, System.Action<Animal> onGuestCompleted)
+        {
+            if (_isSpawning)
+            {
+                Debug.LogWarning("[CounterFlow] 다른 카운터 연출이 진행 중이라 체크아웃을 시작하지 못했습니다.");
+                yield break;
+            }
+
+            _isSpawning = true;
+            if (customerBubble != null) customerBubble.HideImmediate();
+            if (roomAssignmentKey != null) roomAssignmentKey.HideImmediate();
+
+            if (departingGuests != null)
+            {
+                foreach (Animal guest in departingGuests)
+                {
+                    if (guest == null) continue;
+
+                    _currentGuest = guest;
+                    Debug.Log($"[CounterFlow] 체크아웃 손님 등장: {guest.guestName} ({guest.species?.displayName})");
+
+                    if (customerSlot != null)
+                        yield return customerSlot.EnterFromLeft(guest.species?.speciesSprite, guest.CounterSpriteScaleMultiplier);
+
+                    if (checkoutDelayBeforeKey > 0f)
+                        yield return new WaitForSeconds(checkoutDelayBeforeKey);
+
+                    if (roomAssignmentKey != null)
+                        yield return roomAssignmentKey.ShowFromAbove();
+
+                    if (checkoutKeyHoldDuration > 0f)
+                        yield return new WaitForSeconds(checkoutKeyHoldDuration);
+
+                    PlaySfx(exitBellSfx, exitBellVolume);
+                    if (door != null)
+                        yield return door.Open();
+
+                    if (roomAssignmentKey != null)
+                        roomAssignmentKey.HideImmediate();
+
+                    if (checkoutDelayAfterDoorOpen > 0f)
+                        yield return new WaitForSeconds(checkoutDelayAfterDoorOpen);
+
+                    if (customerSlot != null)
+                        yield return customerSlot.Sink();
+
+                    if (door != null)
+                        yield return door.Close();
+
+                    onGuestCompleted?.Invoke(guest);
+                    _currentGuest = null;
+
+                    if (checkoutDelayBetweenGuests > 0f)
+                        yield return new WaitForSeconds(checkoutDelayBetweenGuests);
+                }
+            }
+
+            if (roomAssignmentKey != null) roomAssignmentKey.HideImmediate();
+            _currentGuest = null;
+            _isSpawning = false;
+        }
+
 
         /// <summary>
         /// Returns the next guest from the phase-appropriate arrival queue.

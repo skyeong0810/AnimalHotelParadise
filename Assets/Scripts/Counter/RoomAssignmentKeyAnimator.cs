@@ -13,6 +13,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private float riseDuration = 0.45f;
         [SerializeField] private bool fadeInWhileRising = true;
 
+        [Header("Checkout Animation")]
+        [Tooltip("How far above the normal key position checkout animation begins.")]
+        [SerializeField] private float checkoutAboveYOffset = 2f;
+        [SerializeField] private float checkoutDropDuration = 0.45f;
+
         private Vector3 _visibleLocalPosition;
         private Vector3 _hiddenLocalPosition;
         private SpriteRenderer[] _renderers;
@@ -34,6 +39,8 @@ namespace AnimalHotel.Counter
         {
             hiddenYOffset = Mathf.Max(0.1f, hiddenYOffset);
             riseDuration = Mathf.Max(0.05f, riseDuration);
+            checkoutAboveYOffset = Mathf.Max(0.1f, checkoutAboveYOffset);
+            checkoutDropDuration = Mathf.Max(0.05f, checkoutDropDuration);
         }
 
         public void HideImmediate()
@@ -57,13 +64,35 @@ namespace AnimalHotel.Counter
             int token = ++_motionToken;
             SetVisible(true);
             SetAlpha(fadeInWhileRising ? 0f : 1f);
-            yield return MoveTo(_visibleLocalPosition, riseDuration, token);
+            yield return MoveTo(_visibleLocalPosition, riseDuration, token, fadeInWhileRising);
             if (token == _motionToken)
             {
                 SetAlpha(1f);
                 IsShown = true;
             }
         }
+
+        /// <summary>
+        /// 체크아웃 시 카드키를 화면 위쪽에서 정상 위치까지 내려 보낸다.
+        /// </summary>
+        public IEnumerator ShowFromAbove()
+        {
+            CacheRenderers();
+            CachePositions();
+
+            int token = ++_motionToken;
+            IsShown = false;
+            transform.localPosition = _visibleLocalPosition + Vector3.up * checkoutAboveYOffset;
+            SetVisible(true);
+            SetAlpha(1f);
+            yield return MoveTo(_visibleLocalPosition, checkoutDropDuration, token, false);
+            if (token == _motionToken)
+            {
+                SetAlpha(1f);
+                IsShown = true;
+            }
+        }
+
 
         private void CachePositions()
         {
@@ -88,7 +117,7 @@ namespace AnimalHotel.Counter
             }
         }
 
-        private IEnumerator MoveTo(Vector3 target, float duration, int token)
+        private IEnumerator MoveTo(Vector3 target, float duration, int token, bool fadeDuringMove)
         {
             Vector3 start = transform.localPosition;
             float elapsed = 0f;
@@ -102,7 +131,7 @@ namespace AnimalHotel.Counter
                 float t = Mathf.Clamp01(elapsed / duration);
                 float eased = Mathf.SmoothStep(0f, 1f, t);
                 transform.localPosition = Vector3.Lerp(start, target, eased);
-                if (fadeInWhileRising)
+                if (fadeDuringMove)
                     SetAlpha(eased);
                 yield return null;
             }
