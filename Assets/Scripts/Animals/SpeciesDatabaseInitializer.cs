@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 //  SpeciesDatabaseInitializer.cs
 //
 //  Editor-only helper that populates a SpeciesDatabase ScriptableObject
@@ -46,6 +46,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "squirrel",
                 displayName                = "다람쥐",
+                speechHabit               = "오독오독",
                 stage                      = ContentStage.S1,
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,
@@ -61,6 +62,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "roe_deer",
                 displayName                = "고라니",
+                speechHabit               = "으악",
                 stage                      = ContentStage.S1,
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,
@@ -76,6 +78,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "mouse",
                 displayName                = "쥐",
+                speechHabit               = "찍",
                 stage                      = ContentStage.S1,
                 dietType                   = DietType.Herbivore,    // adjust if design changes
                 activityCycle              = ActivityCycle.Nocturnal,
@@ -91,6 +94,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "rabbit",
                 displayName                = "토끼",
+                speechHabit               = "쿵쿵",
                 stage                      = ContentStage.S1,
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,
@@ -108,6 +112,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "sheep",
                 displayName                = "양",
+                speechHabit               = "매애애애",
                 stage                      = ContentStage.S2,
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,
@@ -123,6 +128,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "cat",
                 displayName                = "고양이",
+                speechHabit               = "마옹",
                 stage                      = ContentStage.S2,
                 dietType                   = DietType.Carnivore,
                 activityCycle              = ActivityCycle.Nocturnal,
@@ -138,6 +144,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "skunk",
                 displayName                = "스컹크",
+                speechHabit               = "뿡",
                 stage                      = ContentStage.S2,
                 dietType                   = DietType.Carnivore,    // adjust if design changes
                 activityCycle              = ActivityCycle.Nocturnal,
@@ -153,6 +160,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "wolf",
                 displayName                = "늑대",
+                speechHabit               = "아우우...",
                 stage                      = ContentStage.S2,
                 dietType                   = DietType.Carnivore,
                 activityCycle              = ActivityCycle.Nocturnal,
@@ -170,6 +178,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "tiger",
                 displayName                = "호랑이",
+                speechHabit               = "어흥",
                 stage                      = ContentStage.S3,
                 dietType                   = DietType.Carnivore,
                 activityCycle              = ActivityCycle.Nocturnal,
@@ -185,6 +194,7 @@ public static class SpeciesDatabaseInitializer
             {
                 speciesId                  = "chicken",
                 displayName                = "닭",
+                speechHabit               = "꼭꼭꼭",
                 stage                      = ContentStage.S3,
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,

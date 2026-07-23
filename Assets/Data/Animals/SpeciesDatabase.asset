@@ -18,6 +18,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 7994791527202228647, guid: aff16d26266ea4ef3b942e3c10e2cb23, type: 3}
     reservationIconSprite: {fileID: 4457663930487915863, guid: c35dadaf2df524887aba1fe6e5d35e6f, type: 3}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uC624\uB3C5\uC624\uB3C5"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -33,6 +47,20 @@ MonoBehaviour:
     speciesSprite: {fileID: -3211196357970331268, guid: 1a64c980cce7145e3b5319eae206467e, type: 3}
     reservationIconSprite: {fileID: -1878785014404026028, guid: 84bc548f6242043129f2c9833c3fa85a, type: 3}
     counterSpriteScaleMultiplier: 1.8
+    speechHabit: "\uC73C\uC545"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -48,6 +76,20 @@ MonoBehaviour:
     speciesSprite: {fileID: -3947334870746072276, guid: 33d79e179449840eca204452065402a7, type: 3}
     reservationIconSprite: {fileID: 2892949232145319937, guid: c9146c608e55f44248249c93ea8fa1e8, type: 3}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uCC0D"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 0
     dietType: 0
     activityCycle: 1
@@ -63,6 +105,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 5881072410746701727, guid: 821221b6e10e24143a36b3b47089ac8a, type: 3}
     reservationIconSprite: {fileID: -522126531455249227, guid: 0c998fa8bd1e5419facd2005ce888004, type: 3}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uCFF5\uCFF5"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 0
     dietType: 0
     activityCycle: 0
@@ -78,6 +134,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uB9E4\uC560\uC560\uC560"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 1
     dietType: 0
     activityCycle: 0
@@ -93,6 +163,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uB9C8\uC639"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -108,6 +192,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uBFE1"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -123,6 +221,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uC544\uC6B0\uC6B0..."
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 1
     dietType: 1
     activityCycle: 1
@@ -138,6 +250,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uC5B4\uD765"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 2
     dietType: 1
     activityCycle: 1
@@ -153,6 +279,20 @@ MonoBehaviour:
     speciesSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
+    speechHabit: "\uAF2D\uAF2D\uAF2D"
+    dialogueLines:
+      claimReservation: 
+      tellInfo: 
+      reactDeniedAngry: 
+      exitCheckinAngry: 
+      exitRejectedAngry: 
+      beg: 
+      noReservation: 
+      begWalkIn: 
+      exitCheckin: 
+      exitLeave: 
+      exitRejected: 
+      exitRejectedNoRoom: 
     stage: 2
     dietType: 0
     activityCycle: 0

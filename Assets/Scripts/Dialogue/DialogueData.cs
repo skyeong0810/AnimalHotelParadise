@@ -51,7 +51,7 @@ namespace AnimalHotel.Counter
         public static Dictionary<string, DialogueNode> Build(
             string guestName, string speciesName,
             bool hasReservation, bool claimsReservation,
-            string speciesId = null)
+            SpeciesData species = null)
         {
             var nodes = new Dictionary<string, DialogueNode>();
 
@@ -66,11 +66,11 @@ namespace AnimalHotel.Counter
             };
 
             if (claimsReservation)
-                BuildReservationBranch(nodes, guestName, speciesName, hasReservation, speciesId);
+                BuildReservationBranch(nodes, guestName, speciesName, hasReservation, species);
             else
-                BuildWalkInBranch(nodes, guestName, speciesName, speciesId);
+                BuildWalkInBranch(nodes, guestName, speciesName, species);
 
-            AddExitNodes(nodes, speciesId);
+            AddExitNodes(nodes, species);
             return nodes;
         }
 
@@ -79,7 +79,7 @@ namespace AnimalHotel.Counter
         // ────────────────────────────────────────
         private static void BuildReservationBranch(
             Dictionary<string, DialogueNode> nodes,
-            string guestName, string speciesName, bool hasReservation, string speciesId)
+            string guestName, string speciesName, bool hasReservation, SpeciesData species)
         {
             // 손님: 예약했다고 답변
             nodes["customer_yes"] = new DialogueNode
@@ -87,7 +87,7 @@ namespace AnimalHotel.Counter
                 id = "customer_yes",
                 nodeType = NodeType.Line,
                 speaker = Speaker.Customer,
-                text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ClaimReservation),
+                text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ClaimReservation),
                 nextNodeId = "staff_check_reservation"
             };
 
@@ -122,7 +122,7 @@ namespace AnimalHotel.Counter
                 id = "customer_tell_info",
                 nodeType = NodeType.Line,
                 speaker = Speaker.Customer,
-                text = string.Format(CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.TellInfo), guestName, speciesName),
+                text = string.Format(CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.TellInfo), guestName, speciesName),
                 nextNodeId = "staff_confirm_info"
             };
 
@@ -147,7 +147,7 @@ namespace AnimalHotel.Counter
                     id = "customer_react_denied",
                     nodeType = NodeType.Line,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ReactDeniedAngry),
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ReactDeniedAngry),
                     nextNodeId = "staff_apologize",
                     reputationDelta = -1  // TODO: 평점 시스템 연동
                 };
@@ -182,7 +182,7 @@ namespace AnimalHotel.Counter
                     id = "exit_checkin_angry",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitCheckinAngry),
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitCheckinAngry),
                     reputationDelta = -1  // TODO: 평점 시스템 연동
                 };
 
@@ -192,7 +192,7 @@ namespace AnimalHotel.Counter
                     id = "exit_rejected_angry",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitRejectedAngry),
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitRejectedAngry),
                     reputationDelta = -3  // TODO: 평점 시스템 연동
                 };
             }
@@ -214,7 +214,7 @@ namespace AnimalHotel.Counter
                     id = "customer_beg_reserved",
                     nodeType = NodeType.Line,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.Beg),
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.Beg),
                     nextNodeId = "staff_hmm_reserved"
                 };
 
@@ -246,14 +246,14 @@ namespace AnimalHotel.Counter
         // ────────────────────────────────────────
         private static void BuildWalkInBranch(
             Dictionary<string, DialogueNode> nodes,
-            string guestName, string speciesName, string speciesId)
+            string guestName, string speciesName, SpeciesData species)
         {
             nodes["customer_no"] = new DialogueNode
             {
                 id = "customer_no",
                 nodeType = NodeType.Line,
                 speaker = Speaker.Customer,
-                text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.NoReservation),
+                text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.NoReservation),
                 nextNodeId = "staff_check_walkin"
             };
 
@@ -293,7 +293,7 @@ namespace AnimalHotel.Counter
                 id = "customer_beg_walkin",
                 nodeType = NodeType.Line,
                 speaker = Speaker.Customer,
-                text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.BegWalkIn),
+                text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.BegWalkIn),
                 nextNodeId = "staff_hmm_walkin"
             };
 
@@ -322,7 +322,7 @@ namespace AnimalHotel.Counter
         // ────────────────────────────────────────
         //  공통 퇴장 노드
         // ────────────────────────────────────────
-        private static void AddExitNodes(Dictionary<string, DialogueNode> nodes, string speciesId)
+        private static void AddExitNodes(Dictionary<string, DialogueNode> nodes, SpeciesData species)
         {
             if (!nodes.ContainsKey("exit_checkin"))
                 nodes["exit_checkin"] = new DialogueNode
@@ -330,7 +330,7 @@ namespace AnimalHotel.Counter
                     id = "exit_checkin",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitCheckin)
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitCheckin)
                 };
 
             if (!nodes.ContainsKey("exit_leave"))
@@ -339,7 +339,7 @@ namespace AnimalHotel.Counter
                     id = "exit_leave",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitLeave)
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitLeave)
                 };
 
             if (!nodes.ContainsKey("exit_rejected"))
@@ -348,7 +348,7 @@ namespace AnimalHotel.Counter
                     id = "exit_rejected",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitRejected)
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitRejected)
                 };
 
             if (!nodes.ContainsKey("exit_rejected_no_room"))
@@ -357,7 +357,7 @@ namespace AnimalHotel.Counter
                     id = "exit_rejected_no_room",
                     nodeType = NodeType.Exit,
                     speaker = Speaker.Customer,
-                    text = CustomerVoiceLines.Get(speciesId, CustomerVoiceLines.Line.ExitRejectedNoRoom)
+                    text = CustomerVoiceLines.Get(species, CustomerVoiceLines.Line.ExitRejectedNoRoom)
                 };
         }
     }

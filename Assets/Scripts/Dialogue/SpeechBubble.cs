@@ -20,7 +20,15 @@ namespace AnimalHotel.Counter
         [Header("Box-Only Mode (텍스트 없을 때 박스만 보여줄 시간)")]
         [SerializeField] private float boxOnlyDuration = 1.5f;
 
-        private void Awake() => HideImmediate();
+        private void Awake()
+        {
+            if (label != null)
+            {
+                label.textWrappingMode = TextWrappingModes.Normal;
+            }
+
+            HideImmediate();
+        }
 
         public void HideImmediate()
         {
