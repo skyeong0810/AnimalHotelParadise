@@ -11,7 +11,7 @@ namespace AnimalHotel.Counter
     public class SimpleCustomerSlot : MonoBehaviour
     {
         [Header("Y Positions")]
-        [SerializeField] private float hiddenY  = -1.5f;
+        [SerializeField] private float hiddenY  = -3.0f;
         [SerializeField] private float visibleY =  1.0f;
 
         [Header("Animation")]

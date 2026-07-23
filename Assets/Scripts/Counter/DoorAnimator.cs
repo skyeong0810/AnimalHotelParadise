@@ -17,34 +17,52 @@ namespace AnimalHotel.Counter
         [Header("Timing")]
         [SerializeField] private float openDuration = 0.35f;
         [SerializeField] private float closeDuration = 0.35f;
+        [Header("Mirrored Open Frame")]
+        [SerializeField] private float mirroredOpenOffsetX = -2.38f;
+        [SerializeField] private float mirroredOpeningOffsetX = -1.09f;
+
+        private Vector3 doorBaseLocalPosition;
 
         private void Awake()
         {
             EnsureRenderer();
-            Show(closedSprite);
+            if (doorRenderer != null)
+            {
+                doorBaseLocalPosition = doorRenderer.transform.localPosition;
+            }
+            Show(closedSprite, false, 0f);
         }
 
         public IEnumerator Open()
         {
-            yield return Play(closedSprite, openingSprite, openSprite, openDuration);
+            Sprite[] frames = { closedSprite, openingSprite, openSprite, openSprite, openingSprite };
+            bool[] flipXStates = { false, false, false, true, true };
+            float[] offsetXStates = { 0f, 0f, 0f, mirroredOpenOffsetX, mirroredOpeningOffsetX };
+            yield return Play(frames, flipXStates, offsetXStates, openDuration);
         }
 
         public IEnumerator Close()
         {
-            yield return Play(openSprite, openingSprite, closedSprite, closeDuration);
+            Sprite[] frames = { openingSprite, openSprite, openSprite, openingSprite, closedSprite };
+            bool[] flipXStates = { true, true, false, false, false };
+            float[] offsetXStates = { mirroredOpeningOffsetX, mirroredOpenOffsetX, 0f, 0f, 0f };
+            yield return Play(frames, flipXStates, offsetXStates, closeDuration);
         }
 
-        private IEnumerator Play(Sprite firstFrame, Sprite middleFrame, Sprite lastFrame, float duration)
+        private IEnumerator Play(Sprite[] frames, bool[] flipXStates, float[] offsetXStates, float duration)
         {
             EnsureRenderer();
-            if (doorRenderer == null) yield break;
+            if (doorRenderer == null || frames == null || frames.Length == 0) yield break;
 
-            Sprite[] frames = { firstFrame, middleFrame, lastFrame };
             float frameDelay = duration > 0f ? duration / Mathf.Max(1, frames.Length - 1) : 0f;
 
             for (int i = 0; i < frames.Length; i++)
             {
-                Show(frames[i]);
+                bool flipX = flipXStates != null && i < flipXStates.Length && flipXStates[i];
+                float offsetX = offsetXStates != null && i < offsetXStates.Length
+                    ? offsetXStates[i]
+                    : 0f;
+                Show(frames[i], flipX, offsetX);
 
                 if (i < frames.Length - 1 && frameDelay > 0f)
                 {
@@ -61,11 +79,14 @@ namespace AnimalHotel.Counter
             }
         }
 
-        private void Show(Sprite sprite)
+        private void Show(Sprite sprite, bool flipX, float offsetX)
         {
             if (doorRenderer != null && sprite != null)
             {
                 doorRenderer.sprite = sprite;
+                doorRenderer.flipX = flipX;
+                doorRenderer.transform.localPosition = doorBaseLocalPosition +
+                    new Vector3(offsetX, 0f, 0f);
             }
         }
     }
