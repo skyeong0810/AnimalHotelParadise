@@ -32,6 +32,9 @@ namespace AnimalHotel.Counter
         [SerializeField] private List<SpriteRenderer> roomRenderers;
         [SerializeField] private Sprite vacantSprite;
         [SerializeField] private Sprite selectedSprite;
+        [SerializeField] private Sprite needsExaminationSprite;
+        [SerializeField] private Sprite needsCleaningSprite;
+        [SerializeField] private Sprite advancedCleaningInProgressSprite;
 
         [Header("assign_button")]
         [SerializeField] private SpriteRenderer assignButtonRenderer;
@@ -49,13 +52,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private Color assignButtonInactiveColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
         [Header("room_status_colors")]
-        [SerializeField] private Color vacantRoomColor = Color.clear;
-        [SerializeField] private Color selectedRoomColor = Color.red;
-        [SerializeField] private Color occupiedRoomColor = Color.clear;
-        [SerializeField] private Color needsExaminationRoomColor = new Color(1f, 0.85f, 0.25f, 1f);
-        [SerializeField] private Color needsCleaningRoomColor = new Color(0.45f, 0.8f, 1f, 1f);
-        [SerializeField] private Color advancedCleaningInProgressRoomColor = new Color(0.7f, 0.45f, 1f, 1f);
-
+        [SerializeField] private Color defaultRoomColor = Color.clear;
 
         public event System.Action OnRoomAssigned;
 
@@ -236,8 +233,49 @@ namespace AnimalHotel.Counter
                 var sr = roomRenderers[i];
                 if (sr == null) continue;
 
-                sr.sprite = GetRoomSprite(room, i + 1 == _selectedRoomNumber);
-                sr.color = GetRoomColor(room, i + 1 == _selectedRoomNumber);
+                bool isSelected = (i + 1 == _selectedRoomNumber);
+
+                sr.sprite = GetRoomSprite(room);
+                sr.color = GetRoomColor(room);
+
+                // Handle the selected sprite overlay
+                Transform selectedTransform = sr.transform.Find("RoomSelectedSprite");
+                if (isSelected && selectedSprite != null)
+                {
+                    GameObject selectedObj;
+                    SpriteRenderer selectedSr;
+                    if (selectedTransform != null)
+                    {
+                        selectedObj = selectedTransform.gameObject;
+                        selectedSr = selectedObj.GetComponent<SpriteRenderer>();
+                    }
+                    else
+                    {
+                        selectedObj = new GameObject("RoomSelectedSprite");
+                        selectedObj.transform.SetParent(sr.transform);
+                        selectedSr = selectedObj.AddComponent<SpriteRenderer>();
+                    }
+
+                    if (selectedSr != null)
+                    {
+                        selectedSr.gameObject.SetActive(true);
+                        selectedSr.sprite = selectedSprite;
+                        selectedSr.color = Color.white;
+                        selectedSr.sortingLayerID = sr.sortingLayerID;
+                        selectedSr.sortingLayerName = sr.sortingLayerName;
+                        selectedSr.sortingOrder = sr.sortingOrder + 2; // Render above room box background
+
+                        selectedObj.transform.localPosition = Vector3.zero;
+                        selectedObj.transform.localScale = Vector3.one;
+                    }
+                }
+                else
+                {
+                    if (selectedTransform != null)
+                    {
+                        selectedTransform.gameObject.SetActive(false);
+                    }
+                }
 
                 // Handle the occupant sprite overlay
                 Transform occupantTransform = sr.transform.Find("RoomOccupantSprite");
@@ -277,7 +315,7 @@ namespace AnimalHotel.Counter
                         }
                         else if (spriteNameLower.Contains("roedeer"))
                         {
-                            targetWorldScale = 0.03f;
+                            targetWorldScale = 0.02f;
                         }
                         else if (spriteNameLower.Contains("rabbit"))
                         {
@@ -396,6 +434,9 @@ namespace AnimalHotel.Counter
                 SpriteRenderer sr = iconObj.AddComponent<SpriteRenderer>();
                 sr.sprite = iconSprite;
                 sr.sortingOrder = 60; // Make sure it's visible on top of panels
+
+                bool isAssigned = (roomManager != null && roomManager.GetRoomByOccupant(guest) != null);
+                sr.color = isAssigned ? new Color(1f, 1f, 1f, 0.4f) : Color.white;
             }
         }
 
@@ -520,28 +561,35 @@ namespace AnimalHotel.Counter
         }
 
 
-        private Sprite GetRoomSprite(RoomData room, bool isSelected)
+        private Sprite GetRoomSprite(RoomData room)
         {
-            if (isSelected && selectedSprite != null) return selectedSprite;
+            if (room == null) return vacantSprite;
+            switch (room.status)
+            {
+                case RoomStatus.NeedsExamination:
+                    if (needsExaminationSprite != null) return needsExaminationSprite;
+                    break;
+                case RoomStatus.NeedsCleaning:
+                    if (needsCleaningSprite != null) return needsCleaningSprite;
+                    break;
+                case RoomStatus.AdvancedCleaningInProgress:
+                    if (advancedCleaningInProgressSprite != null) return advancedCleaningInProgressSprite;
+                    break;
+            }
             return vacantSprite;
         }
 
-        private Color GetRoomColor(RoomData room, bool isSelected)
+        private Color GetRoomColor(RoomData room)
         {
-            if (isSelected) return selectedRoomColor;
-            if (room == null) return vacantRoomColor;
+            if (room == null) return defaultRoomColor;
             switch (room.status)
             {
-                case RoomStatus.Occupied:
-                    return occupiedRoomColor;
                 case RoomStatus.NeedsExamination:
-                    return needsExaminationRoomColor;
                 case RoomStatus.NeedsCleaning:
-                    return needsCleaningRoomColor;
                 case RoomStatus.AdvancedCleaningInProgress:
-                    return advancedCleaningInProgressRoomColor;
+                    return Color.white;
                 default:
-                    return vacantRoomColor;
+                    return defaultRoomColor;
             }
         }
 

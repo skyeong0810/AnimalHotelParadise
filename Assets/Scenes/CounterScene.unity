@@ -648,8 +648,8 @@ Transform:
   m_GameObject: {fileID: 192208135}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.3903, y: -0.04316, z: 0}
-  m_LocalScale: {x: 0.14553511, y: 0.3711532, z: 1}
+  m_LocalPosition: {x: 0.383, y: -0.047, z: 0}
+  m_LocalScale: {x: 0.20166613, y: 0.5143022, z: 1.385662}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 284881872}
@@ -6351,7 +6351,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1768355324
 Transform:
   m_ObjectHideFlags: 0
@@ -8284,7 +8284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2094616065
 Transform:
   m_ObjectHideFlags: 0
@@ -8400,6 +8400,9 @@ MonoBehaviour:
   - {fileID: 681675328}
   vacantSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   selectedSprite: {fileID: 5550138871999223739, guid: dd3404aa86ee22449aeda63a20bfae79, type: 3}
+  needsExaminationSprite: {fileID: -5288677631450684887, guid: 3998faf365e6b2041a1b273abf713187, type: 3}
+  needsCleaningSprite: {fileID: 8501834162434340790, guid: 8eb11f781b5e34f45ba21006370f357a, type: 3}
+  advancedCleaningInProgressSprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   assignButtonRenderer: {fileID: 284881873}
   cleanButtonRenderer: {fileID: 1686208150}
   advancedCleanButtonRenderer: {fileID: 1783034509}
@@ -8410,12 +8413,7 @@ MonoBehaviour:
   menuButtonLabelSortingOffset: 20
   assignButtonActiveColor: {r: 1, g: 1, b: 1, a: 1}
   assignButtonInactiveColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  vacantRoomColor: {r: 1, g: 1, b: 1, a: 0}
-  selectedRoomColor: {r: 1, g: 0, b: 0, a: 1}
-  occupiedRoomColor: {r: 1, g: 1, b: 1, a: 0}
-  needsExaminationRoomColor: {r: 1, g: 0.85, b: 0.25, a: 1}
-  needsCleaningRoomColor: {r: 0.45, g: 0.8, b: 1, a: 1}
-  advancedCleaningInProgressRoomColor: {r: 0.7, g: 0.45, b: 1, a: 1}
+  defaultRoomColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &2107739580
 GameObject:
   m_ObjectHideFlags: 0
