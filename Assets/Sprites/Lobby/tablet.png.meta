@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 363be4450af7244d5bff1f3915f434ac
+guid: 57e5f9354d13540d990f555382cc0938
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4060959264275345818
-    second: lobby_day_background_only_0
+      213: 6604339808490387203
+    second: tablet_0
+  - first:
+      213: -6596608778679774636
+    second: tablet_1
+  - first:
+      213: 6224072184683681966
+    second: tablet_2
+  - first:
+      213: 9215470020163120319
+    second: tablet_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -51,7 +60,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 500
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -139,13 +148,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: lobby_day_background_only_0
+      name: tablet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 511
-        width: 1920
-        height: 569
+        x: 333
+        y: 269
+        width: 6
+        height: 7
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,8 +163,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 66e4985a01394a7c0800000000000000
-      internalID: -4060959264275345818
+      spriteID: 3077a05801457ab50800000000000000
+      internalID: 6604339808490387203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tablet_1
+      rect:
+        serializedVersion: 2
+        x: 341
+        y: 269
+        width: 20
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 452919024432474a0800000000000000
+      internalID: -6596608778679774636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tablet_2
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 269
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea8d578eca8506650800000000000000
+      internalID: 6224072184683681966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tablet_3
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 179
+        width: 825
+        height: 685
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbca51e582de3ef70800000000000000
+      internalID: 9215470020163120319
       vertices: []
       indices: 
       edges: []
@@ -174,7 +249,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      lobby_day_background_only_0: -4060959264275345818
+      tablet_0: 6604339808490387203
+      tablet_1: -6596608778679774636
+      tablet_2: 6224072184683681966
+      tablet_3: 9215470020163120319
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

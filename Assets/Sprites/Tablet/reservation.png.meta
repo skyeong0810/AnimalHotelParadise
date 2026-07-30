@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5a952d08ee23e48b183d8fa8a5e9c6b2
+guid: e23508e00b86b4cbc91a7f9141ddb6d5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8792137747837349979
-    second: lobby_night_table_only_0
+      213: 977322789940115135
+    second: reservation_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 150
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -139,13 +139,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: lobby_night_table_only_0
+      name: reservation_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1920
-        height: 513
+        width: 160
+        height: 160
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b50f52ce2b2f30a70800000000000000
-      internalID: 8792137747837349979
+      spriteID: fb6364d36e5209d00800000000000000
+      internalID: 977322789940115135
       vertices: []
       indices: 
       edges: []
@@ -164,7 +164,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      lobby_night_table_only_0: 8792137747837349979
+      reservation_0: 977322789940115135
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
