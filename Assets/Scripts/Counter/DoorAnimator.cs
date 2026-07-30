@@ -14,6 +14,14 @@ namespace AnimalHotel.Counter
         [SerializeField] private Sprite openingSprite;
         [SerializeField] private Sprite openSprite;
 
+        [Header("Door Sfx")]
+        [SerializeField] private AudioSource doorSfxSource;
+        [SerializeField] private AudioClip openSfx;
+        [Range(0f, 1f)]
+        [SerializeField] private float openSfxVolume = 1f;
+        [Tooltip("음수는 애니메이션보다 먼저, 양수는 애니메이션 시작 후에 재생됩니다.")]
+        [SerializeField] private float openSfxTimingOffsetSeconds = 0f;
+
         [Header("Timing")]
         [SerializeField] private float openDuration = 0.35f;
         [SerializeField] private float closeDuration = 0.35f;
@@ -26,6 +34,7 @@ namespace AnimalHotel.Counter
         private void Awake()
         {
             EnsureRenderer();
+            if (doorSfxSource == null) doorSfxSource = GetComponent<AudioSource>();
             if (doorRenderer != null)
             {
                 doorBaseLocalPosition = doorRenderer.transform.localPosition;
@@ -35,6 +44,20 @@ namespace AnimalHotel.Counter
 
         public IEnumerator Open()
         {
+            if (openSfxTimingOffsetSeconds < 0f)
+            {
+                PlayOpenSfx();
+                yield return new WaitForSeconds(-openSfxTimingOffsetSeconds);
+            }
+            else if (openSfxTimingOffsetSeconds > 0f)
+            {
+                StartCoroutine(PlayOpenSfxAfterDelay(openSfxTimingOffsetSeconds));
+            }
+            else
+            {
+                PlayOpenSfx();
+            }
+
             Sprite[] frames = { closedSprite, openingSprite, openSprite, openSprite, openingSprite };
             bool[] flipXStates = { false, false, false, true, true };
             float[] offsetXStates = { 0f, 0f, 0f, mirroredOpenOffsetX, mirroredOpeningOffsetX };
@@ -68,6 +91,21 @@ namespace AnimalHotel.Counter
                 {
                     yield return new WaitForSeconds(frameDelay);
                 }
+            }
+        }
+
+        private IEnumerator PlayOpenSfxAfterDelay(float delaySeconds)
+        {
+            yield return new WaitForSeconds(delaySeconds);
+            PlayOpenSfx();
+        }
+
+        private void PlayOpenSfx()
+        {
+            if (doorSfxSource == null) doorSfxSource = GetComponent<AudioSource>();
+            if (doorSfxSource != null && openSfx != null)
+            {
+                doorSfxSource.PlayOneShot(openSfx, Mathf.Clamp01(openSfxVolume));
             }
         }
 

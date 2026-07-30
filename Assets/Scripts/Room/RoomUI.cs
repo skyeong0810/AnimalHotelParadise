@@ -22,6 +22,17 @@ namespace AnimalHotel.Counter
         [Range(0f, 1f)]
         [SerializeField] private float memoSfxVolume = 1f;
 
+        [Header("room_sfx")]
+        [SerializeField] private AudioClip roomSelectSfx;
+        [SerializeField] private AudioClip roomCleanSfx;
+        [SerializeField] private AudioClip advancedCleanSfx;
+        [Range(0f, 1f)]
+        [SerializeField] private float roomSelectSfxVolume = 1f;
+        [Range(0f, 1f)]
+        [SerializeField] private float roomCleanSfxVolume = 1f;
+        [Range(0f, 1f)]
+        [SerializeField] private float advancedCleanSfxVolume = 1f;
+
         [Header("reservation_list")]
         [SerializeField] private Transform background;
         [SerializeField] private float spacing = 1.2f;
@@ -128,6 +139,7 @@ namespace AnimalHotel.Counter
 
         public void OnRoomClicked(int roomNumber)
         {
+            PlayRoomSfx(roomSelectSfx, roomSelectSfxVolume);
             _selectedRoomNumber = roomNumber;
             RefreshRoomGrid();
         }
@@ -178,6 +190,7 @@ namespace AnimalHotel.Counter
 
         public void OnCleanButtonClicked()
         {
+            PlayRoomSfx(roomCleanSfx, roomCleanSfxVolume);
             if (roomManager == null) return;
             if (_selectedRoomNumber == -1)
             {
@@ -195,6 +208,7 @@ namespace AnimalHotel.Counter
 
         public void OnAdvancedCleanButtonClicked()
         {
+            PlayRoomSfx(advancedCleanSfx, advancedCleanSfxVolume);
             if (roomManager == null) return;
             if (_selectedRoomNumber == -1)
             {
@@ -677,6 +691,19 @@ namespace AnimalHotel.Counter
             }
 
             PlayMemoSfx();
+        }
+
+        private void PlayRoomSfx(AudioClip clip, float volume)
+        {
+            if (memoSfxSource == null && counterFlow != null)
+            {
+                memoSfxSource = counterFlow.GetComponent<AudioSource>();
+            }
+
+            if (memoSfxSource != null && clip != null)
+            {
+                memoSfxSource.PlayOneShot(clip, Mathf.Clamp01(volume));
+            }
         }
 
         private void PlayMemoSfx()
