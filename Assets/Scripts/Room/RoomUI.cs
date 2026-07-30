@@ -52,10 +52,14 @@ namespace AnimalHotel.Counter
         [SerializeField] private Color vacantRoomColor = Color.clear;
         [SerializeField] private Color selectedRoomColor = Color.red;
         [SerializeField] private Color occupiedRoomColor = Color.clear;
-        [SerializeField] private Color needsExaminationRoomColor = new Color(1f, 0.85f, 0.25f, 1f);
-        [SerializeField] private Color needsCleaningRoomColor = new Color(0.45f, 0.8f, 1f, 1f);
-        [SerializeField] private Color advancedCleaningInProgressRoomColor = new Color(0.7f, 0.45f, 1f, 1f);
 
+        [Header("room_status_icons")]
+        [SerializeField] private Sprite cleaningStatusSprite;
+        [SerializeField] private Sprite advancedCleaningStatusSprite;
+        [Min(0.01f)]
+        [SerializeField] private float roomStatusIconWorldSize = 0.65f;
+        [SerializeField] private Vector2 roomStatusIconLocalOffset = Vector2.zero;
+        [SerializeField] private int roomStatusIconSortingOffset = 8;
 
         public event System.Action OnRoomAssigned;
 
@@ -238,6 +242,7 @@ namespace AnimalHotel.Counter
 
                 sr.sprite = GetRoomSprite(room, i + 1 == _selectedRoomNumber);
                 sr.color = GetRoomColor(room, i + 1 == _selectedRoomNumber);
+                RefreshRoomCleaningIcon(sr, room);
 
                 // Handle the occupant sprite overlay
                 Transform occupantTransform = sr.transform.Find("RoomOccupantSprite");
@@ -530,16 +535,15 @@ namespace AnimalHotel.Counter
         {
             if (isSelected) return selectedRoomColor;
             if (room == null) return vacantRoomColor;
+
             switch (room.status)
             {
                 case RoomStatus.Occupied:
                     return occupiedRoomColor;
                 case RoomStatus.NeedsExamination:
-                    return needsExaminationRoomColor;
                 case RoomStatus.NeedsCleaning:
-                    return needsCleaningRoomColor;
                 case RoomStatus.AdvancedCleaningInProgress:
-                    return advancedCleaningInProgressRoomColor;
+                    return vacantRoomColor;
                 default:
                     return vacantRoomColor;
             }
@@ -715,5 +719,83 @@ namespace AnimalHotel.Counter
             return removedAny;
         }
 
+        private void RefreshRoomCleaningIcon(SpriteRenderer roomRenderer, RoomData room)
+        {
+            if (roomRenderer == null) return;
+
+            const string childName = "RoomCleaningStatusIcon";
+            Transform iconTransform = roomRenderer.transform.Find(childName);
+            Sprite iconSprite = GetRoomCleaningIconSprite(room);
+
+            if (iconSprite == null)
+            {
+                if (iconTransform != null)
+                    iconTransform.gameObject.SetActive(false);
+                return;
+            }
+
+            GameObject iconObject;
+            SpriteRenderer iconRenderer;
+            if (iconTransform == null)
+            {
+                iconObject = new GameObject(childName);
+                iconObject.transform.SetParent(roomRenderer.transform, false);
+                iconRenderer = iconObject.AddComponent<SpriteRenderer>();
+            }
+            else
+            {
+                iconObject = iconTransform.gameObject;
+                iconRenderer = iconObject.GetComponent<SpriteRenderer>();
+                if (iconRenderer == null)
+                    iconRenderer = iconObject.AddComponent<SpriteRenderer>();
+            }
+
+            iconObject.SetActive(true);
+            iconRenderer.sprite = iconSprite;
+            iconRenderer.color = Color.white;
+            iconRenderer.sortingLayerID = roomRenderer.sortingLayerID;
+            iconRenderer.sortingLayerName = roomRenderer.sortingLayerName;
+            iconRenderer.sortingOrder = roomRenderer.sortingOrder + roomStatusIconSortingOffset;
+
+            Vector2 spriteSize = iconSprite.bounds.size;
+            float largestSide = Mathf.Max(spriteSize.x, spriteSize.y);
+            float uniformWorldScale = largestSide > 0.0001f
+                ? Mathf.Max(0.01f, roomStatusIconWorldSize) / largestSide
+                : 1f;
+
+            Vector3 parentWorldScale = roomRenderer.transform.lossyScale;
+            float parentScaleX = Mathf.Abs(parentWorldScale.x) > 0.0001f ? Mathf.Abs(parentWorldScale.x) : 1f;
+            float parentScaleY = Mathf.Abs(parentWorldScale.y) > 0.0001f ? Mathf.Abs(parentWorldScale.y) : 1f;
+            iconObject.transform.localScale = new Vector3(
+                uniformWorldScale / parentScaleX,
+                uniformWorldScale / parentScaleY,
+                1f
+            );
+            iconObject.transform.localRotation = Quaternion.identity;
+
+            Vector3 desiredCenter = new Vector3(
+                roomStatusIconLocalOffset.x,
+                roomStatusIconLocalOffset.y,
+                -0.1f
+            );
+            Vector3 spriteCenterOffset = Vector3.Scale(iconSprite.bounds.center, iconObject.transform.localScale);
+            iconObject.transform.localPosition = desiredCenter - spriteCenterOffset;
+        }
+
+        private Sprite GetRoomCleaningIconSprite(RoomData room)
+        {
+            if (room == null) return null;
+
+            switch (room.status)
+            {
+                case RoomStatus.NeedsExamination:
+                    return cleaningStatusSprite;
+                case RoomStatus.NeedsCleaning:
+                case RoomStatus.AdvancedCleaningInProgress:
+                    return advancedCleaningStatusSprite;
+                default:
+                    return null;
+            }
+        }
     }
 }
