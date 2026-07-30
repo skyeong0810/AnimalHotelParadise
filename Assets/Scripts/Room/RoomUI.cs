@@ -11,6 +11,7 @@ namespace AnimalHotel.Counter
         [SerializeField] private CounterFlow counterFlow;
         [SerializeField] private DialogueManager dialogueManager;
         [SerializeField] private DayManager dayManager;
+        [SerializeField] private TabletController tabletController;
 
         [Header("cleaning_time")]
         [Min(0f)]
@@ -153,6 +154,18 @@ namespace AnimalHotel.Counter
                 return;
             }
 
+            // While a nuisance call is ringing or its phone dialogue is still being handled, room
+            // assignment is locked entirely — for BOTH the complaining guest (their outcome isn't
+            // decided yet) and any new guest who's mid check-in waiting on their own assignment.
+            // Once the call resolves (either "we'll move you" -> GuestAwaitingMove, or "we can't" ->
+            // nothing pending), assignment unlocks again and falls through to the branches below.
+            if (roomManager.IsCallActive)
+            {
+                Debug.LogWarning("[RoomUI] Cannot assign a room while a nuisance call is ringing or being handled.");
+                RefreshRoomGrid();
+                return;
+            }
+
             var selectedRoom = roomManager.GetRoom(_selectedRoomNumber);
             if (selectedRoom.status != RoomStatus.Vacant)
             {
@@ -161,11 +174,35 @@ namespace AnimalHotel.Counter
                 return;
             }
 
+            // A guest who was promised a room move during a nuisance call takes priority over the
+            // normal check-in flow — this lets the same Assign button follow through on that promise.
+            var moveGuest = roomManager.GuestAwaitingMove;
+            if (moveGuest != null)
+            {
+                AssignRoomForPendingMove(moveGuest);
+                return;
+            }
+
             if (counterFlow == null) return;
             var guest = counterFlow.GetCurrentGuest();
             if (guest == null)
             {
                 Debug.LogWarning("[RoomUI] No current guest to assign.");
+                return;
+            }
+
+            // CounterFlow claims the guest (GetCurrentGuest() starts returning them) the instant
+            // they're pulled from the arrival queue — well before their entrance animation finishes
+            // and DialogueManager.StartDialogue() actually runs for them. Assigning a room this early
+            // would call NotifyRoomAssigned(guest) before DialogueManager.CurrentGuest is set to this
+            // guest, so it gets silently ignored (see NotifyRoomAssigned's mismatch warning) — the room
+            // ends up Occupied in RoomManager, but this guest's own "방 배정" dialogue choice never
+            // unlocks and can't be re-triggered once the room's already taken. Wait until their
+            // dialogue has actually started before allowing assignment.
+            if (dialogueManager != null && dialogueManager.CurrentGuest != guest)
+            {
+                Debug.LogWarning($"[RoomUI] {guest.guestName} hasn't reached the counter dialogue yet — cannot assign a room.");
+                RefreshRoomGrid();
                 return;
             }
 
@@ -184,7 +221,68 @@ namespace AnimalHotel.Counter
                 _selectedRoomNumber = -1;
                 RefreshRoomGrid();
                 OnRoomAssigned?.Invoke();
-                if (dialogueManager != null) dialogueManager.NotifyRoomAssigned();
+                if (dialogueManager != null) dialogueManager.NotifyRoomAssigned(guest);
+            }
+        }
+
+        private void AssignRoomForPendingMove(Animal moveGuest)
+        {
+            var currentRoom = roomManager.GetRoomByOccupant(moveGuest);
+            if (currentRoom == null)
+            {
+                Debug.LogWarning($"[RoomUI] {moveGuest.guestName} was awaiting a room move but has no current room (already checked out?).");
+                RefreshRoomGrid();
+                return;
+            }
+
+            bool moved = roomManager.MoveAnimal(currentRoom.roomNumber, _selectedRoomNumber);
+            if (moved)
+            {
+                roomManager.ResolveRoomMove(moveGuest);
+                ClearRoomMemos(_selectedRoomNumber);
+                _selectedRoomNumber = -1;
+                RefreshRoomGrid();
+                OnRoomAssigned?.Invoke();
+
+                // This move was the last thing blocking phase advance (RoomManager.HasPendingCalls()).
+                // Two outcomes depending on whether the current phase still has time left:
+                HandleFlowAfterMoveResolved();
+            }
+        }
+
+        /// <summary>
+        /// Called right after a promised room move (GuestAwaitingMove) has just been fulfilled.
+        /// If the move itself didn't create a fresh complaint (roomManager.HasPendingCalls() is now
+        /// false) and this phase's time is already exhausted, there's nothing left for the player to
+        /// do this phase — close the tablet and advance immediately instead of leaving the player
+        /// stuck looking at the room panel until they back out manually.
+        /// Otherwise (time remains, or the move itself triggered a new complaint), the normal flow
+        /// should simply resume — in particular, CounterFlow was frozen (see
+        /// CounterFlow.SpawnCustomerRoutine's GuestAwaitingMove guard) and needs to be nudged awake so
+        /// arrivals continue.
+        /// </summary>
+        private void HandleFlowAfterMoveResolved()
+        {
+            if (dayManager == null) dayManager = FindFirstObjectByType<DayManager>();
+            if (roomManager == null || dayManager == null) return;
+
+            bool nothingLeftToProcess = !roomManager.HasPendingCalls();
+            bool timeExhausted = dayManager.PhaseTimeRemaining <= 0f;
+            bool counterIdle = counterFlow == null || !counterFlow.IsBusy;
+
+            if (nothingLeftToProcess && timeExhausted && counterIdle)
+            {
+                if (tabletController == null) tabletController = FindFirstObjectByType<TabletController>();
+                tabletController?.Close();
+                dayManager.TryAdvancePhase();
+                return;
+            }
+
+            // Otherwise the day continues: CounterFlow was blocked from pulling the next guest while
+            // this move was pending, so wake it back up now that GuestAwaitingMove is clear.
+            if (nothingLeftToProcess && counterFlow != null && !counterFlow.IsBusy)
+            {
+                StartCoroutine(counterFlow.SpawnCustomerRoutine());
             }
         }
 
@@ -493,7 +591,7 @@ namespace AnimalHotel.Counter
             labelText.fontSize = fontSize;
             labelText.color = menuButtonLabelColor;
             labelText.alignment = TextAlignmentOptions.Center;
-            labelText.enableWordWrapping = false;
+            labelText.textWrappingMode = TextWrappingModes.Normal;
             labelText.overflowMode = TextOverflowModes.Overflow;
             labelText.sortingLayerID = buttonRenderer.sortingLayerID;
             labelText.sortingOrder = buttonRenderer.sortingOrder + menuButtonLabelSortingOffset;
@@ -517,11 +615,18 @@ namespace AnimalHotel.Counter
                 selectedRoom = roomManager.GetRoom(_selectedRoomNumber);
             }
 
+            bool callActive = roomManager != null && roomManager.IsCallActive;
             var guest = counterFlow != null ? counterFlow.GetCurrentGuest() : null;
-            bool canAssign = selectedRoom != null
+            // Don't count as a valid assign target until this guest's dialogue has actually started
+            // (see the matching guard in OnAssignButtonClicked for why) — otherwise the button would
+            // light up as "ready" during the entrance animation, before there's anywhere for the
+            // assignment to actually register.
+            bool guestReady = guest != null && (dialogueManager == null || dialogueManager.CurrentGuest == guest);
+            bool hasMoveTarget = roomManager != null && roomManager.GuestAwaitingMove != null;
+            bool canAssign = !callActive
+                && selectedRoom != null
                 && selectedRoom.status == RoomStatus.Vacant
-                && guest != null
-                && roomManager.GetRoomByOccupant(guest) == null;
+                && (hasMoveTarget || (guestReady && roomManager.GetRoomByOccupant(guest) == null));
             bool canClean = selectedRoom != null && selectedRoom.status == RoomStatus.NeedsExamination;
             bool canAdvancedClean = IsMaintenanceRoom(selectedRoom);
 

@@ -15,6 +15,12 @@ namespace AnimalHotel.Counter
         [Header("Staff Line")]
         [SerializeField] private TextMeshPro lineLabel;
 
+        [Header("Font")]
+        [Tooltip("한글 글리프가 포함된 Font Asset(예: AppleGothic SDF)을 직접 지정한다. " +
+                 "비워두면 TMP Settings의 전역 기본 폰트(LiberationSans SDF, 한글 없음)로 떨어져서 " +
+                 "매번 Fallback SubMesh가 생기고 sortingOrder가 깨진다 — 반드시 지정할 것.")]
+        [SerializeField] private TMP_FontAsset koreanFontAsset;
+
         [Header("Button Layout")]
         [SerializeField] private Transform optionContainer;
         [SerializeField] private float buttonWidth = 4.0f;
@@ -86,24 +92,47 @@ namespace AnimalHotel.Counter
         }
 
         // === 대사 + 선택지 ===
+        // Line 섹션은 lineText가 실제로 있을 때만 공간을 차지한다. TabletCheck 이후 곧바로 선택지만
+        // 나오는 노드(예: staff_reservation_choices)처럼 text가 비어있는 경우, 예전에는 빈 Line 영역이
+        // 그대로 첫 번째 섹션 자리를 차지해서 선택지 위에 부자연스러운 여백이 생겼다. hasLine이 false면
+        // Line Label을 아예 비활성화하고, 배경 높이와 선택지 시작 위치 계산에서도 Line 몫을 완전히 뺀다.
         public IEnumerator ShowLineWithChoices(string lineText, List<string> options, List<bool> optionStates = null)
         {
             ClearButtons();
             int choiceCount = (options != null) ? options.Count : 0;
-            ShowBackground(choiceCount);
+            bool hasLine = !string.IsNullOrWhiteSpace(lineText);
+            ShowBackground(choiceCount, hasLine);
 
             if (lineLabel != null)
             {
-                lineLabel.gameObject.SetActive(true);
-                PositionLineLabel(choiceCount);
-                lineLabel.text = lineText != null ? lineText : "";
+                lineLabel.gameObject.SetActive(hasLine);
+                if (hasLine)
+                {
+                    PositionLineLabel(choiceCount, hasLine);
+                    lineLabel.text = lineText;
+                    TMPKoreanFix.Apply(lineLabel, koreanFontAsset, textSortingOrder);
+                }
+                else
+                {
+                    lineLabel.text = "";
+                }
             }
 
             if (options != null && options.Count > 0)
             {
-                float totalH = CalcTotalHeight(options.Count);
-                float lineBottom = (totalH / 2f) - lineHeight;
-                float startY = lineBottom - lineToChoiceGap;
+                float totalH = CalcTotalHeight(choiceCount, hasLine);
+                float startY;
+                if (hasLine)
+                {
+                    float lineBottom = (totalH / 2f) - lineHeight;
+                    startY = lineBottom - lineToChoiceGap;
+                }
+                else
+                {
+                    // Line이 없으면 선택지 그룹을 배경 안에서 그대로 수직 중앙 정렬한다
+                    // (버튼 n개가 (n-1)*buttonSpacing 간격으로 0을 중심으로 대칭 배치됨).
+                    startY = (totalH / 2f) - (buttonSpacing / 2f);
+                }
                 for (int i = 0; i < options.Count; i++)
                 {
                     float y = startY - i * buttonSpacing + contentYOffset;
@@ -118,20 +147,20 @@ namespace AnimalHotel.Counter
         }
 
         // === 배경 크기 자동 조절 ===
-        private float CalcTotalHeight(int choiceCount)
+        private float CalcTotalHeight(int choiceCount, bool hasLine = true)
         {
-            float h = lineHeight;
+            float h = hasLine ? lineHeight : 0f;
             if (choiceCount > 0)
-                h += lineToChoiceGap + choiceCount * buttonSpacing;
+                h += (hasLine ? lineToChoiceGap : 0f) + choiceCount * buttonSpacing;
             return h;
         }
 
-        private void ShowBackground(int choiceCount)
+        private void ShowBackground(int choiceCount, bool hasLine = true)
         {
             if (backgroundObj == null) return;
             backgroundObj.SetActive(true);
             if (_bgRenderer != null) _bgRenderer.color = bgColor;
-            float totalH = CalcTotalHeight(choiceCount) + bgPaddingY * 2f;
+            float totalH = CalcTotalHeight(choiceCount, hasLine) + bgPaddingY * 2f;
             float totalW = buttonWidth + bgPaddingX * 2f;
             if (_bgRenderer != null)
                 _bgRenderer.size = new Vector2(totalW, totalH);
@@ -139,10 +168,10 @@ namespace AnimalHotel.Counter
                 backgroundObj.transform.localScale = new Vector3(totalW, totalH, 1f);
         }
 
-        private void PositionLineLabel(int choiceCount)
+        private void PositionLineLabel(int choiceCount, bool hasLine = true)
         {
             if (lineLabel == null) return;
-            float totalH = CalcTotalHeight(choiceCount);
+            float totalH = CalcTotalHeight(choiceCount, hasLine);
             float topY = totalH / 2f - lineHeight / 2f;
             lineLabel.transform.localPosition = new Vector3(0f, topY + contentYOffset, -0.01f);
             lineLabel.rectTransform.sizeDelta = new Vector2(buttonWidth * 0.92f, lineHeight);
@@ -165,6 +194,7 @@ namespace AnimalHotel.Counter
         {
             if (string.IsNullOrEmpty(fullText)) { tmp.text = ""; yield break; }
             tmp.text = fullText;
+            TMPKoreanFix.Apply(tmp, koreanFontAsset, textSortingOrder);
             tmp.maxVisibleCharacters = 0;
             float interval = charsPerSecond > 0 ? 1f / charsPerSecond : 0f;
             for (int i = 0; i < fullText.Length; i++)
@@ -196,6 +226,10 @@ namespace AnimalHotel.Counter
             lbl.transform.localPosition = new Vector3(0, 0, -0.01f);
             lbl.transform.localScale = Vector3.one;
             var tmp = lbl.AddComponent<TextMeshPro>();
+            // AddComponent로 새로 만든 TextMeshPro는 font가 지정되지 않으면 TMP Settings의 전역 기본
+            // 폰트(LiberationSans SDF, 한글 없음)로 떨어져서 한글을 그릴 때마다 Fallback SubMesh가
+            // 생긴다. text를 채우기 "전에" 먼저 한글 폰트를 지정해서 애초에 그 경로를 타지 않게 한다.
+            if (koreanFontAsset != null) tmp.font = koreanFontAsset;
             tmp.text = text != null ? text : "";
             tmp.fontSize = labelFontSize;
             tmp.enableAutoSizing = true;
@@ -207,8 +241,9 @@ namespace AnimalHotel.Counter
             tmp.overflowMode = TextOverflowModes.Ellipsis;
             tmp.rectTransform.sizeDelta = new Vector2(buttonWidth * 0.9f, buttonHeight);
             tmp.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            var mr = lbl.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sortingOrder = textSortingOrder;
+            // 그래도 SubMesh가 생겼을 경우(예: 폰트에 없는 특수문자)를 대비해 sortingLayer/Order를
+            // 원본 렌더러 기준으로 강제 동기화한다.
+            TMPKoreanFix.Apply(tmp, null, textSortingOrder);
             var btn = go.AddComponent<SimpleOptionButton>();
             btn.Setup(index, sr, tmp, buttonNormalColor, buttonHoverColor, buttonTextColor, OnButtonClicked, isEnabled);
             return go;

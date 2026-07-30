@@ -14,6 +14,12 @@ namespace AnimalHotel.Counter
         [SerializeField] private GameObject backgroundObj;
         [SerializeField] private TMP_Text label;
 
+        [Header("Font")]
+        [Tooltip("한글 글리프가 포함된 Font Asset(예: AppleGothic SDF)을 직접 지정한다. " +
+                 "비워두면 TMP Settings의 전역 기본 폰트(LiberationSans SDF, 한글 없음)로 떨어져서 " +
+                 "매번 Fallback SubMesh가 생기고 sortingOrder가 깨진다 — 반드시 지정할 것.")]
+        [SerializeField] private TMP_FontAsset koreanFontAsset;
+
         [Header("Typing")]
         [SerializeField] private float typeCharsPerSec = 25f;
 
@@ -66,6 +72,10 @@ namespace AnimalHotel.Counter
 
             label.text = text;
             label.alignment = TMPro.TextAlignmentOptions.Center;
+            // 폰트가 지정 안 돼있으면 한글이 TMP 전역 Fallback을 타면서 SubMesh가 생기고, 그 SubMesh는
+            // 이 label의 원래 sortingOrder를 물려받지 못한다. 폰트를 명시하고 sortingOrder를 동기화한다.
+            int currentSortingOrder = label.GetComponent<MeshRenderer>()?.sortingOrder ?? 0;
+            TMPKoreanFix.Apply(label, koreanFontAsset, currentSortingOrder);
             label.maxVisibleCharacters = 0;
             float charDelay = 1f / Mathf.Max(typeCharsPerSec, 0.1f);
 

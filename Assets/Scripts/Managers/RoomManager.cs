@@ -43,6 +43,28 @@ namespace AnimalHotel.Counter
         private RoomData[] _rooms;
         private List<PendingCall> _pendingCalls = new List<PendingCall>();
 
+        /// <summary>
+        /// The one call currently being handled (ringing, or answered and mid phone-conversation).
+        /// While this is non-null, every other pending call is frozen — no one else's timer ticks
+        /// and no one else's phone rings, matching "손님들은 한 번에 한 통화씩만 받는다".
+        /// </summary>
+        private PendingCall _activeCall;
+
+        /// <summary>
+        /// True from the moment a nuisance call starts ringing until its phone dialogue has fully
+        /// resolved (see ResolvePhoneCallDialogue). While true, room assignment is locked entirely —
+        /// for both the complaining guest (their outcome isn't decided yet) and any new guest who is
+        /// mid check-in waiting on their own room. RoomUI checks this before honoring an Assign click.
+        /// </summary>
+        public bool IsCallActive => _activeCall != null;
+
+        /// <summary>
+        /// Guest who was promised a room move during a nuisance phone call ("빈 방으로 옮겨 드릴게요")
+        /// but hasn't actually been moved yet. RoomUI checks this first when its Assign button is
+        /// clicked, so the same button can complete the promised move instead of check-in assignment.
+        /// </summary>
+        public Animal GuestAwaitingMove { get; private set; }
+
         private void Awake()
         {
             _rooms = new RoomData[RoomCount];
@@ -109,9 +131,30 @@ namespace AnimalHotel.Counter
 
             Debug.Log($"[RoomManager] Room {roomNumber} assigned to {guest.guestName}.");
 
-            EvaluateNuisanceOnAssignment(room);
+            // Nuisance is evaluated later, once check-in has fully completed (see EvaluateNuisanceForGuest).
+            // This keeps a guest from being flagged as a nuisance source/victim while they're still
+            // mid check-in dialogue or walking off-screen.
 
             return true;
+        }
+
+        /// <summary>
+        /// Evaluates floor/wall/surround nuisance for a guest who has just finished checking in.
+        /// Call this once the check-in flow (dialogue + exit animation) has fully completed —
+        /// not at the moment the room is assigned. CounterFlow raises OnGuestSettled for this purpose.
+        /// </summary>
+        public void EvaluateNuisanceForGuest(Animal guest)
+        {
+            if (guest == null) return;
+
+            var room = GetRoomByOccupant(guest);
+            if (room == null)
+            {
+                Debug.LogWarning($"[RoomManager] EvaluateNuisanceForGuest: no room found for {guest.guestName}.");
+                return;
+            }
+
+            EvaluateNuisanceOnAssignment(room);
         }
 
         /// <summary>
@@ -135,6 +178,15 @@ namespace AnimalHotel.Counter
             }
 
             Animal guest = currentRoom.occupant;
+
+            // MoveAnimal is only ever called to fulfill a promised nuisance-call room move (see
+            // RoomUI.AssignRoomForPendingMove) — this guest just complained and is being relocated
+            // because of it. Reset hasCalledNuisance BEFORE evaluating nuisance for the new room below,
+            // so that if the new room already has trouble (e.g. an already-occupied noisy neighbor),
+            // EvaluateNuisanceOnAssignment's immediate ScheduleNuisanceCall isn't silently swallowed by
+            // the old complaint's flag. nuisanceComplaintCount is left untouched — DayManager uses it at
+            // checkout to grade "resolved cleanly" apart from "resolved, but it kept happening again".
+            guest.hasCalledNuisance = false;
 
             // Clear outgoing nuisance caused by guest in the current room
             ClearOutgoingNuisance(currentRoom);
@@ -171,6 +223,13 @@ namespace AnimalHotel.Counter
             room.occupant = null;
             room.status = RoomStatus.NeedsExamination;
             Debug.Log($"[RoomManager] Room {roomNumber} vacated - needs examination. Advanced cleaning: {room.requiresAdvancedCleaning}.");
+
+            // If this guest checked out before staff got around to moving them, there's nothing left
+            // to move — drop the pending request so RoomUI's Assign button falls back to check-in mode.
+            if (GuestAwaitingMove != null && GuestAwaitingMove == departingGuest)
+            {
+                GuestAwaitingMove = null;
+            }
         }
 
         public bool CleanRoom(int roomNumber)
@@ -321,6 +380,28 @@ namespace AnimalHotel.Counter
             return surroundRooms;
         }
 
+        /// <summary>
+        /// Whether the nuisance currently bothering <paramref name="roomNumber"/> is coming from a
+        /// room directly above or below it (a "층간소음" / floor-to-floor complaint — someone stomping
+        /// upstairs) rather than from a same-floor next-door room (a "벽간소음" / wall complaint —
+        /// someone shouting through the wall). Determined spatially from
+        /// <see cref="RoomData.incomingNuisanceSources"/> rather than from the SUFFERING guest's own
+        /// nuisance-causing traits: the guest calling in is the victim, not the source, so their own
+        /// willCauseFloorNuisance/willCauseWallNuisance say nothing about what's bothering THEM — only
+        /// about what they'd do to a neighbor. Used to pick the right opening line for the phone call
+        /// (see DialogueTreeBuilder.BuildPhoneCallTree).
+        /// </summary>
+        public bool IsRoomSufferingFloorNuisance(int roomNumber)
+        {
+            var room = GetRoom(roomNumber);
+            if (room == null || room.incomingNuisanceSources.Count == 0) return false;
+
+            var above = GetRoomAbove(roomNumber);
+            var below = GetRoomBelow(roomNumber);
+            return (above != null && room.incomingNuisanceSources.Contains(above.roomNumber))
+                || (below != null && room.incomingNuisanceSources.Contains(below.roomNumber));
+        }
+
         private void ClearOutgoingNuisance(RoomData room)
         {
             if (room == null) return;
@@ -434,6 +515,11 @@ namespace AnimalHotel.Counter
             if (sufferingRoom == null || sufferingRoom.occupant == null) return;
             Animal guest = sufferingRoom.occupant;
 
+            // A guest can't have a second complaint scheduled while one is already outstanding. This
+            // flag also stays permanently set for a guest whose complaint went unresolved (no room
+            // offered, or the call was missed) — they don't get a second chance. It's only cleared when
+            // a promised move actually happens (see MoveAnimal), which is what allows a guest to call
+            // again if the *new* room turns out to have its own nuisance problem.
             if (guest.hasCalledNuisance) return;
 
             foreach (var call in _pendingCalls)
@@ -441,54 +527,17 @@ namespace AnimalHotel.Counter
                 if (call.sufferingGuest == guest) return;
             }
 
-            float maxCallDelay = 10f;
-            if (DayManager.Instance != null)
+            // Checkout timing no longer matters here — the day cannot advance to the next time
+            // slot while any call is queued, ringing, or being handled (see HasPendingCalls /
+            // DayManager.TryAdvancePhase), so every call is guaranteed to happen before anyone
+            // involved checks out. The call just needs to land sometime within the current slot.
+            float maxDelay = 10f;
+            if (DayManager.Instance != null && DayManager.Instance.PhaseTimeRemaining > 0f)
             {
-                // 1. Must call before the suffering guest checks out
-                float sufferingRemaining = DayManager.Instance.GetRemainingStaySeconds(guest);
-                maxCallDelay = sufferingRemaining;
-
-                // 2. Must call before any nuisance-causing guest checks out
-                if (sufferingRoom.incomingNuisanceSources.Count > 0)
-                {
-                    foreach (int sourceRoomNum in sufferingRoom.incomingNuisanceSources)
-                    {
-                        var sourceRoom = GetRoom(sourceRoomNum);
-                        if (sourceRoom != null && sourceRoom.occupant != null)
-                        {
-                            float causingRemaining = DayManager.Instance.GetRemainingStaySeconds(sourceRoom.occupant);
-                            if (causingRemaining > 0f && causingRemaining < maxCallDelay)
-                            {
-                                maxCallDelay = causingRemaining;
-                            }
-                        }
-                    }
-                }
+                maxDelay = DayManager.Instance.PhaseTimeRemaining;
             }
 
-            // Reserve safety margin (0.5s) so call happens before either guest leaves
-            float safeMaxDelay = Mathf.Max(0.5f, maxCallDelay - 0.5f);
-
-            float minGap = 2.0f;
-            float randomDelay = Random.Range(0f, safeMaxDelay);
-
-            // Pick a random delay that is at least minGap seconds apart from all existing pending calls
-            int maxAttempts = 50;
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                bool collision = false;
-                foreach (var existingCall in _pendingCalls)
-                {
-                    if (Mathf.Abs(randomDelay - existingCall.timer) < minGap)
-                    {
-                        collision = true;
-                        break;
-                    }
-                }
-
-                if (!collision) break;
-                randomDelay = Random.Range(0f, safeMaxDelay);
-            }
+            float randomDelay = Random.Range(0f, Mathf.Max(0.1f, maxDelay));
 
             _pendingCalls.Add(new PendingCall
             {
@@ -497,7 +546,7 @@ namespace AnimalHotel.Counter
                 timer = randomDelay
             });
 
-            Debug.Log($"[Call Scheduled] {guest.guestName} in room {sufferingRoom.roomNumber} scheduled to call in {randomDelay:F1}s (must call before checkout in {maxCallDelay:F1}s).");
+            Debug.Log($"[Call Scheduled] {guest.guestName} in room {sufferingRoom.roomNumber} queued to call in {randomDelay:F1}s.");
         }
 
         private void Update()
@@ -505,8 +554,21 @@ namespace AnimalHotel.Counter
             if (_pendingCalls == null || _pendingCalls.Count == 0) return;
             if (DayManager.Instance != null && !DayManager.Instance.IsTimeFlowing) return;
 
-            bool callTriggeredThisFrame = false;
-            float minGap = 2.0f;
+            // Someone is already ringing or being talked to — every other pending call stays
+            // frozen (its timer does not tick) until that one is fully resolved.
+            //
+            // A guest who was promised a room move (GuestAwaitingMove) also freezes every other
+            // pending call, even though their own call has already ended and _activeCall is back
+            // to null. Until staff actually performs the move, "additional 전화 송신" must not
+            // happen — same freeze rule as an active call, just keyed off a different field.
+            if (_activeCall != null || GuestAwaitingMove != null) return;
+
+            // Once there's nothing left for the player to actively do this phase — either the clock
+            // already ran out, or every guest who was going to arrive already has — there's no point
+            // making them sit through each call's original random cooldown. Drain the queue one call
+            // at a time, as fast as they can be answered, instead of waiting it out.
+            bool nothingElseToWaitFor = DayManager.Instance != null &&
+                (DayManager.Instance.PhaseTimeRemaining <= 0f || DayManager.Instance.NoMoreArrivalsThisPhase);
 
             for (int i = _pendingCalls.Count - 1; i >= 0; i--)
             {
@@ -520,40 +582,43 @@ namespace AnimalHotel.Counter
                     continue;
                 }
 
-                if (!call.isRinging)
+                // The guest's own problem may have resolved itself before they got a chance to call —
+                // e.g. the noisy neighbor checked out or was moved to a different room, clearing every
+                // nuisance source affecting this room. If nothing is bothering them anymore, treat it
+                // as if they never had to call at all: no ring, no hasCalledNuisance, no rating hit.
+                if (room.incomingNuisanceSources.Count == 0)
                 {
+                    Debug.Log($"[RoomManager] {call.sufferingGuest.guestName}'s nuisance in room {room.roomNumber} resolved itself before they could call — cancelling.");
+                    _pendingCalls.RemoveAt(i);
+                    continue;
+                }
+
+                if (nothingElseToWaitFor)
+                    call.timer = 0f;
+                else
                     call.timer -= Time.deltaTime;
 
-                    int secondsLeft = Mathf.CeilToInt(call.timer);
-                    if (secondsLeft > 0 && secondsLeft != call.lastLoggedSecond)
+                int secondsLeft = Mathf.CeilToInt(call.timer);
+                if (secondsLeft > 0 && secondsLeft != call.lastLoggedSecond)
+                {
+                    call.lastLoggedSecond = secondsLeft;
+                    Debug.Log($"[{call.sufferingGuest.guestName}] {secondsLeft}s left until call.");
+                }
+
+                if (call.timer <= 0f)
+                {
+                    if (call.sufferingGuest != null && !call.sufferingGuest.hasCalledNuisance)
                     {
-                        call.lastLoggedSecond = secondsLeft;
-                        Debug.Log($"[{call.sufferingGuest.guestName}] {secondsLeft}s left until call.");
+                        call.sufferingGuest.hasCalledNuisance = true;
+                        call.sufferingGuest.nuisanceComplaintCount++;
+                        call.isRinging = true;
+                        _activeCall = call;
+                        Debug.Log($"{call.sufferingGuest.guestName} called.");
+                        NotifyPhoneCallRinging(call.sufferingGuest, call.roomNumber);
+                        break; // only one call becomes active per frame; the rest stay frozen
                     }
 
-                    if (call.timer <= 0f)
-                    {
-                        // Stagger calls so multiple calls do not ring at the exact same time
-                        if (callTriggeredThisFrame)
-                        {
-                            call.timer = minGap;
-                            call.lastLoggedSecond = -1;
-                            continue;
-                        }
-
-                        if (call.sufferingGuest != null && !call.sufferingGuest.hasCalledNuisance)
-                        {
-                            call.sufferingGuest.hasCalledNuisance = true;
-                            call.isRinging = true;
-                            Debug.Log($"{call.sufferingGuest.guestName} called.");
-                            callTriggeredThisFrame = true;
-                            NotifyPhoneCallRinging(call.sufferingGuest, call.roomNumber);
-                        }
-                        else
-                        {
-                            _pendingCalls.RemoveAt(i);
-                        }
-                    }
+                    _pendingCalls.RemoveAt(i);
                 }
             }
         }
@@ -579,7 +644,10 @@ namespace AnimalHotel.Counter
         }
 
         /// <summary>
-        /// Answers the ringing call for the specified guest.
+        /// Answers the ringing call for the specified guest. The call leaves the queue immediately,
+        /// but stays "active" (still freezing every other pending call) until the phone conversation
+        /// itself finishes — see ResolvePhoneCallDialogue, called once DialogueManager reports the
+        /// phone-call dialogue has ended.
         /// </summary>
         public bool AnswerCall(Animal guest)
         {
@@ -615,6 +683,7 @@ namespace AnimalHotel.Counter
 
         /// <summary>
         /// Cancels/misses the active ringing call for the specified guest when unanswered.
+        /// A missed call counts as an unresolved complaint for rating purposes.
         /// </summary>
         public bool CancelCall(Animal guest)
         {
@@ -625,6 +694,8 @@ namespace AnimalHotel.Counter
                 Debug.Log($"[Call Missed] {guest.guestName}'s call was cancelled (unanswered).");
                 int roomNum = call.roomNumber;
                 _pendingCalls.Remove(call);
+                guest.nuisanceResolution = Animal.NuisanceResolution.Unresolved;
+                if (_activeCall == call) _activeCall = null;
                 NotifyPhoneCallEnded(guest, roomNum, false);
                 return true;
             }
@@ -642,10 +713,55 @@ namespace AnimalHotel.Counter
                 Debug.Log($"[Call Missed] {call.sufferingGuest.guestName}'s call in room {roomNumber} was cancelled (unanswered).");
                 var guest = call.sufferingGuest;
                 _pendingCalls.Remove(call);
+                if (guest != null) guest.nuisanceResolution = Animal.NuisanceResolution.Unresolved;
+                if (_activeCall == call) _activeCall = null;
                 NotifyPhoneCallEnded(guest, roomNumber, false);
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Called once the phone-call dialogue for the currently active call has fully finished
+        /// (forwarded from DialogueManager.OnPhoneCallDialogueEnd via DayManager). Releases the freeze
+        /// on the remaining pending calls. If staff promised a room move, the complaint is only marked
+        /// Resolved once that move actually happens (see ResolveRoomMove) — until then it counts as
+        /// Unresolved, same as if no room had been offered at all.
+        /// </summary>
+        public void ResolvePhoneCallDialogue(Animal guest, string exitNodeId)
+        {
+            if (guest == null) return;
+
+            guest.nuisanceResolution = Animal.NuisanceResolution.Unresolved;
+
+            if (exitNodeId == "phone_exit_move")
+            {
+                GuestAwaitingMove = guest;
+                Debug.Log($"[RoomManager] {guest.guestName} was promised a room move.");
+            }
+
+            if (_activeCall != null && _activeCall.sufferingGuest == guest)
+            {
+                _activeCall = null;
+            }
+        }
+
+        /// <summary>
+        /// Called by RoomUI once it has actually moved a guest who was promised a new room during a
+        /// nuisance phone call. Upgrades the complaint from Unresolved to Resolved for rating purposes.
+        /// </summary>
+        public void ResolveRoomMove(Animal guest)
+        {
+            if (guest == null) return;
+
+            guest.nuisanceResolution = Animal.NuisanceResolution.Resolved;
+            if (GuestAwaitingMove == guest) GuestAwaitingMove = null;
+
+            // hasCalledNuisance was already reset in MoveAnimal(), before nuisance for the new room was
+            // evaluated — so a fresh call could be scheduled immediately if the new room already had
+            // trouble waiting. See MoveAnimal() for why the reset has to happen there and not here.
+            Debug.Log($"[RoomManager] {guest.guestName}'s room move resolved the complaint. " +
+                      $"Total complaints this stay: {guest.nuisanceComplaintCount}.");
         }
 
         /// <summary>
@@ -654,6 +770,16 @@ namespace AnimalHotel.Counter
         public bool HasRingingCall()
         {
             return _pendingCalls != null && _pendingCalls.Exists(c => c.isRinging);
+        }
+
+        /// <summary>
+        /// Returns true if there is any call still queued, ringing, or being handled, OR a guest is
+        /// still waiting on a room move that was promised during a call — i.e. the current time slot
+        /// must not advance yet.
+        /// </summary>
+        public bool HasPendingCalls()
+        {
+            return (_pendingCalls != null && _pendingCalls.Count > 0) || _activeCall != null || GuestAwaitingMove != null;
         }
 
         /// <summary>

@@ -76,6 +76,44 @@ namespace AnimalHotel.Counter
         }
 
         /// <summary>
+        /// 손님이 카드키를 챙겨 들어올리듯 위로 옮기며 투명하게 숨긴다.
+        /// 체크아웃용 <see cref="HideDownAndFade"/>와 대칭되는 체크인용 동작 — 방향만 위쪽이고
+        /// 나머지(토큰 취소, SmoothStep 이징, 알파 페이드) 구조는 동일하다.
+        /// </summary>
+        public IEnumerator HideUpAndFade()
+        {
+            CacheRenderers();
+            CachePositions();
+
+            int token = ++_motionToken;
+            IsShown = false;
+
+            Vector3 start = transform.localPosition;
+            Vector3 target = new Vector3(start.x, start.y + hiddenYOffset * 0.5f, start.z);
+            float elapsed = 0f;
+
+            while (elapsed < riseDuration)
+            {
+                if (token != _motionToken)
+                    yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / riseDuration);
+                float eased = Mathf.SmoothStep(0f, 1f, t);
+                transform.localPosition = Vector3.Lerp(start, target, eased);
+                SetAlpha(1f - eased);
+                yield return null;
+            }
+
+            if (token == _motionToken)
+            {
+                transform.localPosition = target;
+                SetAlpha(0f);
+                SetVisible(false);
+            }
+        }
+
+        /// <summary>
         /// 체크아웃 시 카드키를 화면 위쪽에서 정상 위치까지 내려 보낸다.
         /// </summary>
         public IEnumerator ShowFromAbove()

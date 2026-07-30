@@ -74,13 +74,22 @@ namespace AnimalHotel.Counter
             return nodes;
         }
 
-        public static Dictionary<string, DialogueNode> BuildPhoneCallTree(Animal sufferingGuest, int roomNumber)
+        /// <param name="sufferingGuest">The victim placing the complaint call.</param>
+        /// <param name="roomNumber">The victim's room number.</param>
+        /// <param name="isFloorNuisance">
+        /// True if the nuisance actually bothering this guest is coming from directly above/below them
+        /// (층간소음), false if it's coming from a same-floor next-door room (벽간소음). Callers should
+        /// compute this from RoomManager.IsRoomSufferingFloorNuisance(roomNumber) — NOT from
+        /// sufferingGuest's own willCauseFloorNuisance/willCauseWallNuisance, which describe what this
+        /// guest would do to a neighbor, not what's happening to them as the victim here.
+        /// </param>
+        public static Dictionary<string, DialogueNode> BuildPhoneCallTree(Animal sufferingGuest, int roomNumber, bool isFloorNuisance)
         {
             var nodes = new Dictionary<string, DialogueNode>();
 
-            string openingText = (sufferingGuest != null && sufferingGuest.willCauseFloorNuisance)
+            string openingText = isFloorNuisance
                 ? "여보세요? 윗방에서 엄청 쿵쿵대서 미칠 것 같아요!"
-                : "아아!! 누가 계속 소리를 질러서 잠을 못 자겠어요!";
+                : "아아!! 누가 계속 소리를 질러서 쉬질 못 하겠어요!"; // TODO: 낮에도 민원 넣는 경우가 있어 밤낮 가리지 않게 함
 
             nodes["start"] = new DialogueNode
             {

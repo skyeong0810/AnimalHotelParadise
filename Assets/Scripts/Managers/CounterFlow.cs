@@ -39,6 +39,8 @@ namespace AnimalHotel.Counter
         [SerializeField] private float delayBeforeDialogue = 0.35f;
         [SerializeField] private float delayAfterResponse = 0.4f;
         [SerializeField] private float delayBetweenCustomers = 1.0f;
+        [Tooltip("How long the key sits there (as if the guest just took it) before it disappears.")]
+        [SerializeField] private float keyPickupDelay = 0.6f;
         [SerializeField] private bool autoStartOnPlay = true;
         [SerializeField] private bool autoSpawnNextCustomer = true;
 
@@ -49,13 +51,27 @@ namespace AnimalHotel.Counter
         [SerializeField] private float checkoutDelayBetweenGuests = 0.5f;
 
         public bool _isSpawning;
-        private int _guestIndex;
         private bool _dialogueFinished;
         private string _exitNodeId;
         private Animal _currentGuest;
 
         public bool IsBusy => _isSpawning;
         public Animal GetCurrentGuest() => _currentGuest;
+
+        /// <summary>
+        /// True once every guest scheduled to arrive this time slot has already shown up at the
+        /// counter. Reset back to false at the start of each new phase (see OnPhaseChanged).
+        /// Used by RoomManager to know when there's nothing left to wait for except pending calls,
+        /// so it can stop making them sit out their original random cooldown.
+        /// </summary>
+        public bool AllArrivalsVisited { get; private set; }
+
+        /// <summary>
+        /// Raised once a guest's check-in flow (dialogue + exit/sink animation) has fully finished.
+        /// This is the point at which the guest is considered "settled in" — nuisance evaluation and
+        /// complaint-call scheduling should hang off this event rather than off room assignment.
+        /// </summary>
+        public event System.Action<Animal> OnGuestSettled;
 
         private void Start()
         {
@@ -79,6 +95,12 @@ namespace AnimalHotel.Counter
 
         public IEnumerator SpawnCustomerRoutine()
         {
+            // A guest was promised a room move during a nuisance call ("빈 방으로 옮겨 드릴게요") but
+            // hasn't actually been moved yet. Until staff follows through, no new guest may reach the
+            // counter — "새 고객이 들어오는 일"은 방을 재배정하기 전까지 일어나지 않아야 한다.
+            if (dayManager != null && dayManager.roomManager != null && dayManager.roomManager.GuestAwaitingMove != null)
+                yield break;
+
             if (_isSpawning || (dayManager != null && dayManager.IsCheckoutInProgress)) yield break;
             _isSpawning = true;
             if (customerBubble != null) customerBubble.HideImmediate();
@@ -87,7 +109,13 @@ namespace AnimalHotel.Counter
             _currentGuest = GetNextGuest();
             if (_currentGuest == null)
             {
-                Debug.Log("[CounterFlow] 현재 시간대의 손님이 모두 방문했습니다.");
+                // DayManager.TryAdvancePhase() logs the authoritative "who got skipped, if anyone"
+                // reason right below — it's the single choke point every actual phase transition
+                // passes through, whereas this branch is only reached when CounterFlow happens to be
+                // the one to notice first (DayManager's own Update() loop can also catch the phase
+                // timer hitting zero directly, during the idle gap between two guests, without ever
+                // going through here).
+                AllArrivalsVisited = true;
                 _isSpawning = false;
                 dayManager.TryAdvancePhase();
                 yield break;
@@ -108,6 +136,7 @@ namespace AnimalHotel.Counter
             if (door != null) yield return door.Close();
 
             if (delayBeforeDialogue > 0f) yield return new WaitForSeconds(delayBeforeDialogue);
+            Animal settledGuest = null;
             if (dialogueManager != null)
             {
                 _dialogueFinished = false;
@@ -119,7 +148,10 @@ namespace AnimalHotel.Counter
                 // Confirm check-in only when the dialogue result indicates the guest was accepted.
                 // Adjust the exitNodeId string to match whatever your DialogueManager emits.
                 if (_exitNodeId == "exit_checkin" || _exitNodeId == "exit_checkin_angry")
+                {
                     dayManager.CheckIn(_currentGuest);
+                    settledGuest = _currentGuest;
+                }
                 else if (_exitNodeId == "exit_rejected_no_room")
                     dayManager.RecordRating(_currentGuest, 0, "Reservation rejected because no room was available");
             }
@@ -127,7 +159,20 @@ namespace AnimalHotel.Counter
             if (delayAfterResponse > 0f) yield return new WaitForSeconds(delayAfterResponse);
             if (customerBubble != null) customerBubble.HideImmediate();
             PlaySfx(exitBellSfx, exitBellVolume);
+            
+            // The key represents the guest taking it with them — it doesn't sink/fade like the
+            // checkout key. It just sits there a beat (as if being picked up) and then is gone.
+            if (settledGuest != null && roomAssignmentKey != null && roomAssignmentKey.IsShown)
+            {
+                if (keyPickupDelay > 0f) yield return new WaitForSeconds(keyPickupDelay);
+                yield return roomAssignmentKey.HideUpAndFade();
+            }
+            
             if (customerSlot != null) yield return customerSlot.Sink();
+            
+            // Guest is now fully checked in and the key is gone — safe to evaluate nuisance / schedule calls.
+            if (settledGuest != null) OnGuestSettled?.Invoke(settledGuest);
+
             _currentGuest = null;
             _isSpawning = false;
 
@@ -206,9 +251,18 @@ namespace AnimalHotel.Counter
 
 
         /// <summary>
-        /// Returns the next guest from the phase-appropriate arrival queue.
-        /// Diurnals come from MorningArrivals; nocturnals from AfternoonArrivals.
-        /// Calls GuestArrived so DayManager knows they've walked up to the counter.
+        /// Returns the next guest from the phase-appropriate arrival queue and pops them off the
+        /// front of it (RemoveAt(0)) — this is the moment a guest is considered "walked up to the
+        /// counter", regardless of whether their dialogue later ends in check-in or rejection.
+        ///
+        /// IMPORTANT: this must be the only place that removes from MorningArrivals/AfternoonArrivals
+        /// by position. Previously CounterFlow tracked a separate running "_guestIndex" into these
+        /// same lists while DayManager.CheckIn() ALSO removed the checked-in guest from the list —
+        /// two different pieces of code mutating/indexing the same list disagreed with each other:
+        /// removing an earlier guest shifts every later guest's list position down by one, but
+        /// _guestIndex kept counting up regardless, so it silently skipped exactly one guest for
+        /// every guest that successfully checked in. Popping from the front here avoids the whole
+        /// class of bug — there's no separate position counter left to fall out of sync.
         /// </summary>
         private Animal GetNextGuest()
         {
@@ -218,22 +272,21 @@ namespace AnimalHotel.Counter
             if (dayManager.PhaseTimeRemaining <= 0f) return null;
 
             var queue = dayManager.IsMorning ? dayManager.MorningArrivals : dayManager.AfternoonArrivals;
-            if (queue == null || _guestIndex >= queue.Count) return null;
+            if (queue == null || queue.Count == 0) return null;
 
-            var guest = queue[_guestIndex];
-            _guestIndex++;
+            var guest = queue[0];
             dayManager.GuestArrived(guest.guestName);  // logs approach; no payment yet
+            queue.RemoveAt(0);
             return guest;
         }
 
         /// <summary>
-        /// Call this when the phase changes (morning ↔ afternoon) so the index resets
-        /// to the start of the new queue. Wire this to DayManager's phase-change event
-        /// or call it from your phase-transition UI code.
+        /// Call this when the phase changes (morning ↔ afternoon). Wire this to DayManager's
+        /// phase-change event or call it from your phase-transition UI code.
         /// </summary>
         public void OnPhaseChanged()
         {
-            _guestIndex = 0;
+            AllArrivalsVisited = false;
             if (!_isSpawning && Application.isPlaying)
             {
                 StartCoroutine(SpawnCustomerRoutine());

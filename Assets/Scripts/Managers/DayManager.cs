@@ -28,6 +28,9 @@ public class DayManager : MonoBehaviour
     [Tooltip("Reference to the RoomManager in the scene.")]
     public RoomManager roomManager;
 
+    [Tooltip("Reference to the DialogueManager in the scene.")]
+    public DialogueManager dialogueManager;
+
     [Tooltip("The SpeciesDatabase ScriptableObject asset.")]
     public SpeciesDatabase speciesDatabase;
 
@@ -51,6 +54,19 @@ public class DayManager : MonoBehaviour
     [Tooltip("Base payment per night of stay.")]
     public float roomRatePerNight = 10f;
 
+    [Header("Checkout Rating Ranges")]
+    [Tooltip("Rating range (inclusive) for a guest who never had a nuisance complaint.")]
+    [SerializeField] private Vector2Int noIssueRatingRange = new Vector2Int(9, 10);
+
+    [Tooltip("Rating range (inclusive) for a guest whose nuisance complaint was resolved (moved to a new room) on their first and only complaint.")]
+    [SerializeField] private Vector2Int nuisanceResolvedRatingRange = new Vector2Int(7, 9);
+
+    [Tooltip("Rating range (inclusive) for a guest who was moved due to a nuisance complaint, but the nuisance recurred in the new room and they ultimately ended up resolved again (2+ total complaints this stay, most recent one resolved). Worse than a single clean resolution, but better than an outright unresolved complaint.")]
+    [SerializeField] private Vector2Int nuisancePartiallyResolvedRatingRange = new Vector2Int(4, 6);
+
+    [Tooltip("Rating range (inclusive) for a guest whose most recent nuisance complaint was NOT resolved (no room offered, or the call was missed).")]
+    [SerializeField] private Vector2Int nuisanceUnresolvedRatingRange = new Vector2Int(1, 3);
+
     // ── Runtime state ─────────────────────────────────────────────────────────
 
     /// <summary>Which day we are currently on (starts at 1).</summary>
@@ -64,6 +80,13 @@ public class DayManager : MonoBehaviour
 
     /// <summary>True while due guests are checking out one by one.</summary>
     public bool IsCheckoutInProgress { get; private set; }
+
+    /// <summary>
+    /// True once every guest scheduled to arrive this time slot has already shown up at the counter
+    /// (forwarded from CounterFlow.AllArrivalsVisited). Used by RoomManager: once nothing else is
+    /// going to happen this phase, pending nuisance calls stop waiting out their random cooldown.
+    /// </summary>
+    public bool NoMoreArrivalsThisPhase => counterFlow != null && counterFlow.AllArrivalsVisited;
 
     public float TotalMoney { get; private set; } = 0f;
     public float AverageRating { get; private set; } = 5.0f;
@@ -112,11 +135,39 @@ public class DayManager : MonoBehaviour
         {
             Instance = this;
         }
+
+        if (counterFlow != null) counterFlow.OnGuestSettled += HandleGuestSettled;
+        if (dialogueManager != null) dialogueManager.OnPhoneCallDialogueEnd += HandlePhoneCallDialogueEnd;
+    }
+
+    private void OnDestroy()
+    {
+        if (counterFlow != null) counterFlow.OnGuestSettled -= HandleGuestSettled;
+        if (dialogueManager != null) dialogueManager.OnPhoneCallDialogueEnd -= HandlePhoneCallDialogueEnd;
     }
 
     private void Start()
     {
         StartMorning();
+    }
+
+    /// <summary>
+    /// Forwards the "guest fully checked in" signal from CounterFlow to RoomManager so that
+    /// nuisance evaluation (and any complaint call it schedules) happens only after the guest's
+    /// check-in dialogue and exit animation have completed — not the instant a room is assigned.
+    /// </summary>
+    private void HandleGuestSettled(Animal guest)
+    {
+        if (roomManager != null) roomManager.EvaluateNuisanceForGuest(guest);
+    }
+
+    /// <summary>
+    /// Forwards the "phone-call dialogue finished" signal from DialogueManager to RoomManager so it
+    /// can record whether the complaint was resolved and unfreeze the rest of the call queue.
+    /// </summary>
+    private void HandlePhoneCallDialogueEnd(Animal guest, string exitNodeId)
+    {
+        if (roomManager != null) roomManager.ResolvePhoneCallDialogue(guest, exitNodeId);
     }
 
     /// <summary>
@@ -165,8 +216,41 @@ public class DayManager : MonoBehaviour
             return;
         }
 
+        // Don't move to the next time slot while any nuisance complaint is still queued, ringing,
+        // or being handled — every call raised this slot must be resolved (or missed) first.
+        if (roomManager != null && roomManager.HasPendingCalls())
+        {
+            return;
+        }
+
+        // This is the single choke point every actual phase transition passes through — whether
+        // CounterFlow triggered it after finding no next guest, or this method's own Update() loop
+        // caught PhaseTimeRemaining hitting zero directly (which happens whenever the clock runs out
+        // during the idle gap between two guests, i.e. before CounterFlow ever gets a chance to try
+        // pulling a next guest and log anything itself). Logging here guarantees it always fires.
+        LogArrivalsSkippedThisPhase();
+
         if (IsMorning) StartAfternoon();
         else StartMorning();
+    }
+
+    /// <summary>
+    /// Logs whether any guests from the current phase's arrival queue never made it to the counter
+    /// before the phase ended.
+    /// </summary>
+    private void LogArrivalsSkippedThisPhase()
+    {
+        var queue = IsMorning ? MorningArrivals : AfternoonArrivals;
+        string phaseLabel = IsMorning ? "morning" : "afternoon";
+
+        if (queue == null || queue.Count == 0)
+        {
+            Debug.Log($"[DayManager] Day {CurrentDay} {phaseLabel} ending — every arrival was visited.");
+            return;
+        }
+
+        var missedNames = string.Join(", ", queue.Select(a => a.guestName));
+        Debug.Log($"[DayManager] Day {CurrentDay} {phaseLabel} ending — {queue.Count} guest(s) never visited (out of time): {missedNames}");
     }
 
     /// <summary>
@@ -240,6 +324,7 @@ public class DayManager : MonoBehaviour
                   $"{AfternoonArrivals.Count} afternoon arrivals expected, " +
                   $"{TodaysGuests.Count} continuing guests in hotel, " +
                   $"{completedAdvancedCleanings} advanced cleaning(s) completed.");
+        LogArrivalsForPhase("morning", MorningArrivals);
 
         BeginCheckoutPhase(departing);
     }
@@ -268,8 +353,26 @@ public class DayManager : MonoBehaviour
                   $"{departingNocturnal.Count} nocturnal checkout(s) queued, " +
                   $"{AfternoonArrivals.Count} nocturnal guest(s) expected, " +
                   $"{completedAdvancedCleanings} advanced cleaning(s) completed.");
+        LogArrivalsForPhase("afternoon", AfternoonArrivals);
 
         BeginCheckoutPhase(departingNocturnal);
+    }
+
+    /// <summary>
+    /// Logs the full guest list expected to arrive during the phase that's about to start, so it's
+    /// visible up front instead of trickling in one "손님 등장" log at a time as CounterFlow spawns them.
+    /// </summary>
+    private void LogArrivalsForPhase(string phaseLabel, List<Animal> arrivals)
+    {
+        if (arrivals == null || arrivals.Count == 0)
+        {
+            Debug.Log($"[DayManager] Day {CurrentDay} {phaseLabel}: no arrivals expected.");
+            return;
+        }
+
+        var lines = arrivals.Select(a =>
+            $"{a.guestName}({a.species?.displayName ?? "?"}{(a.hasReservation ? ", 예약" : "")}, {a.stayNights}박)");
+        Debug.Log($"[DayManager] Day {CurrentDay} {phaseLabel} arrivals ({arrivals.Count}): {string.Join(", ", lines)}");
     }
 
     private int CompleteAdvancedCleaningRooms()
@@ -339,6 +442,43 @@ public class DayManager : MonoBehaviour
         NotifyPhaseChanged();
     }
 
+    /// <summary>
+    /// Guests who never had a nuisance complaint get the usual random rating. Guests who did have
+    /// one are rated deterministically instead: getting moved to a new room still costs some rating
+    /// (they were bothered in the first place), but staff failing to resolve it — or missing the
+    /// call outright — costs a lot more.
+    /// </summary>
+    private int GetCheckoutRating(Animal guest)
+    {
+        // A guest can only ever place a second complaint after their first one was actually resolved
+        // (see RoomManager.MoveAnimal resetting hasCalledNuisance only on a successful move) — so
+        // nuisanceComplaintCount >= 2 always means "moved at least once, then the nuisance recurred".
+        // If their latest complaint also ended up resolved, that's the "부분 해결" tier: better than an
+        // outright unresolved complaint, but worse than a single clean resolution since it happened
+        // more than once. If the latest complaint is unresolved, it falls through to the normal
+        // unresolved case below — being bounced around and then failed isn't graded any more leniently
+        // than failing on the first try.
+        if (guest.nuisanceComplaintCount >= 2 && guest.nuisanceResolution == Animal.NuisanceResolution.Resolved)
+        {
+            return RandomInRange(nuisancePartiallyResolvedRatingRange);
+        }
+
+        switch (guest.nuisanceResolution)
+        {
+            case Animal.NuisanceResolution.Resolved:
+                return RandomInRange(nuisanceResolvedRatingRange);
+            case Animal.NuisanceResolution.Unresolved:
+                return RandomInRange(nuisanceUnresolvedRatingRange);
+            default:
+                return RandomInRange(noIssueRatingRange);
+        }
+    }
+
+    private static int RandomInRange(Vector2Int inclusiveRange)
+    {
+        return Random.Range(inclusiveRange.x, inclusiveRange.y + 1);
+    }
+
     private void FinalizeCheckoutGuest(Animal guest)
     {
         if (guest == null || !TodaysGuests.Remove(guest))
@@ -352,7 +492,7 @@ public class DayManager : MonoBehaviour
             CheckedOutToday.Add(guest);
         }
 
-        int rating = Random.Range(0, 11); // 0–10 inclusive
+        int rating = GetCheckoutRating(guest);
         _totalRatingSum += rating;
         _totalRatingCount++;
         AverageRating = (float)_totalRatingSum / _totalRatingCount;
@@ -392,17 +532,13 @@ public class DayManager : MonoBehaviour
 
     /// <summary>
     /// Call this after the player completes check-in dialogue and confirms the guest's stay.
-    /// Removes the guest from the arrival queue, adds them to TodaysGuests and ArrivedGuests,
-    /// and collects payment.
+    /// Adds them to TodaysGuests and ArrivedGuests, and collects payment. The guest was already
+    /// removed from MorningArrivals/AfternoonArrivals back when CounterFlow pulled them to the
+    /// counter (see CounterFlow.GetNextGuest) — nothing left to remove here.
     /// </summary>
     public void CheckIn(Animal guest)
     {
         if (guest == null) return;
-
-        // Remove from whichever queue they came from.
-        bool removed = MorningArrivals.Remove(guest) || AfternoonArrivals.Remove(guest);
-        if (!removed)
-            Debug.LogWarning($"[DayManager] CheckIn called for {guest.guestName} but they weren't in any arrival queue.");
 
         if (!TodaysGuests.Contains(guest))
             TodaysGuests.Add(guest);

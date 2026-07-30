@@ -79,9 +79,40 @@ public class Animal
     public bool willCauseSurroundNuisance;
 
     /// <summary>
-    /// Whether this guest has already called the front desk regarding nuisance during their stay.
+    /// Whether this guest currently has an unanswered-for nuisance complaint outstanding. Set true the
+    /// moment their call starts ringing; blocks any further call from being scheduled while true (see
+    /// RoomManager.ScheduleNuisanceCall). Reset back to false once a promised room move actually
+    /// happens (see RoomManager.MoveAnimal) — so the guest can complain again if the *new* room turns
+    /// out to have its own nuisance problem. It is NOT reset when a complaint goes unresolved (no room
+    /// offered, or the call was missed) — an unresolved guest never gets a second chance to call.
     /// </summary>
     public bool hasCalledNuisance;
+
+    /// <summary>
+    /// How many times this guest has actually placed a nuisance complaint call during their stay
+    /// (i.e., how many times their call has started ringing). Unlike <see cref="hasCalledNuisance"/>,
+    /// this never resets — DayManager.GetCheckoutRating uses it to tell "resolved cleanly on the first
+    /// complaint" apart from "resolved, but the nuisance kept recurring after being moved" (the
+    /// "부분 해결" rating tier).
+    /// </summary>
+    public int nuisanceComplaintCount;
+
+    /// <summary>How a nuisance complaint (if any) for this guest was ultimately handled.</summary>
+    public enum NuisanceResolution
+    {
+        /// <summary>This guest never had to call about a nuisance.</summary>
+        None,
+        /// <summary>Staff answered and moved the guest to a new room.</summary>
+        Resolved,
+        /// <summary>The call was missed, or staff answered but had no room to offer.</summary>
+        Unresolved
+    }
+
+    /// <summary>
+    /// Outcome of this guest's nuisance complaint, if they had one. Read at checkout time to
+    /// determine the rating penalty (see DayManager.FinalizeCheckoutGuest).
+    /// </summary>
+    public NuisanceResolution nuisanceResolution = NuisanceResolution.None;
 
     /// <summary>
     /// Evaluates nuisance probabilities once per guest instance and saves the results.

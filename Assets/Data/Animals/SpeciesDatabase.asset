@@ -66,8 +66,8 @@ MonoBehaviour:
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 30
-    wallNuisanceProbability: 50
+    floorNuisanceProbability: 0
+    wallNuisanceProbability: 100
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
@@ -126,7 +126,7 @@ MonoBehaviour:
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 70
+    floorNuisanceProbability: 100
     wallNuisanceProbability: 0
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
