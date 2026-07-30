@@ -9122,7 +9122,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2094616065
 Transform:
   m_ObjectHideFlags: 0
@@ -9223,7 +9223,7 @@ MonoBehaviour:
   memoSfxVolume: 1
   roomSelectSfx: {fileID: 8300000, guid: 27582659980db443ea4a92a283e9eb36, type: 3}
   roomCleanSfx: {fileID: 8300000, guid: b18ba0e1117ca4505a6f66152a4e3dc0, type: 3}
-  advancedCleanSfx: {fileID: 8300000, guid: b18ba0e1117ca4505a6f66152a4e3dc0, type: 3}
+  advancedCleanSfx: {fileID: 8300000, guid: 9a6621ac252d14b6a9fc180c66d2549b, type: 3}
   roomSelectSfxVolume: 1
   roomCleanSfxVolume: 1
   advancedCleanSfxVolume: 1
