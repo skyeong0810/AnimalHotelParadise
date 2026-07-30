@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AnimalHotel.Counter
@@ -19,6 +20,8 @@ namespace AnimalHotel.Counter
         public Animal lastOccupant;
         public bool requiresAdvancedCleaning;
 
+        public HashSet<int> incomingNuisanceSources = new HashSet<int>();
+        public HashSet<int> outgoingNuisanceTargets = new HashSet<int>();
     }
 
     public class RoomManager : MonoBehaviour
@@ -92,6 +95,9 @@ namespace AnimalHotel.Counter
             room.requiresAdvancedCleaning = false;
 
             Debug.Log($"[RoomManager] Room {roomNumber} assigned to {guest.guestName}.");
+
+            EvaluateNuisanceOnAssignment(room);
+
             return true;
         }
 
@@ -99,6 +105,9 @@ namespace AnimalHotel.Counter
         {
             var room = GetRoom(roomNumber);
             var departingGuest = room.occupant;
+
+            ClearOutgoingNuisance(room);
+
             room.lastOccupant = departingGuest;
             room.requiresAdvancedCleaning = RequiresAdvancedCleaning(departingGuest);
             room.occupant = null;
@@ -194,7 +203,198 @@ namespace AnimalHotel.Counter
             return causedDamage;
         }
 
+        // ── Nuisance Logic ────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Returns the room right below the given room number, or null if none exists.
+        /// </summary>
+        public RoomData GetRoomBelow(int roomNumber)
+        {
+            if (roomNumber < 1 || roomNumber > RoomCount) return null;
+            int floor = (roomNumber - 1) / 5;
+            if (floor == 0) // Top floor (rooms 1..5)
+            {
+                return GetRoom(roomNumber + 5);
+            }
+            return null;
+        }
 
+        /// <summary>
+        /// Returns the room right above the given room number, or null if none exists.
+        /// </summary>
+        public RoomData GetRoomAbove(int roomNumber)
+        {
+            if (roomNumber < 1 || roomNumber > RoomCount) return null;
+            int floor = (roomNumber - 1) / 5;
+            if (floor == 1) // Bottom floor (rooms 6..10)
+            {
+                return GetRoom(roomNumber - 5);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns adjacent rooms on the same floor (left and right next-door rooms).
+        /// </summary>
+        public List<RoomData> GetNextRooms(int roomNumber)
+        {
+            List<RoomData> nextRooms = new List<RoomData>();
+            if (roomNumber < 1 || roomNumber > RoomCount) return nextRooms;
+
+            int col = (roomNumber - 1) % 5;
+            if (col > 0) // Left neighbor
+            {
+                nextRooms.Add(GetRoom(roomNumber - 1));
+            }
+            if (col < 4) // Right neighbor
+            {
+                nextRooms.Add(GetRoom(roomNumber + 1));
+            }
+            return nextRooms;
+        }
+
+        /// <summary>
+        /// Returns all surrounding rooms (top, bottom, left next, right next).
+        /// </summary>
+        public List<RoomData> GetSurroundRooms(int roomNumber)
+        {
+            List<RoomData> surroundRooms = new List<RoomData>();
+            if (roomNumber < 1 || roomNumber > RoomCount) return surroundRooms;
+
+            var above = GetRoomAbove(roomNumber);
+            if (above != null) surroundRooms.Add(above);
+
+            var below = GetRoomBelow(roomNumber);
+            if (below != null) surroundRooms.Add(below);
+
+            surroundRooms.AddRange(GetNextRooms(roomNumber));
+
+            return surroundRooms;
+        }
+
+        private void ClearOutgoingNuisance(RoomData room)
+        {
+            if (room == null) return;
+            foreach (int targetRoomNum in room.outgoingNuisanceTargets)
+            {
+                var targetRoom = GetRoom(targetRoomNum);
+                if (targetRoom != null)
+                {
+                    targetRoom.incomingNuisanceSources.Remove(room.roomNumber);
+                }
+            }
+            room.outgoingNuisanceTargets.Clear();
+        }
+
+        private void EvaluateNuisanceOnAssignment(RoomData sourceRoom)
+        {
+            Animal guest = sourceRoom.occupant;
+            if (guest == null) return;
+
+            bool causedAnyNuisance = false;
+
+            // 1. floorNuisanceProbability cause nuisance to the room right below
+            if (guest.FloorNuisance > 0 && Random.Range(0, 100) < guest.FloorNuisance)
+            {
+                var target = GetRoomBelow(sourceRoom.roomNumber);
+                if (target != null)
+                {
+                    Debug.Log("will cause floor nuisance");
+                    causedAnyNuisance = true;
+                    RegisterNuisanceTarget(sourceRoom, target);
+                }
+            }
+
+            // 2. wallNuisanceProbability cause nuisance to the rooms on the next
+            if (guest.WallNuisance > 0 && Random.Range(0, 100) < guest.WallNuisance)
+            {
+                var nextRooms = GetNextRooms(sourceRoom.roomNumber);
+                if (nextRooms.Count > 0)
+                {
+                    Debug.Log("will cause wall nuisance");
+                    causedAnyNuisance = true;
+                    foreach (var target in nextRooms)
+                    {
+                        RegisterNuisanceTarget(sourceRoom, target);
+                    }
+                }
+            }
+
+            // 3. surroundNuisanceProbability cause nuisance to the rooms on top, bottom and next
+            if (guest.SurroundNuisance > 0 && Random.Range(0, 100) < guest.SurroundNuisance)
+            {
+                var surroundRooms = GetSurroundRooms(sourceRoom.roomNumber);
+                if (surroundRooms.Count > 0)
+                {
+                    Debug.Log("will cause surround nuisance");
+                    causedAnyNuisance = true;
+                    foreach (var target in surroundRooms)
+                    {
+                        RegisterNuisanceTarget(sourceRoom, target);
+                    }
+                }
+            }
+
+            if (!causedAnyNuisance)
+            {
+                Debug.Log("won't cause nuisance");
+            }
+
+            // If THIS newly assigned room is ALREADY affected by nuisance from another occupied room
+            bool isAffectedByActiveNuisance = false;
+            foreach (int srcNum in sourceRoom.incomingNuisanceSources)
+            {
+                var srcRoom = GetRoom(srcNum);
+                if (srcRoom != null && srcRoom.status == RoomStatus.Occupied && srcRoom.occupant != null)
+                {
+                    isAffectedByActiveNuisance = true;
+                    break;
+                }
+            }
+
+            if (isAffectedByActiveNuisance)
+            {
+                Debug.Log($"{guest.guestName} at room {sourceRoom.roomNumber} wants to call");
+            }
+        }
+
+        private void RegisterNuisanceTarget(RoomData sourceRoom, RoomData targetRoom)
+        {
+            if (sourceRoom == null || targetRoom == null) return;
+
+            sourceRoom.outgoingNuisanceTargets.Add(targetRoom.roomNumber);
+            targetRoom.incomingNuisanceSources.Add(sourceRoom.roomNumber);
+
+            // If the room that will get affected is ALREADY occupied, log call
+            if (targetRoom.status == RoomStatus.Occupied && targetRoom.occupant != null)
+            {
+                Debug.Log($"{targetRoom.occupant.guestName} at room {targetRoom.roomNumber} wants to call");
+            }
+        }
+
+        /// <summary>
+        /// Evaluates nuisance for all currently occupied rooms that have active incoming nuisance sources.
+        /// Logs: "{targetRoom.occupant.guestName} at room {targetRoom.roomNumber} wants to call"
+        /// </summary>
+        public void ProcessNuisance()
+        {
+            if (_rooms == null) return;
+
+            foreach (var room in _rooms)
+            {
+                if (room == null || room.status != RoomStatus.Occupied || room.occupant == null)
+                    continue;
+
+                foreach (int srcNum in room.incomingNuisanceSources)
+                {
+                    var srcRoom = GetRoom(srcNum);
+                    if (srcRoom != null && srcRoom.status == RoomStatus.Occupied && srcRoom.occupant != null)
+                    {
+                        Debug.Log($"{room.occupant.guestName} at room {room.roomNumber} wants to call");
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

@@ -139,7 +139,6 @@ namespace AnimalHotel.Counter
 
         public void OnRoomClicked(int roomNumber)
         {
-            PlayRoomSfx(roomSelectSfx, roomSelectSfxVolume);
             _selectedRoomNumber = roomNumber;
             RefreshRoomGrid();
         }

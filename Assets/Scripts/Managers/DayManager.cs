@@ -163,6 +163,7 @@ public class DayManager : MonoBehaviour
         OnTimeOfDayChanged?.Invoke();
         PhaseTimeRemaining = morningDuration;
         int completedAdvancedCleanings = CompleteAdvancedCleaningRooms();
+        if (roomManager != null) roomManager.ProcessNuisance();
 
         CheckedOutToday.Clear();
         List<Animal> departing = CollectDepartingGuests(nocturnal: false);
@@ -227,6 +228,7 @@ public class DayManager : MonoBehaviour
         OnTimeOfDayChanged?.Invoke();
         PhaseTimeRemaining = afternoonDuration;
         int completedAdvancedCleanings = CompleteAdvancedCleaningRooms();
+        if (roomManager != null) roomManager.ProcessNuisance();
 
         if (MorningArrivals.Count > 0)
         {

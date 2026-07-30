@@ -66,8 +66,8 @@ MonoBehaviour:
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
+    floorNuisanceProbability: 30
+    wallNuisanceProbability: 50
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
@@ -96,8 +96,8 @@ MonoBehaviour:
     stage: 0
     dietType: 0
     activityCycle: 1
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
+    floorNuisanceProbability: 10
+    wallNuisanceProbability: 10
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
@@ -126,7 +126,7 @@ MonoBehaviour:
     stage: 0
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 0
+    floorNuisanceProbability: 70
     wallNuisanceProbability: 0
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
@@ -156,8 +156,8 @@ MonoBehaviour:
     stage: 1
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
+    floorNuisanceProbability: 20
+    wallNuisanceProbability: 10
     surroundNuisanceProbability: 0
     requiresSpecialRoom: 0
     leavesOdour: 0
@@ -186,9 +186,9 @@ MonoBehaviour:
     stage: 1
     dietType: 1
     activityCycle: 1
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
-    surroundNuisanceProbability: 0
+    floorNuisanceProbability: 5
+    wallNuisanceProbability: 5
+    surroundNuisanceProbability: 10
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
@@ -246,9 +246,9 @@ MonoBehaviour:
     stage: 1
     dietType: 1
     activityCycle: 1
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
-    surroundNuisanceProbability: 0
+    floorNuisanceProbability: 30
+    wallNuisanceProbability: 20
+    surroundNuisanceProbability: 40
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
@@ -276,9 +276,9 @@ MonoBehaviour:
     stage: 2
     dietType: 1
     activityCycle: 1
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
-    surroundNuisanceProbability: 0
+    floorNuisanceProbability: 50
+    wallNuisanceProbability: 30
+    surroundNuisanceProbability: 20
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
@@ -306,9 +306,9 @@ MonoBehaviour:
     stage: 2
     dietType: 0
     activityCycle: 0
-    floorNuisanceProbability: 0
-    wallNuisanceProbability: 0
-    surroundNuisanceProbability: 0
+    floorNuisanceProbability: 10
+    wallNuisanceProbability: 5
+    surroundNuisanceProbability: 30
     requiresSpecialRoom: 0
     leavesOdour: 0
     causesDamage: 0
