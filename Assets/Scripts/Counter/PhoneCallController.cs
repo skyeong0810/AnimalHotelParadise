@@ -112,18 +112,24 @@ namespace AnimalHotel.Counter
                     phoneTransform.localRotation = _phoneInitialRotation * Quaternion.Euler(0, 0, zAngle);
                 }
 
-                // Direct raycast click check for 2D colliders
-                if (Input.GetMouseButtonDown(0))
+                // Check whether the pointer is inside one of the phone's 2D colliders.
+                AnimalHotel.InputHelper.GetInput(out Vector2 pointerScreenPos, out bool pointerDownThisFrame);
+                if (pointerDownThisFrame)
                 {
                     Camera cam = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
                     if (cam != null)
                     {
-                        Vector3 mouseWorldPos = cam.ScreenToWorldPoint(Input.mousePosition);
-                        RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero);
-                        if (hit.collider != null && (hit.collider.transform.IsChildOf(callObject.transform) || hit.collider.gameObject == callObject))
+                        Vector3 pointerWorldPosition = cam.ScreenToWorldPoint(
+                            new Vector3(pointerScreenPos.x, pointerScreenPos.y, 0f));
+                        Vector2 pointerWorldPoint = new Vector2(pointerWorldPosition.x, pointerWorldPosition.y);
+                        Collider2D[] callColliders = callObject.GetComponentsInChildren<Collider2D>(true);
+                        foreach (Collider2D callCollider in callColliders)
                         {
-                            AnswerCurrentCall();
-                            return;
+                            if (callCollider != null && callCollider.enabled && callCollider.OverlapPoint(pointerWorldPoint))
+                            {
+                                AnswerCurrentCall();
+                                return;
+                            }
                         }
                     }
                 }
