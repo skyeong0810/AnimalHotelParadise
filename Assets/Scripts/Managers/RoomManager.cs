@@ -101,6 +101,51 @@ namespace AnimalHotel.Counter
             return true;
         }
 
+        /// <summary>
+        /// Moves an assigned animal from currentRoomNumber to a vacant newRoomNumber.
+        /// Clears outgoing nuisance from the old room and evaluates nuisance in the new room.
+        /// </summary>
+        public bool MoveAnimal(int currentRoomNumber, int newRoomNumber)
+        {
+            var currentRoom = GetRoom(currentRoomNumber);
+            if (currentRoom == null || currentRoom.occupant == null)
+            {
+                Debug.LogWarning($"[RoomManager] Room {currentRoomNumber} is empty or invalid.");
+                return false;
+            }
+
+            var targetRoom = GetRoom(newRoomNumber);
+            if (targetRoom == null || targetRoom.status != RoomStatus.Vacant)
+            {
+                Debug.LogWarning($"[RoomManager] Target room {newRoomNumber} is not vacant.");
+                return false;
+            }
+
+            Animal guest = currentRoom.occupant;
+
+            // Clear outgoing nuisance caused by guest in the current room
+            ClearOutgoingNuisance(currentRoom);
+
+            // Vacate current room
+            currentRoom.occupant = null;
+            currentRoom.lastOccupant = guest;
+            currentRoom.requiresAdvancedCleaning = RequiresAdvancedCleaning(guest);
+            currentRoom.status = RoomStatus.NeedsExamination;
+
+            // Assign guest to new room
+            targetRoom.occupant = guest;
+            targetRoom.status = RoomStatus.Occupied;
+            targetRoom.lastOccupant = null;
+            targetRoom.requiresAdvancedCleaning = false;
+
+            Debug.Log($"[RoomManager] Moved {guest.guestName} from room {currentRoomNumber} to room {newRoomNumber}.");
+
+            // Evaluate nuisance in the new room using guest's saved nuisance flags
+            EvaluateNuisanceOnAssignment(targetRoom);
+
+            return true;
+        }
+
         public void VacateRoom(int roomNumber)
         {
             var room = GetRoom(roomNumber);
@@ -291,10 +336,13 @@ namespace AnimalHotel.Counter
             Animal guest = sourceRoom.occupant;
             if (guest == null) return;
 
+            // Ensure nuisance determination is made once per guest instance and kept until checkout
+            guest.DetermineNuisance();
+
             bool causedAnyNuisance = false;
 
             // 1. floorNuisanceProbability cause nuisance to the room right below
-            if (guest.FloorNuisance > 0 && Random.Range(0, 100) < guest.FloorNuisance)
+            if (guest.willCauseFloorNuisance)
             {
                 var target = GetRoomBelow(sourceRoom.roomNumber);
                 if (target != null)
@@ -306,7 +354,7 @@ namespace AnimalHotel.Counter
             }
 
             // 2. wallNuisanceProbability cause nuisance to the rooms on the next
-            if (guest.WallNuisance > 0 && Random.Range(0, 100) < guest.WallNuisance)
+            if (guest.willCauseWallNuisance)
             {
                 var nextRooms = GetNextRooms(sourceRoom.roomNumber);
                 if (nextRooms.Count > 0)
@@ -321,7 +369,7 @@ namespace AnimalHotel.Counter
             }
 
             // 3. surroundNuisanceProbability cause nuisance to the rooms on top, bottom and next
-            if (guest.SurroundNuisance > 0 && Random.Range(0, 100) < guest.SurroundNuisance)
+            if (guest.willCauseSurroundNuisance)
             {
                 var surroundRooms = GetSurroundRooms(sourceRoom.roomNumber);
                 if (surroundRooms.Count > 0)
@@ -341,18 +389,7 @@ namespace AnimalHotel.Counter
             }
 
             // If THIS newly assigned room is ALREADY affected by nuisance from another occupied room
-            bool isAffectedByActiveNuisance = false;
-            foreach (int srcNum in sourceRoom.incomingNuisanceSources)
-            {
-                var srcRoom = GetRoom(srcNum);
-                if (srcRoom != null && srcRoom.status == RoomStatus.Occupied && srcRoom.occupant != null)
-                {
-                    isAffectedByActiveNuisance = true;
-                    break;
-                }
-            }
-
-            if (isAffectedByActiveNuisance)
+            if (sourceRoom.incomingNuisanceSources.Count > 0)
             {
                 Debug.Log($"{guest.guestName} at room {sourceRoom.roomNumber} wants to call");
             }
@@ -382,17 +419,9 @@ namespace AnimalHotel.Counter
 
             foreach (var room in _rooms)
             {
-                if (room == null || room.status != RoomStatus.Occupied || room.occupant == null)
-                    continue;
-
-                foreach (int srcNum in room.incomingNuisanceSources)
+                if (room != null && room.status == RoomStatus.Occupied && room.occupant != null && room.incomingNuisanceSources.Count > 0)
                 {
-                    var srcRoom = GetRoom(srcNum);
-                    if (srcRoom != null && srcRoom.status == RoomStatus.Occupied && srcRoom.occupant != null)
-                    {
-                        Debug.Log($"{room.occupant.guestName} at room {room.roomNumber} wants to call");
-                        break;
-                    }
+                    Debug.Log($"{room.occupant.guestName} at room {room.roomNumber} wants to call");
                 }
             }
         }

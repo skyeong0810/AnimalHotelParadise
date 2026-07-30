@@ -67,6 +67,30 @@ public class Animal
     public bool IsCarnivore => DietType == DietType.Carnivore;
     public bool IsNocturnal => Activity == ActivityCycle.Nocturnal;
 
+    // ── Instance Nuisance Determination ───────
+
+    /// <summary>
+    /// Whether nuisance probabilities have been evaluated for this guest instance.
+    /// Once determined, these flags persist until the guest checks out.
+    /// </summary>
+    public bool hasDeterminedNuisance;
+    public bool willCauseFloorNuisance;
+    public bool willCauseWallNuisance;
+    public bool willCauseSurroundNuisance;
+
+    /// <summary>
+    /// Evaluates nuisance probabilities once per guest instance and saves the results.
+    /// </summary>
+    public void DetermineNuisance()
+    {
+        if (hasDeterminedNuisance) return;
+
+        willCauseFloorNuisance = FloorNuisance > 0 && Random.Range(0, 100) < FloorNuisance;
+        willCauseWallNuisance = WallNuisance > 0 && Random.Range(0, 100) < WallNuisance;
+        willCauseSurroundNuisance = SurroundNuisance > 0 && Random.Range(0, 100) < SurroundNuisance;
+        hasDeterminedNuisance = true;
+    }
+
     // ── Constructor ───────────────────────────
 
     public Animal(SpeciesData speciesData, string name, bool hasReservation, int checkInDay, int stayNights)
