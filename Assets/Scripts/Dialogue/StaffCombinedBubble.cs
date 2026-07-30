@@ -27,6 +27,8 @@ namespace AnimalHotel.Counter
         [SerializeField] private float bgPaddingY = 0.5f;
         [SerializeField] private float lineHeight = 1.0f;
         [SerializeField] private float lineToChoiceGap = 0.3f;
+        [Tooltip("Moves the staff line and choices together inside the bubble.")]
+        [SerializeField] private float contentYOffset = 0.35f;
 
         [Header("Sorting Orders")]
         [SerializeField] private int buttonBgSortingOrder = 6;
@@ -104,7 +106,7 @@ namespace AnimalHotel.Counter
                 float startY = lineBottom - lineToChoiceGap;
                 for (int i = 0; i < options.Count; i++)
                 {
-                    float y = startY - i * buttonSpacing;
+                    float y = startY - i * buttonSpacing + contentYOffset;
                     bool isEnabled = (optionStates != null && i < optionStates.Count) ? optionStates[i] : true;
                     _spawnedButtons.Add(CreateButton(options[i], i, y, isEnabled));
                 }
@@ -131,7 +133,10 @@ namespace AnimalHotel.Counter
             if (_bgRenderer != null) _bgRenderer.color = bgColor;
             float totalH = CalcTotalHeight(choiceCount) + bgPaddingY * 2f;
             float totalW = buttonWidth + bgPaddingX * 2f;
-            backgroundObj.transform.localScale = new Vector3(totalW, totalH, 1f);
+            if (_bgRenderer != null)
+                _bgRenderer.size = new Vector2(totalW, totalH);
+            else
+                backgroundObj.transform.localScale = new Vector3(totalW, totalH, 1f);
         }
 
         private void PositionLineLabel(int choiceCount)
@@ -139,7 +144,7 @@ namespace AnimalHotel.Counter
             if (lineLabel == null) return;
             float totalH = CalcTotalHeight(choiceCount);
             float topY = totalH / 2f - lineHeight / 2f;
-            lineLabel.transform.localPosition = new Vector3(0f, topY, -0.01f);
+            lineLabel.transform.localPosition = new Vector3(0f, topY + contentYOffset, -0.01f);
             lineLabel.rectTransform.sizeDelta = new Vector2(buttonWidth * 0.92f, lineHeight);
             lineLabel.color = lineTextColor;
             lineLabel.alignment = TMPro.TextAlignmentOptions.Center;

@@ -937,7 +937,7 @@ Transform:
   m_GameObject: {fileID: 273473064}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.77, y: -0.82, z: 0}
+  m_LocalPosition: {x: 0.17, y: -0.76, z: 0}
   m_LocalScale: {x: 1.4, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2146,7 +2146,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4.5, y: 2.8, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1254594634}
@@ -2200,12 +2200,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 0.55, b: 0.75, a: 0.8}
+  m_Sprite: {fileID: 21300000, guid: c461dbc27120047be9e60e9de4d64a3a, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_DrawMode: 1
+  m_Size: {x: 4.5, y: 2.8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -3026,7 +3026,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 3.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1923386690}
@@ -3080,12 +3080,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 0.92, b: 0.35, a: 0.8}
+  m_Sprite: {fileID: 21300000, guid: 267e4cfb4c99f44cbbd188baaed99f2a, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_DrawMode: 1
+  m_Size: {x: 5.2, y: 3.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -8023,6 +8023,7 @@ MonoBehaviour:
   buttonHeight: 0.55
   buttonSpacing: 1
   labelFontSize: 10
+  contentYOffset: 0.35
   bgSortingOrder: 6
   textSortingOrder: 7
   normalColor: {r: 1, g: 0.95, b: 0.6, a: 0.95}
@@ -8052,9 +8053,10 @@ MonoBehaviour:
   bgPaddingY: 0.5
   lineHeight: 1.2
   lineToChoiceGap: 0.3
+  contentYOffset: 0.35
   buttonBgSortingOrder: 6
   textSortingOrder: 7
-  bgColor: {r: 1, g: 0.92, b: 0.35, a: 0.8}
+  bgColor: {r: 1, g: 1, b: 1, a: 1}
   buttonNormalColor: {r: 1, g: 0.85, b: 0.4, a: 0.95}
   buttonHoverColor: {r: 1, g: 0.78, b: 0.3, a: 1}
   lineTextColor: {r: 0.15, g: 0.05, b: 0.1, a: 1}
@@ -8391,7 +8393,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.25}
   m_SizeDelta: {x: 4.2, y: 2.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1944828182

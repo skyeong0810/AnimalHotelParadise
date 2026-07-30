@@ -28,6 +28,8 @@ namespace AnimalHotel.Counter
         [SerializeField] private float buttonHeight = 0.65f;
         [SerializeField] private float buttonSpacing = 0.75f;
         [SerializeField] private float labelFontSize = 0.35f;
+        [Tooltip("Moves response choices together inside the bubble.")]
+        [SerializeField] private float contentYOffset = 0.35f;
 
         [Header("Sorting Orders")]
         [SerializeField] private int bgSortingOrder = 6;
@@ -64,7 +66,7 @@ namespace AnimalHotel.Counter
             float startY = totalH / 2f;
             for (int i = 0; i < options.Count; i++)
             {
-                float y = startY - i * buttonSpacing;
+                float y = startY - i * buttonSpacing + contentYOffset;
                 _spawned.Add(CreateButton(options[i], i, y));
             }
         }

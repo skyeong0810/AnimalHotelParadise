@@ -84,7 +84,6 @@ namespace AnimalHotel.Counter
             CachePositions();
 
             Vector3 checkoutVisibleLocalPosition = _visibleLocalPosition;
-            checkoutVisibleLocalPosition.x = -checkoutVisibleLocalPosition.x;
 
             int token = ++_motionToken;
             IsShown = false;
