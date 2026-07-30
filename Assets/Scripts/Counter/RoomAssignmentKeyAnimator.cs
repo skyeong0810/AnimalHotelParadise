@@ -17,6 +17,8 @@ namespace AnimalHotel.Counter
         [Tooltip("How far above the normal key position checkout animation begins.")]
         [SerializeField] private float checkoutAboveYOffset = 2f;
         [SerializeField] private float checkoutDropDuration = 0.45f;
+        [Tooltip("How long the checkout key takes to sink below the desk while fading out.")]
+        [SerializeField] private float checkoutHideDuration = 1.1f;
 
         private Vector3 _visibleLocalPosition;
         private Vector3 _hiddenLocalPosition;
@@ -41,6 +43,7 @@ namespace AnimalHotel.Counter
             riseDuration = Mathf.Max(0.05f, riseDuration);
             checkoutAboveYOffset = Mathf.Max(0.1f, checkoutAboveYOffset);
             checkoutDropDuration = Mathf.Max(0.05f, checkoutDropDuration);
+            checkoutHideDuration = Mathf.Max(0.05f, checkoutHideDuration);
         }
 
         public void HideImmediate()
@@ -80,12 +83,15 @@ namespace AnimalHotel.Counter
             CacheRenderers();
             CachePositions();
 
+            Vector3 checkoutVisibleLocalPosition = _visibleLocalPosition;
+            checkoutVisibleLocalPosition.x = -checkoutVisibleLocalPosition.x;
+
             int token = ++_motionToken;
             IsShown = false;
-            transform.localPosition = _visibleLocalPosition + Vector3.up * checkoutAboveYOffset;
+            transform.localPosition = checkoutVisibleLocalPosition + Vector3.up * checkoutAboveYOffset;
             SetVisible(true);
             SetAlpha(1f);
-            yield return MoveTo(_visibleLocalPosition, checkoutDropDuration, token, false);
+            yield return MoveTo(checkoutVisibleLocalPosition, checkoutDropDuration, token, false);
             if (token == _motionToken)
             {
                 SetAlpha(1f);
@@ -93,6 +99,41 @@ namespace AnimalHotel.Counter
             }
         }
 
+        /// <summary>
+        /// 체크아웃 동물이 퇴장하는 동안 카드키를 책상 아래로 내리며 투명하게 숨긴다.
+        /// </summary>
+        public IEnumerator HideDownAndFade()
+        {
+            CacheRenderers();
+            CachePositions();
+
+            int token = ++_motionToken;
+            IsShown = false;
+
+            Vector3 start = transform.localPosition;
+            Vector3 target = new Vector3(start.x, _hiddenLocalPosition.y, start.z);
+            float elapsed = 0f;
+
+            while (elapsed < checkoutHideDuration)
+            {
+                if (token != _motionToken)
+                    yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / checkoutHideDuration);
+                float eased = Mathf.SmoothStep(0f, 1f, t);
+                transform.localPosition = Vector3.Lerp(start, target, eased);
+                SetAlpha(1f - eased);
+                yield return null;
+            }
+
+            if (token == _motionToken)
+            {
+                transform.localPosition = target;
+                SetAlpha(0f);
+                SetVisible(false);
+            }
+        }
 
         private void CachePositions()
         {

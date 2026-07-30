@@ -16,6 +16,7 @@ MonoBehaviour:
   - speciesId: squirrel
     displayName: "\uB2E4\uB78C\uC950"
     speciesSprite: {fileID: 7994791527202228647, guid: aff16d26266ea4ef3b942e3c10e2cb23, type: 3}
+    backSprite: {fileID: 21300000, guid: b12b36d062d9e4c0093cf9b5c7759d0d, type: 3}
     reservationIconSprite: {fileID: 4457663930487915863, guid: c35dadaf2df524887aba1fe6e5d35e6f, type: 3}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uC624\uB3C5\uC624\uB3C5"
@@ -45,6 +46,7 @@ MonoBehaviour:
   - speciesId: roe_deer
     displayName: "\uACE0\uB77C\uB2C8"
     speciesSprite: {fileID: -3211196357970331268, guid: 1a64c980cce7145e3b5319eae206467e, type: 3}
+    backSprite: {fileID: 21300000, guid: 04de14614421b4ddeb39461010b0c48a, type: 3}
     reservationIconSprite: {fileID: -1878785014404026028, guid: 84bc548f6242043129f2c9833c3fa85a, type: 3}
     counterSpriteScaleMultiplier: 1.8
     speechHabit: "\uC73C\uC545"
@@ -74,6 +76,7 @@ MonoBehaviour:
   - speciesId: mouse
     displayName: "\uC950"
     speciesSprite: {fileID: -3947334870746072276, guid: 33d79e179449840eca204452065402a7, type: 3}
+    backSprite: {fileID: 21300000, guid: 30035d066bf5b4a188d3d7372d5f2557, type: 3}
     reservationIconSprite: {fileID: 2892949232145319937, guid: c9146c608e55f44248249c93ea8fa1e8, type: 3}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uCC0D"
@@ -103,6 +106,7 @@ MonoBehaviour:
   - speciesId: rabbit
     displayName: "\uD1A0\uB07C"
     speciesSprite: {fileID: 5881072410746701727, guid: 821221b6e10e24143a36b3b47089ac8a, type: 3}
+    backSprite: {fileID: 21300000, guid: 8ad7fa8cc8e0a47c99be0a1d009eb426, type: 3}
     reservationIconSprite: {fileID: -522126531455249227, guid: 0c998fa8bd1e5419facd2005ce888004, type: 3}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uCFF5\uCFF5"
@@ -132,6 +136,7 @@ MonoBehaviour:
   - speciesId: sheep
     displayName: "\uC591"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uB9E4\uC560\uC560\uC560"
@@ -161,6 +166,7 @@ MonoBehaviour:
   - speciesId: cat
     displayName: "\uACE0\uC591\uC774"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uB9C8\uC639"
@@ -190,6 +196,7 @@ MonoBehaviour:
   - speciesId: skunk
     displayName: "\uC2A4\uCEF9\uD06C"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uBFE1"
@@ -219,6 +226,7 @@ MonoBehaviour:
   - speciesId: wolf
     displayName: "\uB291\uB300"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uC544\uC6B0\uC6B0..."
@@ -248,6 +256,7 @@ MonoBehaviour:
   - speciesId: tiger
     displayName: "\uD638\uB791\uC774"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uC5B4\uD765"
@@ -277,6 +286,7 @@ MonoBehaviour:
   - speciesId: chicken
     displayName: "\uB2ED"
     speciesSprite: {fileID: 0}
+    backSprite: {fileID: 0}
     reservationIconSprite: {fileID: 0}
     counterSpriteScaleMultiplier: 1
     speechHabit: "\uAF2D\uAF2D\uAF2D"

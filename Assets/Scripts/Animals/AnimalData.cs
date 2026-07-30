@@ -112,6 +112,9 @@ public class SpeciesData
     [Tooltip("The sprite representation of this species.")]
     public Sprite speciesSprite;
 
+    [Tooltip("Back-facing sprite used when this species leaves through the lobby door.")]
+    public Sprite backSprite;
+
     [Tooltip("Small face icon used in reservation lists.")]
     public Sprite reservationIconSprite;
 

@@ -19,9 +19,15 @@ namespace AnimalHotel.Counter
         [SerializeField] private float sinkDuration = 0.5f;
 
         [Header("Checkout Animation")]
-        [Tooltip("How far left of the counter the animal starts during checkout.")]
+        [Tooltip("How far right of the counter the animal starts during checkout.")]
         [SerializeField] private float checkoutStartOffsetX = 6f;
         [SerializeField] private float checkoutEnterDuration = 0.65f;
+
+        [Header("Checkout Door Exit")]
+        [Tooltip("World-space offset from the normal counter position to the lobby door destination.")]
+        [SerializeField] private Vector2 checkoutDoorTargetOffset = new Vector2(0f, 1.25f);
+        [SerializeField] private float checkoutDoorMoveDuration = 0.75f;
+        [SerializeField] private float checkoutFadeDuration = 0.35f;
 
         [Header("Refs (optional)")]
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -33,10 +39,12 @@ namespace AnimalHotel.Counter
         private float _visibleX;
         private Vector3 _initialScale;
         private float _currentSpriteScaleMultiplier = 1f;
+        private Color _initialSpriteColor = Color.white;
 
         private void Awake()
         {
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null) _initialSpriteColor = spriteRenderer.color;
             _initialScale = transform.localScale;
             _visibleX = transform.position.x;
             SetY(hiddenY);
@@ -45,30 +53,19 @@ namespace AnimalHotel.Counter
         /// <summary>위치 즉시 리셋 + 새 동물 이미지가 있으면 교체 + 솟아오름.</summary>
         public IEnumerator Spawn(Sprite portrait = null, float spriteScaleMultiplier = 1f)
         {
-            _currentSpriteScaleMultiplier = Mathf.Max(0.1f, spriteScaleMultiplier);
-            if (portrait != null && spriteRenderer != null)
-            {
-                spriteRenderer.sprite = portrait;
-                FitSpriteToSlot();
-            }
-
+            PrepareSprite(portrait, spriteScaleMultiplier);
             SetY(hiddenY);
             yield return MoveY(visibleY, riseDuration);
         }
 
         /// <summary>
-        /// 체크아웃 손님을 화면 왼쪽에서 카운터 중앙으로 이동시킨다.
+        /// 체크아웃 손님을 화면 오른쪽에서 카운터 중앙으로 이동시킨다.
         /// </summary>
-        public IEnumerator EnterFromLeft(Sprite portrait = null, float spriteScaleMultiplier = 1f)
+        public IEnumerator EnterFromRight(Sprite portrait = null, float spriteScaleMultiplier = 1f)
         {
-            _currentSpriteScaleMultiplier = Mathf.Max(0.1f, spriteScaleMultiplier);
-            if (portrait != null && spriteRenderer != null)
-            {
-                spriteRenderer.sprite = portrait;
-                FitSpriteToSlot();
-            }
+            PrepareSprite(portrait, spriteScaleMultiplier);
 
-            Vector3 start = new Vector3(_visibleX - Mathf.Abs(checkoutStartOffsetX), visibleY, transform.position.z);
+            Vector3 start = new Vector3(_visibleX + Mathf.Abs(checkoutStartOffsetX), visibleY, transform.position.z);
             Vector3 destination = new Vector3(_visibleX, visibleY, transform.position.z);
             transform.position = start;
             yield return MoveTo(destination, checkoutEnterDuration);
@@ -79,6 +76,32 @@ namespace AnimalHotel.Counter
         {
             yield return MoveY(hiddenY, sinkDuration);
         }
+
+        public IEnumerator ExitThroughDoor(Sprite backFacingSprite = null)
+        {
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                if (backFacingSprite != null)
+                {
+                    spriteRenderer.sprite = backFacingSprite;
+                    FitSpriteToSlot();
+                }
+                SetSpriteAlpha(1f);
+            }
+
+            Vector3 doorTarget = new Vector3(
+                _visibleX + checkoutDoorTargetOffset.x,
+                visibleY + checkoutDoorTargetOffset.y,
+                transform.position.z
+            );
+
+            yield return MoveTo(doorTarget, Mathf.Max(0f, checkoutDoorMoveDuration));
+            yield return FadeTo(0f, Mathf.Max(0f, checkoutFadeDuration));
+
+            transform.position = new Vector3(_visibleX, hiddenY, transform.position.z);
+        }
+
 
         private void SetY(float y)
         {
@@ -141,6 +164,48 @@ namespace AnimalHotel.Counter
             float uniformScale = Mathf.Min(xScale, yScale);
 
             transform.localScale = new Vector3(uniformScale, uniformScale, _initialScale.z);
+        }
+
+        private void PrepareSprite(Sprite portrait, float spriteScaleMultiplier)
+        {
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            _currentSpriteScaleMultiplier = Mathf.Max(0.1f, spriteScaleMultiplier);
+
+            if (spriteRenderer == null) return;
+            if (portrait != null) spriteRenderer.sprite = portrait;
+            SetSpriteAlpha(1f);
+            FitSpriteToSlot();
+        }
+
+        private void SetSpriteAlpha(float alpha)
+        {
+            if (spriteRenderer == null) return;
+            Color color = _initialSpriteColor;
+            color.a = Mathf.Clamp01(alpha);
+            spriteRenderer.color = color;
+        }
+
+        private IEnumerator FadeTo(float targetAlpha, float duration)
+        {
+            if (spriteRenderer == null) yield break;
+
+            float startAlpha = spriteRenderer.color.a;
+            if (duration <= 0f)
+            {
+                SetSpriteAlpha(targetAlpha);
+                yield break;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                SetSpriteAlpha(Mathf.Lerp(startAlpha, targetAlpha, k));
+                yield return null;
+            }
+
+            SetSpriteAlpha(targetAlpha);
         }
     }
 }

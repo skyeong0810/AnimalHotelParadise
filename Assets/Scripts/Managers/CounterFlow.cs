@@ -139,8 +139,8 @@ namespace AnimalHotel.Counter
         }
 
         /// <summary>
-        /// 체크아웃 대상 동물들을 한 마리씩 왼쪽에서 입장시키고,
-        /// 카드키 반납 → 문 열림 → 아래로 퇴장 → 문 닫힘 순서로 재생한다.
+        /// 체크아웃 대상 동물들을 한 마리씩 오른쪽에서 입장시키고,
+        /// 카드키 반납 → 문 열림 → 동물 퇴장과 카드키 하강·페이드 아웃을 각각 재생 → 문 닫힘 순서로 재생한다.
         /// </summary>
         public IEnumerator PlayCheckoutSequence(IList<Animal> departingGuests, System.Action<Animal> onGuestCompleted)
         {
@@ -164,7 +164,7 @@ namespace AnimalHotel.Counter
                     Debug.Log($"[CounterFlow] 체크아웃 손님 등장: {guest.guestName} ({guest.species?.displayName})");
 
                     if (customerSlot != null)
-                        yield return customerSlot.EnterFromLeft(guest.species?.speciesSprite, guest.CounterSpriteScaleMultiplier);
+                        yield return customerSlot.EnterFromRight(guest.species?.speciesSprite, guest.CounterSpriteScaleMultiplier);
 
                     if (checkoutDelayBeforeKey > 0f)
                         yield return new WaitForSeconds(checkoutDelayBeforeKey);
@@ -179,14 +179,14 @@ namespace AnimalHotel.Counter
                     if (door != null)
                         yield return door.Open();
 
-                    if (roomAssignmentKey != null)
-                        roomAssignmentKey.HideImmediate();
-
                     if (checkoutDelayAfterDoorOpen > 0f)
                         yield return new WaitForSeconds(checkoutDelayAfterDoorOpen);
 
+                    if (roomAssignmentKey != null)
+                        StartCoroutine(roomAssignmentKey.HideDownAndFade());
+
                     if (customerSlot != null)
-                        yield return customerSlot.Sink();
+                        yield return customerSlot.ExitThroughDoor(guest.species?.backSprite);
 
                     if (door != null)
                         yield return door.Close();
