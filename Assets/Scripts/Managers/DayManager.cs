@@ -102,25 +102,51 @@ public class DayManager : MonoBehaviour
     /// <summary>Guests who checked out at the start of this morning. Cleared each morning.</summary>
     public List<Animal> CheckedOutToday { get; private set; } = new List<Animal>();
 
+    public static DayManager Instance { get; private set; }
+
     // ── Unity lifecycle ───────────────────────────────────────────────────────
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+    }
 
     private void Start()
     {
         StartMorning();
     }
 
+    /// <summary>
+    /// Returns true if game time is currently flowing.
+    /// Time flows normally while talking to checking-in animals during a phase,
+    /// but stops when the phase timer reaches 0 and phase change is delayed because counter is busy.
+    /// </summary>
+    public bool IsTimeFlowing
+    {
+        get
+        {
+            if (IsCheckoutInProgress && pauseClockDuringCheckout) return false;
+            if (PhaseTimeRemaining <= 0f && counterFlow != null && counterFlow.IsBusy) return false;
+            return true;
+        }
+    }
+
     private void Update()
     {
-        if (IsCheckoutInProgress && pauseClockDuringCheckout)
+        if (!IsTimeFlowing)
         {
+            if (PhaseTimeRemaining <= 0f)
+            {
+                TryAdvancePhase();
+            }
             return;
         }
 
-        if (PhaseTimeRemaining > 0f)
-        {
-            PhaseTimeRemaining -= Time.deltaTime;
-        }
-        else
+        PhaseTimeRemaining -= Time.deltaTime;
+        if (PhaseTimeRemaining <= 0f)
         {
             TryAdvancePhase();
         }
@@ -409,8 +435,14 @@ public class DayManager : MonoBehaviour
     {
         if (seconds <= 0f) return;
 
-        PhaseTimeRemaining = Mathf.Max(0f, PhaseTimeRemaining - seconds);
         string reasonText = string.IsNullOrEmpty(reason) ? "" : $" Reason: {reason}.";
+        if (!IsTimeFlowing)
+        {
+            Debug.Log($"[DayManager] Time is not flowing; cannot spend phase time.{reasonText}");
+            return;
+        }
+
+        PhaseTimeRemaining = Mathf.Max(0f, PhaseTimeRemaining - seconds);
         Debug.Log($"[DayManager] Spent {seconds:F1}s from the current phase.{reasonText} Remaining: {PhaseTimeRemaining:F1}s.");
 
         TryAdvancePhase();
@@ -423,5 +455,18 @@ public class DayManager : MonoBehaviour
     public Animal GetGuest(string guestName)
     {
         return TodaysGuests.FirstOrDefault(a => a.guestName == guestName);
+    }
+
+    /// <summary>
+    /// Calculates the estimated remaining real-time seconds until the specified guest checks out.
+    /// </summary>
+    public float GetRemainingStaySeconds(Animal guest)
+    {
+        if (guest == null) return 10f;
+        int remainingDays = Mathf.Max(0, guest.CheckOutDay - CurrentDay);
+        float singleDayDuration = morningDuration + afternoonDuration;
+        float remainingToday = PhaseTimeRemaining + (IsMorning ? afternoonDuration : 0f);
+        float totalSeconds = remainingToday + (Mathf.Max(0, remainingDays - 1) * singleDayDuration);
+        return Mathf.Max(1f, totalSeconds);
     }
 }

@@ -51,6 +51,20 @@ namespace AnimalHotel.Counter
             StartCoroutine(RunDialogue());
         }
 
+        public void StartPhoneCallDialogue(Animal guest, int roomNumber)
+        {
+            if (_isRunning)
+            {
+                StopAllCoroutines();
+                HideAllBubbles();
+                _isRunning = false;
+            }
+            CurrentGuest = guest;
+            _nodes = DialogueTreeBuilder.BuildPhoneCallTree(guest, roomNumber);
+            _roomAssigned = false;
+            StartCoroutine(RunDialogue());
+        }
+
         private IEnumerator RunDialogue()
         {
             _isRunning = true;

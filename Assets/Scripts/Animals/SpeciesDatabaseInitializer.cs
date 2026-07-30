@@ -67,7 +67,7 @@ public static class SpeciesDatabaseInitializer
                 dietType                   = DietType.Herbivore,
                 activityCycle              = ActivityCycle.Diurnal,
                 floorNuisanceProbability   = 30,
-                wallNuisanceProbability    = 50,  // design doc example: 고라니 50%
+                wallNuisanceProbability    =  0,  // design doc example: 고라니 50%
                 surroundNuisanceProbability = 0,
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,
@@ -82,8 +82,8 @@ public static class SpeciesDatabaseInitializer
                 stage                      = ContentStage.S1,
                 dietType                   = DietType.Herbivore,    // adjust if design changes
                 activityCycle              = ActivityCycle.Nocturnal,
-                floorNuisanceProbability   = 10,
-                wallNuisanceProbability    = 10,
+                floorNuisanceProbability   = 30,
+                wallNuisanceProbability    = 30,
                 surroundNuisanceProbability = 0,
                 requiresSpecialRoom        = false,
                 leavesOdour                = false,

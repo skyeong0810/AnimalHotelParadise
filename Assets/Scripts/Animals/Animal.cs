@@ -79,6 +79,11 @@ public class Animal
     public bool willCauseSurroundNuisance;
 
     /// <summary>
+    /// Whether this guest has already called the front desk regarding nuisance during their stay.
+    /// </summary>
+    public bool hasCalledNuisance;
+
+    /// <summary>
     /// Evaluates nuisance probabilities once per guest instance and saves the results.
     /// </summary>
     public void DetermineNuisance()

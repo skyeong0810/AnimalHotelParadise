@@ -354,8 +354,6 @@ namespace AnimalHotel.Counter
                 }
             }
 
-            Debug.Log($"[RoomUI] RefreshReservationList found {reservationGuests.Count} reservation guests.");
-
             // Instantiate sprites horizontally from right to left
             float localRightEdge = 0.5f;
             SpriteRenderer bgSr = background.GetComponent<SpriteRenderer>();
