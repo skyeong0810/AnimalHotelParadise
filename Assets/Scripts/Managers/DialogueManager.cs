@@ -26,11 +26,23 @@ namespace AnimalHotel.Counter
         private Dictionary<string, DialogueNode> _nodes;
         private DialogueNode _currentNode;
         private bool _isRunning;
+        private bool _isPhoneCall;
         private bool _roomAssigned = false;
+
+        // Saved Check-in state during phone call
+        private bool _hasSavedCheckIn;
+        private Animal _savedGuest;
+        private Dictionary<string, DialogueNode> _savedNodes;
+        private DialogueNode _savedCurrentNode;
+        private bool _savedRoomAssigned;
 
         public void NotifyRoomAssigned()
         {
             _roomAssigned = true;
+            if (_hasSavedCheckIn)
+            {
+                _savedRoomAssigned = true;
+            }
             if (staffBubble != null)
             {
                 staffBubble.EnableAssignChoices();
@@ -40,6 +52,13 @@ namespace AnimalHotel.Counter
         public void StartDialogue(Animal guest, bool claimsReservation)
         {
             if (_isRunning) return;
+            _hasSavedCheckIn = false;
+            _savedGuest = null;
+            _savedNodes = null;
+            _savedCurrentNode = null;
+            _savedRoomAssigned = false;
+            _isPhoneCall = false;
+
             CurrentGuest = guest;
             _nodes = DialogueTreeBuilder.Build(
                 guest.guestName,
@@ -53,19 +72,54 @@ namespace AnimalHotel.Counter
 
         public void StartPhoneCallDialogue(Animal guest, int roomNumber)
         {
+            if (_isRunning && !_isPhoneCall)
+            {
+                _hasSavedCheckIn = true;
+                _savedGuest = CurrentGuest;
+                _savedNodes = _nodes;
+                _savedCurrentNode = _currentNode;
+                _savedRoomAssigned = _roomAssigned;
+            }
+
             if (_isRunning)
             {
                 StopAllCoroutines();
                 HideAllBubbles();
                 _isRunning = false;
             }
+
+            _isPhoneCall = true;
             CurrentGuest = guest;
             _nodes = DialogueTreeBuilder.BuildPhoneCallTree(guest, roomNumber);
             _roomAssigned = false;
-            StartCoroutine(RunDialogue());
+            StartCoroutine(RunPhoneCallDialogue());
         }
 
-        private IEnumerator RunDialogue()
+        private IEnumerator RunDialogue(bool resumeFromCurrent = false)
+        {
+            _isRunning = true;
+            _isPhoneCall = false;
+            if (!resumeFromCurrent)
+            {
+                HideAllBubbles();
+                _currentNode = GetNode("start");
+            }
+
+            while (_currentNode != null)
+            {
+                yield return ProcessNode(_currentNode);
+                string nextId = ResolveNextNode(_currentNode);
+                if (string.IsNullOrEmpty(nextId)) break;
+                _currentNode = GetNode(nextId);
+                if (delayBetweenNodes > 0f) yield return new WaitForSeconds(delayBetweenNodes);
+            }
+            HideAllBubbles();
+            _isRunning = false;
+            string exitId = _currentNode != null ? _currentNode.id : "exit_leave";
+            OnDialogueEnd?.Invoke(exitId);
+        }
+
+        private IEnumerator RunPhoneCallDialogue()
         {
             _isRunning = true;
             HideAllBubbles();
@@ -80,8 +134,22 @@ namespace AnimalHotel.Counter
             }
             HideAllBubbles();
             _isRunning = false;
-            string exitId = _currentNode != null ? _currentNode.id : "exit_leave";
-            OnDialogueEnd?.Invoke(exitId);
+            _isPhoneCall = false;
+
+            if (_hasSavedCheckIn)
+            {
+                CurrentGuest = _savedGuest;
+                _nodes = _savedNodes;
+                _currentNode = _savedCurrentNode;
+                _roomAssigned = _savedRoomAssigned || _roomAssigned;
+
+                _hasSavedCheckIn = false;
+                _savedGuest = null;
+                _savedNodes = null;
+                _savedCurrentNode = null;
+
+                StartCoroutine(RunDialogue(resumeFromCurrent: true));
+            }
         }
 
         private IEnumerator ProcessNode(DialogueNode node)
