@@ -74,6 +74,79 @@ namespace AnimalHotel.Counter
             return nodes;
         }
 
+        public static Dictionary<string, DialogueNode> BuildPhoneCallTree(Animal sufferingGuest, int roomNumber)
+        {
+            var nodes = new Dictionary<string, DialogueNode>();
+
+            string openingText = (sufferingGuest != null && sufferingGuest.willCauseFloorNuisance)
+                ? "여보세요? 윗방에서 엄청 쿵쿵대서 미칠 것 같아요!"
+                : "아아!! 누가 계속 소리를 질러서 잠을 못 자겠어요!";
+
+            nodes["start"] = new DialogueNode
+            {
+                id = "start",
+                nodeType = NodeType.Line,
+                speaker = Speaker.Customer,
+                text = openingText,
+                nextNodeId = "staff_ask_room"
+            };
+
+            nodes["staff_ask_room"] = new DialogueNode
+            {
+                id = "staff_ask_room",
+                nodeType = NodeType.Line,
+                speaker = Speaker.Staff,
+                text = "죄송합니다. 몇 호에 계신가요?",
+                nextNodeId = "customer_tell_room"
+            };
+
+            nodes["customer_tell_room"] = new DialogueNode
+            {
+                id = "customer_tell_room",
+                nodeType = NodeType.Line,
+                speaker = Speaker.Customer,
+                text = $"{roomNumber}호예요.",
+                nextNodeId = "staff_phone_choice"
+            };
+
+            nodes["staff_phone_choice"] = new DialogueNode
+            {
+                id = "staff_phone_choice",
+                nodeType = NodeType.Choice,
+                speaker = Speaker.Staff,
+                text = "",
+                choices = new List<DialogueChoice>
+                {
+                    new DialogueChoice
+                    {
+                        text = "빈 방으로 옮겨 드릴게요. 다시 한 번 죄송합니다.",
+                        nextNodeId = "phone_exit_move"
+                    },
+                    new DialogueChoice
+                    {
+                        text = "정말 죄송합니다. 방을 옮겨드리고 싶은데, 조건에 맞는 방이 없어요.",
+                        nextNodeId = "phone_exit_no_move"
+                    }
+                }
+            };
+
+            nodes["phone_exit_move"] = new DialogueNode
+            {
+                id = "phone_exit_move",
+                nodeType = NodeType.Exit,
+                text = ""
+            };
+
+            nodes["phone_exit_no_move"] = new DialogueNode
+            {
+                id = "phone_exit_no_move",
+                nodeType = NodeType.Exit,
+                text = ""
+            };
+
+            return nodes;
+        }
+
         // ────────────────────────────────────────
         //  YES 분기: 손님이 예약했다고 주장
         // ────────────────────────────────────────

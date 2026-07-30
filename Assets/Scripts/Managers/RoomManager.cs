@@ -26,9 +26,22 @@ namespace AnimalHotel.Counter
 
     public class RoomManager : MonoBehaviour
     {
+        public class PendingCall
+        {
+            public Animal sufferingGuest;
+            public int roomNumber;
+            public float timer;
+            public int lastLoggedSecond = -1;
+            public bool isRinging;
+        }
+
+        public event System.Action<Animal, int> OnCallRinging;
+        public event System.Action<Animal, int, bool> OnCallEnded; // guest, roomNumber, wasAnswered
+
         public static readonly int RoomCount = 10;
 
         private RoomData[] _rooms;
+        private List<PendingCall> _pendingCalls = new List<PendingCall>();
 
         private void Awake()
         {
@@ -193,17 +206,13 @@ namespace AnimalHotel.Counter
             if (room.status == RoomStatus.NeedsExamination || room.status == RoomStatus.NeedsCleaning)
             {
                 room.status = RoomStatus.AdvancedCleaningInProgress;
-                Debug.Log($"[RoomManager] Room {roomNumber} advanced cleaning started.");
                 return true;
             }
 
             if (room.status == RoomStatus.AdvancedCleaningInProgress)
             {
-                Debug.LogWarning($"[RoomManager] Room {roomNumber} is already being advanced-cleaned.");
                 return false;
             }
-
-            Debug.LogWarning($"[RoomManager] Room {roomNumber} does not need cleaning.");
             return false;
         }
 
@@ -217,11 +226,6 @@ namespace AnimalHotel.Counter
 
                 MarkRoomVacant(room);
                 completedCount++;
-            }
-
-            if (completedCount > 0)
-            {
-                Debug.Log($"[RoomManager] Completed advanced cleaning for {completedCount} room(s).");
             }
 
             return completedCount;
@@ -391,7 +395,7 @@ namespace AnimalHotel.Counter
             // If THIS newly assigned room is ALREADY affected by nuisance from another occupied room
             if (sourceRoom.incomingNuisanceSources.Count > 0)
             {
-                Debug.Log($"{guest.guestName} at room {sourceRoom.roomNumber} wants to call");
+                ScheduleNuisanceCall(sourceRoom);
             }
         }
 
@@ -402,16 +406,15 @@ namespace AnimalHotel.Counter
             sourceRoom.outgoingNuisanceTargets.Add(targetRoom.roomNumber);
             targetRoom.incomingNuisanceSources.Add(sourceRoom.roomNumber);
 
-            // If the room that will get affected is ALREADY occupied, log call
+            // If the room that will get affected is ALREADY occupied, schedule call
             if (targetRoom.status == RoomStatus.Occupied && targetRoom.occupant != null)
             {
-                Debug.Log($"{targetRoom.occupant.guestName} at room {targetRoom.roomNumber} wants to call");
+                ScheduleNuisanceCall(targetRoom);
             }
         }
 
         /// <summary>
         /// Evaluates nuisance for all currently occupied rooms that have active incoming nuisance sources.
-        /// Logs: "{targetRoom.occupant.guestName} at room {targetRoom.roomNumber} wants to call"
         /// </summary>
         public void ProcessNuisance()
         {
@@ -421,9 +424,244 @@ namespace AnimalHotel.Counter
             {
                 if (room != null && room.status == RoomStatus.Occupied && room.occupant != null && room.incomingNuisanceSources.Count > 0)
                 {
-                    Debug.Log($"{room.occupant.guestName} at room {room.roomNumber} wants to call");
+                    ScheduleNuisanceCall(room);
                 }
             }
+        }
+
+        private void ScheduleNuisanceCall(RoomData sufferingRoom)
+        {
+            if (sufferingRoom == null || sufferingRoom.occupant == null) return;
+            Animal guest = sufferingRoom.occupant;
+
+            if (guest.hasCalledNuisance) return;
+
+            foreach (var call in _pendingCalls)
+            {
+                if (call.sufferingGuest == guest) return;
+            }
+
+            float maxCallDelay = 10f;
+            if (DayManager.Instance != null)
+            {
+                // 1. Must call before the suffering guest checks out
+                float sufferingRemaining = DayManager.Instance.GetRemainingStaySeconds(guest);
+                maxCallDelay = sufferingRemaining;
+
+                // 2. Must call before any nuisance-causing guest checks out
+                if (sufferingRoom.incomingNuisanceSources.Count > 0)
+                {
+                    foreach (int sourceRoomNum in sufferingRoom.incomingNuisanceSources)
+                    {
+                        var sourceRoom = GetRoom(sourceRoomNum);
+                        if (sourceRoom != null && sourceRoom.occupant != null)
+                        {
+                            float causingRemaining = DayManager.Instance.GetRemainingStaySeconds(sourceRoom.occupant);
+                            if (causingRemaining > 0f && causingRemaining < maxCallDelay)
+                            {
+                                maxCallDelay = causingRemaining;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Reserve safety margin (0.5s) so call happens before either guest leaves
+            float safeMaxDelay = Mathf.Max(0.5f, maxCallDelay - 0.5f);
+
+            float minGap = 2.0f;
+            float randomDelay = Random.Range(0f, safeMaxDelay);
+
+            // Pick a random delay that is at least minGap seconds apart from all existing pending calls
+            int maxAttempts = 50;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                bool collision = false;
+                foreach (var existingCall in _pendingCalls)
+                {
+                    if (Mathf.Abs(randomDelay - existingCall.timer) < minGap)
+                    {
+                        collision = true;
+                        break;
+                    }
+                }
+
+                if (!collision) break;
+                randomDelay = Random.Range(0f, safeMaxDelay);
+            }
+
+            _pendingCalls.Add(new PendingCall
+            {
+                sufferingGuest = guest,
+                roomNumber = sufferingRoom.roomNumber,
+                timer = randomDelay
+            });
+
+            Debug.Log($"[Call Scheduled] {guest.guestName} in room {sufferingRoom.roomNumber} scheduled to call in {randomDelay:F1}s (must call before checkout in {maxCallDelay:F1}s).");
+        }
+
+        private void Update()
+        {
+            if (_pendingCalls == null || _pendingCalls.Count == 0) return;
+            if (DayManager.Instance != null && !DayManager.Instance.IsTimeFlowing) return;
+
+            bool callTriggeredThisFrame = false;
+            float minGap = 2.0f;
+
+            for (int i = _pendingCalls.Count - 1; i >= 0; i--)
+            {
+                var call = _pendingCalls[i];
+
+                // Verify suffering guest is still occupied in the room
+                var room = GetRoom(call.roomNumber);
+                if (room == null || room.occupant != call.sufferingGuest || room.status != RoomStatus.Occupied)
+                {
+                    _pendingCalls.RemoveAt(i);
+                    continue;
+                }
+
+                if (!call.isRinging)
+                {
+                    call.timer -= Time.deltaTime;
+
+                    int secondsLeft = Mathf.CeilToInt(call.timer);
+                    if (secondsLeft > 0 && secondsLeft != call.lastLoggedSecond)
+                    {
+                        call.lastLoggedSecond = secondsLeft;
+                        Debug.Log($"[{call.sufferingGuest.guestName}] {secondsLeft}s left until call.");
+                    }
+
+                    if (call.timer <= 0f)
+                    {
+                        // Stagger calls so multiple calls do not ring at the exact same time
+                        if (callTriggeredThisFrame)
+                        {
+                            call.timer = minGap;
+                            call.lastLoggedSecond = -1;
+                            continue;
+                        }
+
+                        if (call.sufferingGuest != null && !call.sufferingGuest.hasCalledNuisance)
+                        {
+                            call.sufferingGuest.hasCalledNuisance = true;
+                            call.isRinging = true;
+                            Debug.Log($"{call.sufferingGuest.guestName} called.");
+                            callTriggeredThisFrame = true;
+                            NotifyPhoneCallRinging(call.sufferingGuest, call.roomNumber);
+                        }
+                        else
+                        {
+                            _pendingCalls.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void NotifyPhoneCallRinging(Animal guest, int roomNumber)
+        {
+            OnCallRinging?.Invoke(guest, roomNumber);
+            var phoneCtrl = FindFirstObjectByType<PhoneCallController>(FindObjectsInactive.Include);
+            if (phoneCtrl != null)
+            {
+                phoneCtrl.OnCallRinging(guest, roomNumber);
+            }
+        }
+
+        private void NotifyPhoneCallEnded(Animal guest, int roomNumber, bool wasAnswered)
+        {
+            OnCallEnded?.Invoke(guest, roomNumber, wasAnswered);
+            var phoneCtrl = FindFirstObjectByType<PhoneCallController>(FindObjectsInactive.Include);
+            if (phoneCtrl != null)
+            {
+                phoneCtrl.OnCallEnded(guest, roomNumber, wasAnswered);
+            }
+        }
+
+        /// <summary>
+        /// Answers the ringing call for the specified guest.
+        /// </summary>
+        public bool AnswerCall(Animal guest)
+        {
+            if (guest == null) return false;
+            var call = _pendingCalls.Find(c => c.sufferingGuest == guest && c.isRinging);
+            if (call != null)
+            {
+                Debug.Log($"[Call Answered] Player answered {guest.guestName}'s call.");
+                int roomNum = call.roomNumber;
+                _pendingCalls.Remove(call);
+                NotifyPhoneCallEnded(guest, roomNum, true);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Answers the ringing call for the specified room number.
+        /// </summary>
+        public bool AnswerCall(int roomNumber)
+        {
+            var call = _pendingCalls.Find(c => c.roomNumber == roomNumber && c.isRinging);
+            if (call != null)
+            {
+                Debug.Log($"[Call Answered] Player answered {call.sufferingGuest.guestName}'s call in room {roomNumber}.");
+                var guest = call.sufferingGuest;
+                _pendingCalls.Remove(call);
+                NotifyPhoneCallEnded(guest, roomNumber, true);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Cancels/misses the active ringing call for the specified guest when unanswered.
+        /// </summary>
+        public bool CancelCall(Animal guest)
+        {
+            if (guest == null) return false;
+            var call = _pendingCalls.Find(c => c.sufferingGuest == guest && c.isRinging);
+            if (call != null)
+            {
+                Debug.Log($"[Call Missed] {guest.guestName}'s call was cancelled (unanswered).");
+                int roomNum = call.roomNumber;
+                _pendingCalls.Remove(call);
+                NotifyPhoneCallEnded(guest, roomNum, false);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Cancels/misses the active ringing call for the specified room number when unanswered.
+        /// </summary>
+        public bool CancelCall(int roomNumber)
+        {
+            var call = _pendingCalls.Find(c => c.roomNumber == roomNumber && c.isRinging);
+            if (call != null)
+            {
+                Debug.Log($"[Call Missed] {call.sufferingGuest.guestName}'s call in room {roomNumber} was cancelled (unanswered).");
+                var guest = call.sufferingGuest;
+                _pendingCalls.Remove(call);
+                NotifyPhoneCallEnded(guest, roomNumber, false);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if any incoming call is currently ringing.
+        /// </summary>
+        public bool HasRingingCall()
+        {
+            return _pendingCalls != null && _pendingCalls.Exists(c => c.isRinging);
+        }
+
+        /// <summary>
+        /// Returns the currently active ringing call, if any.
+        /// </summary>
+        public PendingCall GetActiveRingingCall()
+        {
+            return _pendingCalls?.Find(c => c.isRinging);
         }
     }
 }
