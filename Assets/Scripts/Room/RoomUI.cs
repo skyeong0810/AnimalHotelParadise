@@ -315,7 +315,7 @@ namespace AnimalHotel.Counter
                         }
                         else if (spriteNameLower.Contains("roedeer"))
                         {
-                            targetWorldScale = 0.02f;
+                            targetWorldScale = 0.01f;
                         }
                         else if (spriteNameLower.Contains("rabbit"))
                         {
@@ -372,8 +372,6 @@ namespace AnimalHotel.Counter
                         reservationGuests.Add(a);
                 }
             }
-
-            Debug.Log($"[RoomUI] RefreshReservationList found {reservationGuests.Count} reservation guests.");
 
             // Instantiate sprites horizontally from right to left
             float localRightEdge = 0.5f;
