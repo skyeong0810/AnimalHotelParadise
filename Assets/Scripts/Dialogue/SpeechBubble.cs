@@ -17,6 +17,12 @@ namespace AnimalHotel.Counter
         [Header("Typing")]
         [SerializeField] private float typeCharsPerSec = 25f;
 
+        [Header("Animal Voice")]
+        [SerializeField] private AudioSource voiceSource;
+        [SerializeField] private AudioClip typingVoiceSfx;
+        [Range(0f, 1f)]
+        [SerializeField] private float typingVoiceVolume = 0.3f;
+
         [Header("Box-Only Mode (텍스트 없을 때 박스만 보여줄 시간)")]
         [SerializeField] private float boxOnlyDuration = 1.5f;
 
@@ -27,11 +33,17 @@ namespace AnimalHotel.Counter
                 label.textWrappingMode = TextWrappingModes.Normal;
             }
 
+            if (voiceSource == null)
+                voiceSource = GetComponent<AudioSource>();
+            if (voiceSource != null)
+                voiceSource.playOnAwake = false;
+
             HideImmediate();
         }
 
         public void HideImmediate()
         {
+            StopTypingVoice();
             StopAllCoroutines();
             if (backgroundObj != null) backgroundObj.SetActive(false);
             if (label != null) label.text = string.Empty;
@@ -51,15 +63,40 @@ namespace AnimalHotel.Counter
         public IEnumerator TypeText(string text)
         {
             if (label == null) yield break;
+
             label.text = text;
             label.alignment = TMPro.TextAlignmentOptions.Center;
             label.maxVisibleCharacters = 0;
             float charDelay = 1f / Mathf.Max(typeCharsPerSec, 0.1f);
+
+            StartTypingVoice();
             for (int i = 0; i < text.Length; i++)
             {
                 label.maxVisibleCharacters = i + 1;
                 if (charDelay > 0f) yield return new WaitForSeconds(charDelay);
             }
+            StopTypingVoice();
+        }
+
+        private void StartTypingVoice()
+        {
+            if (voiceSource == null || typingVoiceSfx == null)
+                return;
+
+            voiceSource.Stop();
+            voiceSource.clip = typingVoiceSfx;
+            voiceSource.loop = true;
+            voiceSource.volume = Mathf.Clamp01(typingVoiceVolume);
+            voiceSource.Play();
+        }
+
+        private void StopTypingVoice()
+        {
+            if (voiceSource == null)
+                return;
+
+            voiceSource.Stop();
+            voiceSource.loop = false;
         }
 
         public bool IsVisible => backgroundObj != null && backgroundObj.activeSelf;
