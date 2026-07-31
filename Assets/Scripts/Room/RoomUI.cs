@@ -73,6 +73,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private Vector2 roomStatusIconLocalOffset = Vector2.zero;
         [SerializeField] private int roomStatusIconSortingOffset = 8;
 
+        [Header("room_cleaning_dim")]
+        [SerializeField] private Color cleaningRoomDimColor = new Color(0f, 0f, 0f, 0.45f);
+        [SerializeField] private Vector2 cleaningRoomDimScale = new Vector2(1.02f, 1.02f);
+        [SerializeField] private int cleaningRoomDimSortingOffset = 7;
+
         public event System.Action OnRoomAssigned;
 
         private int _selectedRoomNumber = -1;
@@ -354,6 +359,7 @@ namespace AnimalHotel.Counter
 
                 sr.sprite = GetRoomSprite(room, i + 1 == _selectedRoomNumber);
                 sr.color = GetRoomColor(room, i + 1 == _selectedRoomNumber);
+                RefreshRoomCleaningDim(sr, room);
                 RefreshRoomCleaningIcon(sr, room);
 
                 // Handle the occupant sprite overlay
@@ -910,6 +916,63 @@ namespace AnimalHotel.Counter
             );
             Vector3 spriteCenterOffset = Vector3.Scale(iconSprite.bounds.center, iconObject.transform.localScale);
             iconObject.transform.localPosition = desiredCenter - spriteCenterOffset;
+        }
+
+        private void RefreshRoomCleaningDim(SpriteRenderer roomRenderer, RoomData room)
+        {
+            if (roomRenderer == null) return;
+
+            const string childName = "RoomCleaningDimOverlay";
+            Transform overlayTransform = roomRenderer.transform.Find(childName);
+            bool shouldDim = room != null
+                && (room.status == RoomStatus.NeedsExamination
+                    || room.status == RoomStatus.NeedsCleaning
+                    || room.status == RoomStatus.AdvancedCleaningInProgress);
+
+            if (!shouldDim)
+            {
+                if (overlayTransform != null)
+                    overlayTransform.gameObject.SetActive(false);
+                return;
+            }
+
+            GameObject overlayObject;
+            SpriteRenderer overlayRenderer;
+            if (overlayTransform == null)
+            {
+                overlayObject = new GameObject(childName);
+                overlayObject.transform.SetParent(roomRenderer.transform, false);
+                overlayRenderer = overlayObject.AddComponent<SpriteRenderer>();
+            }
+            else
+            {
+                overlayObject = overlayTransform.gameObject;
+                overlayRenderer = overlayObject.GetComponent<SpriteRenderer>();
+                if (overlayRenderer == null)
+                    overlayRenderer = overlayObject.AddComponent<SpriteRenderer>();
+            }
+
+            Sprite overlaySprite = vacantSprite != null ? vacantSprite : roomRenderer.sprite;
+            if (overlaySprite == null)
+            {
+                overlayObject.SetActive(false);
+                return;
+            }
+
+            overlayObject.SetActive(true);
+            overlayObject.transform.localPosition = new Vector3(0f, 0f, -0.05f);
+            overlayObject.transform.localRotation = Quaternion.identity;
+            overlayObject.transform.localScale = new Vector3(
+                Mathf.Max(0.01f, cleaningRoomDimScale.x),
+                Mathf.Max(0.01f, cleaningRoomDimScale.y),
+                1f
+            );
+
+            overlayRenderer.sprite = overlaySprite;
+            overlayRenderer.color = cleaningRoomDimColor;
+            overlayRenderer.sortingLayerID = roomRenderer.sortingLayerID;
+            overlayRenderer.sortingLayerName = roomRenderer.sortingLayerName;
+            overlayRenderer.sortingOrder = roomRenderer.sortingOrder + cleaningRoomDimSortingOffset;
         }
 
         private Sprite GetRoomCleaningIconSprite(RoomData room)
