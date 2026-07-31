@@ -51,18 +51,15 @@ public class DayManager : MonoBehaviour
     [Tooltip("When enabled, the morning/afternoon timer does not decrease while checkout animations are playing.")]
     [SerializeField] private bool pauseClockDuringCheckout = true;
 
-    [Header("Checkout Payment (per night, paid at checkout)")]
-    [Tooltip("Payment per night for a guest who never had a nuisance complaint.")]
-    [SerializeField] private float noIssuePaymentPerNight = 15f;
+    [Header("Check-in / Checkout Payment (flat, one-time amounts — not multiplied by stayNights)")]
+    [Tooltip("Flat base amount charged to every guest at check-in, regardless of stay length or outcome.")]
+    [SerializeField] private float baseCheckInPayment = 12f;
 
-    [Tooltip("Payment per night for a guest whose nuisance complaint was resolved cleanly (single complaint, moved).")]
-    [SerializeField] private float resolvedPaymentPerNight = 12f;
+    [Tooltip("Bonus paid at checkout on top of the base amount, only for guests who never had a nuisance complaint.")]
+    [SerializeField] private float noIssueCheckoutBonus = 3f;
 
-    [Tooltip("Payment per night for a guest who was moved due to a complaint, the nuisance recurred, but the most recent complaint was still resolved.")]
-    [SerializeField] private float partiallyResolvedPaymentPerNight = 6f;
-
-    [Tooltip("Payment per night for a guest whose most recent complaint was never resolved (missed call, or no room offered).")]
-    [SerializeField] private float unresolvedPaymentPerNight = 0f;
+    [Tooltip("Penalty deducted at checkout for a guest who complained 2+ times, had an earlier complaint resolved, but whose most recent complaint went unresolved (missed call or no room offered).")]
+    [SerializeField] private float recurringFailurePenalty = 6f;
 
     [Header("Checkout Rating Ranges")]
     [Tooltip("Rating range (inclusive) for a guest who never had a nuisance complaint.")]
@@ -479,31 +476,35 @@ public class DayManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Computes what a guest owes at checkout: a flat per-night rate determined entirely by their
-    /// <see cref="Animal.CheckoutOutcome"/> tier, times the number of nights they stayed. Unlike
-    /// <see cref="GetCheckoutRating"/> (which rolls a random value within a tier's range), payment is
-    /// deterministic per tier — same tier always pays the same rate.
+    /// Computes the checkout-time adjustment to a guest's already-paid <see cref="baseCheckInPayment"/>,
+    /// determined entirely by their <see cref="Animal.CheckoutOutcome"/> tier. This is a delta added to
+    /// <see cref="TotalMoney"/> at checkout, not the guest's total payment — the base amount was already
+    /// collected in <see cref="CheckIn"/>. Flat, one-time amounts; not multiplied by stayNights.
+    ///
+    /// Tiers:
+    ///   NoIssue            → +noIssueCheckoutBonus (never complained).
+    ///   Resolved           → 0 (single complaint, cleanly resolved — base payment stands).
+    ///   PartiallyResolved  → 0 (complained 2+ times, but every complaint — including the last — was
+    ///                          resolved; same as a clean resolution, no bonus).
+    ///   Unresolved         → the *last* complaint was never resolved. Split by
+    ///                        <see cref="Animal.nuisanceComplaintCount"/> since CheckoutOutcome alone
+    ///                        doesn't distinguish "failed on the very first complaint" from "handled the
+    ///                        first fine, then failed on a later one":
+    ///                          - complaintCount >= 2 → -recurringFailurePenalty (partial refund).
+    ///                          - complaintCount == 1 → -baseCheckInPayment (full refund, net 0 paid).
     /// </summary>
-    private float GetCheckoutPayment(Animal guest)
+    private float GetCheckoutAdjustment(Animal guest)
     {
-        float perNightRate;
         switch (guest.GetCheckoutOutcome())
         {
             case Animal.CheckoutOutcome.Resolved:
-                perNightRate = resolvedPaymentPerNight;
-                break;
             case Animal.CheckoutOutcome.PartiallyResolved:
-                perNightRate = partiallyResolvedPaymentPerNight;
-                break;
+                return 0f;
             case Animal.CheckoutOutcome.Unresolved:
-                perNightRate = unresolvedPaymentPerNight;
-                break;
-            default:
-                perNightRate = noIssuePaymentPerNight;
-                break;
+                return guest.nuisanceComplaintCount >= 2 ? -recurringFailurePenalty : -baseCheckInPayment;
+            default: // NoIssue
+                return noIssueCheckoutBonus;
         }
-
-        return perNightRate * guest.stayNights;
     }
 
     private void FinalizeCheckoutGuest(Animal guest)
@@ -524,8 +525,8 @@ public class DayManager : MonoBehaviour
         _totalRatingCount++;
         AverageRating = (float)_totalRatingSum / _totalRatingCount;
 
-        float payment = GetCheckoutPayment(guest);
-        TotalMoney += payment;
+        float adjustment = GetCheckoutAdjustment(guest);
+        TotalMoney += adjustment;
 
         if (roomManager != null)
         {
@@ -535,7 +536,8 @@ public class DayManager : MonoBehaviour
         }
 
         Debug.Log($"[DayManager] {guest.guestName} checked out. " +
-                  $"Rated {rating}/10. Paid {payment} ({guest.stayNights} night(s), {guest.GetCheckoutOutcome()}). " +
+                  $"Rated {rating}/10. Checkout adjustment {adjustment:+0;-0;0} " +
+                  $"(base {baseCheckInPayment} paid at check-in, {guest.stayNights} night(s), {guest.GetCheckoutOutcome()}). " +
                   $"Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
     }
 
@@ -566,8 +568,9 @@ public class DayManager : MonoBehaviour
     /// Adds them to TodaysGuests and ArrivedGuests. The guest was already removed from
     /// MorningArrivals/AfternoonArrivals back when CounterFlow pulled them to the counter (see
     /// CounterFlow.GetNextGuest) — nothing left to remove here.
-    /// Payment is no longer collected here — guests pay at checkout instead, based on how their
-    /// nuisance complaints (if any) were handled. See GetCheckoutPayment / FinalizeCheckoutGuest.
+    /// Collects the flat <see cref="baseCheckInPayment"/> up front. This may be adjusted (bonus,
+    /// partial penalty, or full refund) at checkout based on how the guest's nuisance complaints, if
+    /// any, were handled — see GetCheckoutAdjustment / FinalizeCheckoutGuest.
     /// </summary>
     public void CheckIn(Animal guest)
     {
@@ -579,8 +582,10 @@ public class DayManager : MonoBehaviour
         if (!ArrivedGuests.Contains(guest))
             ArrivedGuests.Add(guest);
 
-        Debug.Log($"[DayManager] {guest.guestName} checked in. " +
-                  $"Staying until Day {guest.CheckOutDay}.");
+        TotalMoney += baseCheckInPayment;
+
+        Debug.Log($"[DayManager] {guest.guestName} checked in. Paid base {baseCheckInPayment}. " +
+                  $"Staying until Day {guest.CheckOutDay}. Hotel total: {TotalMoney}.");
     }
 
     public void RecordRating(Animal guest, int rating, string reason = "")

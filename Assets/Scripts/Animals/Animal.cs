@@ -117,8 +117,8 @@ public class Animal
     /// <summary>
     /// The four checkout-grading tiers a guest can fall into, derived purely from their own
     /// complaint history (<see cref="nuisanceComplaintCount"/> and <see cref="nuisanceResolution"/>).
-    /// Both the checkout rating (DayManager.GetCheckoutRating) and the checkout payment
-    /// (DayManager.GetCheckoutPayment) key off this single classification so the tiering logic
+    /// Both the checkout rating (DayManager.GetCheckoutRating) and the checkout payment adjustment
+    /// (DayManager.GetCheckoutAdjustment) key off this single classification so the tiering logic
     /// only has to live — and change — in one place.
     /// </summary>
     public enum CheckoutOutcome
