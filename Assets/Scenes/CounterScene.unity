@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 30827596}
   - component: {fileID: 30827595}
   m_Layer: 0
-  m_Name: Room1
+  m_Name: Room201
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2545,7 +2545,7 @@ GameObject:
   - component: {fileID: 401893062}
   - component: {fileID: 401893061}
   m_Layer: 0
-  m_Name: Room8
+  m_Name: Room103
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3136,7 +3136,7 @@ GameObject:
   - component: {fileID: 504467670}
   - component: {fileID: 504467669}
   m_Layer: 0
-  m_Name: Room6
+  m_Name: Room101
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3856,7 +3856,7 @@ GameObject:
   - component: {fileID: 681675330}
   - component: {fileID: 681675329}
   m_Layer: 0
-  m_Name: Room10
+  m_Name: Room105
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4388,7 +4388,7 @@ MonoBehaviour:
   morningBgm: {fileID: 8300000, guid: 748b4d1c25390cd41a516976d7bc7612, type: 3}
   afternoonBgm: {fileID: 8300000, guid: a4655425e6a89104680b51cbdc39f7c9, type: 3}
   masterVolume: 1
-  bgmVolume: 0.7
+  bgmVolume: 0.35
   crossfadeDuration: 1.5
   duckingVolumeRatio: 0.3
   duckingFadeDuration: 0.5
@@ -4642,7 +4642,7 @@ GameObject:
   - component: {fileID: 977608162}
   - component: {fileID: 977608161}
   m_Layer: 0
-  m_Name: Room7
+  m_Name: Room102
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5084,7 +5084,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 61
+  m_SortingOrder: 62
   m_MaskInteraction: 0
   m_Sprite: {fileID: -1878785014404026028, guid: 84bc548f6242043129f2c9833c3fa85a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -5689,7 +5689,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 61
+  m_SortingOrder: 62
   m_MaskInteraction: 0
   m_Sprite: {fileID: 2892949232145319937, guid: c9146c608e55f44248249c93ea8fa1e8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -5746,7 +5746,7 @@ GameObject:
   - component: {fileID: 1186992529}
   - component: {fileID: 1186992528}
   m_Layer: 0
-  m_Name: Room4
+  m_Name: Room204
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5899,7 +5899,7 @@ GameObject:
   - component: {fileID: 1190969919}
   - component: {fileID: 1190969918}
   m_Layer: 0
-  m_Name: Room2
+  m_Name: Room202
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6693,7 +6693,7 @@ GameObject:
   - component: {fileID: 1347916688}
   - component: {fileID: 1347916687}
   m_Layer: 0
-  m_Name: Room9
+  m_Name: Room104
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6938,7 +6938,7 @@ GameObject:
   - component: {fileID: 1417240426}
   - component: {fileID: 1417240425}
   m_Layer: 0
-  m_Name: Room3
+  m_Name: Room203
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7747,7 +7747,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 61
+  m_SortingOrder: 62
   m_MaskInteraction: 0
   m_Sprite: {fileID: 4457663930487915863, guid: c35dadaf2df524887aba1fe6e5d35e6f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -9389,7 +9389,7 @@ GameObject:
   - component: {fileID: 1924578163}
   - component: {fileID: 1924578162}
   m_Layer: 0
-  m_Name: Room5
+  m_Name: Room205
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9655,7 +9655,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 61
+  m_SortingOrder: 62
   m_MaskInteraction: 0
   m_Sprite: {fileID: -522126531455249227, guid: 0c998fa8bd1e5419facd2005ce888004, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
