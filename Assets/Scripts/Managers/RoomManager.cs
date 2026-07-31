@@ -567,8 +567,7 @@ namespace AnimalHotel.Counter
             // already ran out, or every guest who was going to arrive already has — there's no point
             // making them sit through each call's original random cooldown. Drain the queue one call
             // at a time, as fast as they can be answered, instead of waiting it out.
-            bool nothingElseToWaitFor = DayManager.Instance != null &&
-                (DayManager.Instance.PhaseTimeRemaining <= 0f || DayManager.Instance.NoMoreArrivalsThisPhase);
+            bool nothingElseToWaitFor = ComputeNothingElseToWaitFor();
 
             for (int i = _pendingCalls.Count - 1; i >= 0; i--)
             {
@@ -623,6 +622,26 @@ namespace AnimalHotel.Counter
             }
         }
 
+        private bool ComputeNothingElseToWaitFor()
+        {
+            return DayManager.Instance != null &&
+                (DayManager.Instance.PhaseTimeRemaining <= 0f || DayManager.Instance.NoMoreArrivalsThisPhase);
+        }
+
+        /// <summary>
+        /// True if another call is already queued and will start ringing on the very next Update tick
+        /// once _activeCall clears (i.e. the queue is in "drain instantly, one at a time" mode — see
+        /// ComputeNothingElseToWaitFor/Update). BGMManager uses this to avoid un-ducking BGM only to
+        /// immediately duck it again a moment later for the next call — at night, calls are frequently
+        /// queued back-to-back this way (arrival queue drains early, so nothingElseToWaitFor kicks in),
+        /// and un-duck/re-duck within a fraction of a second reads as an audible BGM stutter/cut rather
+        /// than two separate, deliberate dips.
+        /// </summary>
+        public bool HasImmediatelyQueuedCall()
+        {
+            return _pendingCalls != null && _pendingCalls.Count > 0 && ComputeNothingElseToWaitFor();
+        }
+
         private void NotifyPhoneCallRinging(Animal guest, int roomNumber)
         {
             OnCallRinging?.Invoke(guest, roomNumber);
@@ -644,6 +663,22 @@ namespace AnimalHotel.Counter
         }
 
         /// <summary>
+        /// Called the instant the player answers — stops the ringing shake/sfx/timeout on the Phone
+        /// prop, but deliberately does NOT sink/deactivate it (that's NotifyPhoneCallEnded's job, now
+        /// only called once the phone dialogue itself has actually finished — see
+        /// ResolvePhoneCallDialogue). Answering used to immediately fire NotifyPhoneCallEnded, which
+        /// made the Phone/PhoneLine props disappear before the conversation even started.
+        /// </summary>
+        private void NotifyPhoneCallAnswered(Animal guest, int roomNumber)
+        {
+            var phoneCtrl = FindFirstObjectByType<PhoneCallController>(FindObjectsInactive.Include);
+            if (phoneCtrl != null)
+            {
+                phoneCtrl.OnCallAnswered();
+            }
+        }
+
+        /// <summary>
         /// Answers the ringing call for the specified guest. The call leaves the queue immediately,
         /// but stays "active" (still freezing every other pending call) until the phone conversation
         /// itself finishes — see ResolvePhoneCallDialogue, called once DialogueManager reports the
@@ -658,7 +693,7 @@ namespace AnimalHotel.Counter
                 Debug.Log($"[Call Answered] Player answered {guest.guestName}'s call.");
                 int roomNum = call.roomNumber;
                 _pendingCalls.Remove(call);
-                NotifyPhoneCallEnded(guest, roomNum, true);
+                NotifyPhoneCallAnswered(guest, roomNum);
                 return true;
             }
             return false;
@@ -675,7 +710,7 @@ namespace AnimalHotel.Counter
                 Debug.Log($"[Call Answered] Player answered {call.sufferingGuest.guestName}'s call in room {roomNumber}.");
                 var guest = call.sufferingGuest;
                 _pendingCalls.Remove(call);
-                NotifyPhoneCallEnded(guest, roomNumber, true);
+                NotifyPhoneCallAnswered(guest, roomNumber);
                 return true;
             }
             return false;
@@ -732,18 +767,39 @@ namespace AnimalHotel.Counter
         {
             if (guest == null) return;
 
-            guest.nuisanceResolution = Animal.NuisanceResolution.Unresolved;
-
-            if (exitNodeId == "phone_exit_move")
+            // If the player already relocated this guest WHILE they were still on the phone (see
+            // RoomUI.AssignRoomForActivePhoneCall / DialogueManager.NotifyRoomAssigned), the "빈 방으로
+            // 옮겨 드릴게요" choice only became clickable because the move already happened — don't
+            // stomp that Resolved status back to Unresolved, and don't queue a second, redundant move.
+            bool alreadyResolved = guest.nuisanceResolution == Animal.NuisanceResolution.Resolved;
+            if (!alreadyResolved)
             {
-                GuestAwaitingMove = guest;
-                Debug.Log($"[RoomManager] {guest.guestName} was promised a room move.");
+                guest.nuisanceResolution = Animal.NuisanceResolution.Unresolved;
+
+                if (exitNodeId == "phone_exit_move")
+                {
+                    GuestAwaitingMove = guest;
+                    Debug.Log($"[RoomManager] {guest.guestName} was promised a room move.");
+                }
             }
+            else
+            {
+                Debug.Log($"[RoomManager] {guest.guestName} was already moved to a new room before hanging up.");
+            }
+
+            int roomNumber = (_activeCall != null && _activeCall.sufferingGuest == guest)
+                ? _activeCall.roomNumber
+                : (GetRoomByOccupant(guest)?.roomNumber ?? 0);
 
             if (_activeCall != null && _activeCall.sufferingGuest == guest)
             {
                 _activeCall = null;
             }
+
+            // The conversation is genuinely over now — hang up the Phone/PhoneLine props. This used to
+            // happen the instant the call was ANSWERED instead, so the phone looked like it had already
+            // hung up while the player was still mid-conversation.
+            NotifyPhoneCallEnded(guest, roomNumber, true);
         }
 
         /// <summary>

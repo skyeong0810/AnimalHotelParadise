@@ -51,8 +51,18 @@ public class DayManager : MonoBehaviour
     [Tooltip("When enabled, the morning/afternoon timer does not decrease while checkout animations are playing.")]
     [SerializeField] private bool pauseClockDuringCheckout = true;
 
-    [Tooltip("Base payment per night of stay.")]
-    public float roomRatePerNight = 10f;
+    [Header("Checkout Payment (per night, paid at checkout)")]
+    [Tooltip("Payment per night for a guest who never had a nuisance complaint.")]
+    [SerializeField] private float noIssuePaymentPerNight = 15f;
+
+    [Tooltip("Payment per night for a guest whose nuisance complaint was resolved cleanly (single complaint, moved).")]
+    [SerializeField] private float resolvedPaymentPerNight = 12f;
+
+    [Tooltip("Payment per night for a guest who was moved due to a complaint, the nuisance recurred, but the most recent complaint was still resolved.")]
+    [SerializeField] private float partiallyResolvedPaymentPerNight = 6f;
+
+    [Tooltip("Payment per night for a guest whose most recent complaint was never resolved (missed call, or no room offered).")]
+    [SerializeField] private float unresolvedPaymentPerNight = 0f;
 
     [Header("Checkout Rating Ranges")]
     [Tooltip("Rating range (inclusive) for a guest who never had a nuisance complaint.")]
@@ -450,24 +460,13 @@ public class DayManager : MonoBehaviour
     /// </summary>
     private int GetCheckoutRating(Animal guest)
     {
-        // A guest can only ever place a second complaint after their first one was actually resolved
-        // (see RoomManager.MoveAnimal resetting hasCalledNuisance only on a successful move) — so
-        // nuisanceComplaintCount >= 2 always means "moved at least once, then the nuisance recurred".
-        // If their latest complaint also ended up resolved, that's the "부분 해결" tier: better than an
-        // outright unresolved complaint, but worse than a single clean resolution since it happened
-        // more than once. If the latest complaint is unresolved, it falls through to the normal
-        // unresolved case below — being bounced around and then failed isn't graded any more leniently
-        // than failing on the first try.
-        if (guest.nuisanceComplaintCount >= 2 && guest.nuisanceResolution == Animal.NuisanceResolution.Resolved)
+        switch (guest.GetCheckoutOutcome())
         {
-            return RandomInRange(nuisancePartiallyResolvedRatingRange);
-        }
-
-        switch (guest.nuisanceResolution)
-        {
-            case Animal.NuisanceResolution.Resolved:
+            case Animal.CheckoutOutcome.Resolved:
                 return RandomInRange(nuisanceResolvedRatingRange);
-            case Animal.NuisanceResolution.Unresolved:
+            case Animal.CheckoutOutcome.PartiallyResolved:
+                return RandomInRange(nuisancePartiallyResolvedRatingRange);
+            case Animal.CheckoutOutcome.Unresolved:
                 return RandomInRange(nuisanceUnresolvedRatingRange);
             default:
                 return RandomInRange(noIssueRatingRange);
@@ -477,6 +476,34 @@ public class DayManager : MonoBehaviour
     private static int RandomInRange(Vector2Int inclusiveRange)
     {
         return Random.Range(inclusiveRange.x, inclusiveRange.y + 1);
+    }
+
+    /// <summary>
+    /// Computes what a guest owes at checkout: a flat per-night rate determined entirely by their
+    /// <see cref="Animal.CheckoutOutcome"/> tier, times the number of nights they stayed. Unlike
+    /// <see cref="GetCheckoutRating"/> (which rolls a random value within a tier's range), payment is
+    /// deterministic per tier — same tier always pays the same rate.
+    /// </summary>
+    private float GetCheckoutPayment(Animal guest)
+    {
+        float perNightRate;
+        switch (guest.GetCheckoutOutcome())
+        {
+            case Animal.CheckoutOutcome.Resolved:
+                perNightRate = resolvedPaymentPerNight;
+                break;
+            case Animal.CheckoutOutcome.PartiallyResolved:
+                perNightRate = partiallyResolvedPaymentPerNight;
+                break;
+            case Animal.CheckoutOutcome.Unresolved:
+                perNightRate = unresolvedPaymentPerNight;
+                break;
+            default:
+                perNightRate = noIssuePaymentPerNight;
+                break;
+        }
+
+        return perNightRate * guest.stayNights;
     }
 
     private void FinalizeCheckoutGuest(Animal guest)
@@ -497,6 +524,9 @@ public class DayManager : MonoBehaviour
         _totalRatingCount++;
         AverageRating = (float)_totalRatingSum / _totalRatingCount;
 
+        float payment = GetCheckoutPayment(guest);
+        TotalMoney += payment;
+
         if (roomManager != null)
         {
             var room = roomManager.GetRoomByOccupant(guest);
@@ -505,7 +535,8 @@ public class DayManager : MonoBehaviour
         }
 
         Debug.Log($"[DayManager] {guest.guestName} checked out. " +
-                  $"Rated {rating}/10. Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
+                  $"Rated {rating}/10. Paid {payment} ({guest.stayNights} night(s), {guest.GetCheckoutOutcome()}). " +
+                  $"Hotel total: {TotalMoney}, avg rating: {AverageRating:F1}");
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -514,7 +545,7 @@ public class DayManager : MonoBehaviour
     /// Call this when an animal walks up to the front desk counter.
     /// Finds the guest in the appropriate arrival queue and returns them
     /// so the dialogue system can start a conversation.
-    /// Does NOT add them to TodaysGuests or charge payment yet — call CheckIn() for that.
+    /// Does NOT add them to TodaysGuests yet — call CheckIn() for that.
     /// </summary>
     public Animal GuestArrived(string guestName)
     {
@@ -532,9 +563,11 @@ public class DayManager : MonoBehaviour
 
     /// <summary>
     /// Call this after the player completes check-in dialogue and confirms the guest's stay.
-    /// Adds them to TodaysGuests and ArrivedGuests, and collects payment. The guest was already
-    /// removed from MorningArrivals/AfternoonArrivals back when CounterFlow pulled them to the
-    /// counter (see CounterFlow.GetNextGuest) — nothing left to remove here.
+    /// Adds them to TodaysGuests and ArrivedGuests. The guest was already removed from
+    /// MorningArrivals/AfternoonArrivals back when CounterFlow pulled them to the counter (see
+    /// CounterFlow.GetNextGuest) — nothing left to remove here.
+    /// Payment is no longer collected here — guests pay at checkout instead, based on how their
+    /// nuisance complaints (if any) were handled. See GetCheckoutPayment / FinalizeCheckoutGuest.
     /// </summary>
     public void CheckIn(Animal guest)
     {
@@ -546,13 +579,8 @@ public class DayManager : MonoBehaviour
         if (!ArrivedGuests.Contains(guest))
             ArrivedGuests.Add(guest);
 
-        float payment = guest.stayNights * roomRatePerNight;
-        TotalMoney += payment;
-
         Debug.Log($"[DayManager] {guest.guestName} checked in. " +
-                  $"Paid {payment} ({guest.stayNights} night(s)). " +
-                  $"Staying until Day {guest.CheckOutDay}. " +
-                  $"Hotel total: {TotalMoney}");
+                  $"Staying until Day {guest.CheckOutDay}.");
     }
 
     public void RecordRating(Animal guest, int rating, string reason = "")

@@ -158,6 +158,7 @@ namespace AnimalHotel.Counter
         {
             if (_isRinging) return;
             _isRinging = true;
+            
             _ringingTimer = callRingingDurationSeconds;
             if (callObject != null && !callObject.activeSelf) callObject.SetActive(true);
 
@@ -166,6 +167,30 @@ namespace AnimalHotel.Counter
 
             if (_motionCoroutine != null) StopCoroutine(_motionCoroutine);
             _motionCoroutine = StartCoroutine(RiseAndRingRoutine());
+        }
+
+        /// <summary>
+        /// Called the instant the player answers. Stops the ringing shake/sfx/timeout countdown, but
+        /// deliberately leaves the Call GameObject (Phone + PhoneLine) active and in its risen position
+        /// — it should stay visible for the whole phone conversation. Only OnCallEnded (now fired once
+        /// the phone dialogue has actually finished, see RoomManager.ResolvePhoneCallDialogue) sinks and
+        /// deactivates it. Previously answering fired OnCallEnded immediately, which made the phone
+        /// visually hang up before the conversation had even started.
+        /// </summary>
+        public void OnCallAnswered()
+        {
+            if (!_isRinging) return;
+            _isRinging = false;
+
+            if (sfxSource != null && sfxSource.isPlaying)
+            {
+                sfxSource.Stop();
+            }
+
+            if (phoneTransform != null)
+            {
+                phoneTransform.localRotation = _phoneInitialRotation;
+            }
         }
 
         public void OnCallEnded(Animal guest, int roomNumber, bool wasAnswered)

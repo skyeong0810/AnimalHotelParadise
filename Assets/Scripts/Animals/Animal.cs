@@ -115,6 +115,64 @@ public class Animal
     public NuisanceResolution nuisanceResolution = NuisanceResolution.None;
 
     /// <summary>
+    /// The four checkout-grading tiers a guest can fall into, derived purely from their own
+    /// complaint history (<see cref="nuisanceComplaintCount"/> and <see cref="nuisanceResolution"/>).
+    /// Both the checkout rating (DayManager.GetCheckoutRating) and the checkout payment
+    /// (DayManager.GetCheckoutPayment) key off this single classification so the tiering logic
+    /// only has to live — and change — in one place.
+    /// </summary>
+    public enum CheckoutOutcome
+    {
+        /// <summary>Guest never had a nuisance complaint.</summary>
+        NoIssue,
+        /// <summary>Guest had exactly one complaint and it was resolved (moved) cleanly.</summary>
+        Resolved,
+        /// <summary>
+        /// Guest was moved at least once, the nuisance recurred, but the most recent complaint was
+        /// still ultimately resolved. Only reachable with nuisanceComplaintCount >= 2, since a guest
+        /// can only place a second complaint after their first one was actually resolved (see
+        /// RoomManager.MoveAnimal, which only resets hasCalledNuisance on a successful move).
+        /// </summary>
+        PartiallyResolved,
+        /// <summary>
+        /// The guest's most recent (and, per the game's call-scheduling rules, therefore final)
+        /// complaint was never resolved — no room was offered, or the call was missed outright.
+        /// </summary>
+        Unresolved
+    }
+
+    /// <summary>
+    /// Classifies this guest's stay into one of the four <see cref="CheckoutOutcome"/> tiers, based
+    /// solely on their own complaint history. Safe to call at any time after checkout is decided;
+    /// does not read or mutate any other guest or room state.
+    /// </summary>
+    public CheckoutOutcome GetCheckoutOutcome()
+    {
+        // A guest can only ever place a second complaint after their first one was actually resolved
+        // (see RoomManager.MoveAnimal resetting hasCalledNuisance only on a successful move) — so
+        // nuisanceComplaintCount >= 2 always means "moved at least once, then the nuisance recurred".
+        // If their latest complaint also ended up resolved, that's the "부분 해결" tier: better than an
+        // outright unresolved complaint, but worse than a single clean resolution since it happened
+        // more than once. If the latest complaint is unresolved, it falls through to the normal
+        // unresolved case below — being bounced around and then failed isn't graded any more leniently
+        // than failing on the first try.
+        if (nuisanceComplaintCount >= 2 && nuisanceResolution == NuisanceResolution.Resolved)
+        {
+            return CheckoutOutcome.PartiallyResolved;
+        }
+
+        switch (nuisanceResolution)
+        {
+            case NuisanceResolution.Resolved:
+                return CheckoutOutcome.Resolved;
+            case NuisanceResolution.Unresolved:
+                return CheckoutOutcome.Unresolved;
+            default:
+                return CheckoutOutcome.NoIssue;
+        }
+    }
+
+    /// <summary>
     /// Evaluates nuisance probabilities once per guest instance and saves the results.
     /// </summary>
     public void DetermineNuisance()

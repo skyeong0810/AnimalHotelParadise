@@ -40,6 +40,15 @@ namespace AnimalHotel.Counter
     {
         public string text;
         public string nextNodeId;
+
+        /// <summary>
+        /// True if this choice can't be picked until DialogueManager.NotifyRoomAssigned(guest) has
+        /// fired for the guest currently owning this dialogue (counter check-in "방 배정", or phone
+        /// call "빈 방으로 옮겨 드릴게요"). Previously this was inferred by matching choice.text against
+        /// "방 배정"/"배정해", which silently failed to gate any choice phrased differently (e.g. the
+        /// phone tree's move-guest choice) and would break again the moment any of this text changed.
+        /// </summary>
+        public bool requiresRoomAssignment;
     }
 
     /// <summary>
@@ -129,7 +138,8 @@ namespace AnimalHotel.Counter
                     new DialogueChoice
                     {
                         text = "빈 방으로 옮겨 드릴게요. 다시 한 번 죄송합니다.",
-                        nextNodeId = "phone_exit_move"
+                        nextNodeId = "phone_exit_move",
+                        requiresRoomAssignment = true
                     },
                     new DialogueChoice
                     {
@@ -191,7 +201,7 @@ namespace AnimalHotel.Counter
                 speaker = Speaker.Staff,
                 choices = new List<DialogueChoice>
                 {
-                    new DialogueChoice { text = "네, 방 배정해드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "네, 방 배정해드렸어요.", nextNodeId = "exit_checkin", requiresRoomAssignment = true },
                     new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" },
                     new DialogueChoice { text = "죄송하지만, 예약 정보가 확인되지 않네요.", nextNodeId = "customer_react_denied" },
                     new DialogueChoice { text = "예약하신 분 성함과 종을 알려주시겠어요?", nextNodeId = "customer_tell_info" }
@@ -215,7 +225,7 @@ namespace AnimalHotel.Counter
                 speaker = Speaker.Staff,
                 choices = new List<DialogueChoice>
                 {
-                    new DialogueChoice { text = "잠시만요, 방 배정해드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "잠시만요, 방 배정해드렸어요.", nextNodeId = "exit_checkin", requiresRoomAssignment = true },
                     new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" }
                 }
             };
@@ -252,7 +262,7 @@ namespace AnimalHotel.Counter
                     speaker = Speaker.Staff,
                     choices = new List<DialogueChoice>
                     {
-                        new DialogueChoice { text = "확인했습니다, 방 배정해드릴게요.", nextNodeId = "exit_checkin_angry" },
+                        new DialogueChoice { text = "확인했습니다, 방 배정해드릴게요.", nextNodeId = "exit_checkin_angry", requiresRoomAssignment = true },
                         new DialogueChoice { text = "죄송하지만, 빈 방이 없습니다.", nextNodeId = "exit_rejected_no_room" },
                         new DialogueChoice { text = "정말 죄송합니다, 확인이 어렵습니다.", nextNodeId = "exit_rejected_angry" }
                     }
@@ -316,7 +326,7 @@ namespace AnimalHotel.Counter
                     speaker = Speaker.Staff,
                     choices = new List<DialogueChoice>
                     {
-                        new DialogueChoice { text = "남은 방에 배정해 드렸어요.", nextNodeId = "exit_checkin" },
+                        new DialogueChoice { text = "남은 방에 배정해 드렸어요.", nextNodeId = "exit_checkin", requiresRoomAssignment = true },
                         new DialogueChoice { text = "죄송하지만, 다음에 다시 방문해 주세요.", nextNodeId = "exit_rejected" }
                     }
                 };
@@ -355,7 +365,7 @@ namespace AnimalHotel.Counter
                 speaker = Speaker.Staff,
                 choices = new List<DialogueChoice>
                 {
-                    new DialogueChoice { text = "네, 방 배정해드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "네, 방 배정해드렸어요.", nextNodeId = "exit_checkin", requiresRoomAssignment = true },
                     new DialogueChoice { text = "죄송하지만, 숙박이 어려울 것 같아요.", nextNodeId = "customer_react_walkin_denied" }
                 }
             };
@@ -395,7 +405,7 @@ namespace AnimalHotel.Counter
                 speaker = Speaker.Staff,
                 choices = new List<DialogueChoice>
                 {
-                    new DialogueChoice { text = "남은 방에 배정해 드렸어요.", nextNodeId = "exit_checkin" },
+                    new DialogueChoice { text = "남은 방에 배정해 드렸어요.", nextNodeId = "exit_checkin", requiresRoomAssignment = true },
                     new DialogueChoice { text = "죄송하지만, 다음에 다시 방문해 주세요.", nextNodeId = "exit_rejected" }
                 }
             };

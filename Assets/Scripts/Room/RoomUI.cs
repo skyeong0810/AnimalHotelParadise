@@ -160,12 +160,22 @@ namespace AnimalHotel.Counter
             }
 
             // While a nuisance call is ringing or its phone dialogue is still being handled, room
-            // assignment is locked entirely — for BOTH the complaining guest (their outcome isn't
-            // decided yet) and any new guest who's mid check-in waiting on their own assignment.
-            // Once the call resolves (either "we'll move you" -> GuestAwaitingMove, or "we can't" ->
-            // nothing pending), assignment unlocks again and falls through to the branches below.
+            // assignment is locked out for any OTHER guest — a new counter guest mid check-in still
+            // has to wait, since the call takes priority.
+            //
+            // Exception: the guest currently ON the phone can be relocated right now, while the call is
+            // still active. This is how the "빈 방으로 옮겨 드릴게요" choice in the phone dialogue gets
+            // unlocked (DialogueChoice.requiresRoomAssignment / DialogueManager.NotifyRoomAssigned) — the
+            // player picks the room first, then the promise, not the other way around.
             if (roomManager.IsCallActive)
             {
+                if (dialogueManager != null && dialogueManager.IsPhoneCallActive
+                    && dialogueManager.CurrentGuest != null && roomManager.GuestAwaitingMove == null)
+                {
+                    AssignRoomForActivePhoneCall(dialogueManager.CurrentGuest);
+                    return;
+                }
+
                 Debug.LogWarning("[RoomUI] Cannot assign a room while a nuisance call is ringing or being handled.");
                 RefreshRoomGrid();
                 return;
@@ -227,6 +237,36 @@ namespace AnimalHotel.Counter
                 RefreshRoomGrid();
                 OnRoomAssigned?.Invoke();
                 if (dialogueManager != null) dialogueManager.NotifyRoomAssigned(guest);
+            }
+        }
+
+        /// <summary>
+        /// Relocates the guest currently on the phone WHILE the call is still active — this is the new
+        /// "select the room first" path. Unlike AssignRoomForPendingMove (which fulfills a promise made
+        /// earlier in the dialogue), the move happens for real immediately, and the dialogue choice is
+        /// what catches up: DialogueManager.NotifyRoomAssigned unlocks "빈 방으로 옮겨 드릴게요" only
+        /// after this succeeds, so by the time the player can click it, the guest is already moved.
+        /// </summary>
+        private void AssignRoomForActivePhoneCall(Animal callGuest)
+        {
+            var currentRoom = roomManager.GetRoomByOccupant(callGuest);
+            if (currentRoom == null)
+            {
+                Debug.LogWarning($"[RoomUI] {callGuest.guestName} is on the phone but has no current room.");
+                RefreshRoomGrid();
+                return;
+            }
+
+            bool moved = roomManager.MoveAnimal(currentRoom.roomNumber, _selectedRoomNumber);
+            if (moved)
+            {
+                roomManager.ResolveRoomMove(callGuest);
+                ClearRoomMemos(_selectedRoomNumber);
+                _selectedRoomNumber = -1;
+                RefreshRoomGrid();
+                OnRoomAssigned?.Invoke();
+
+                if (dialogueManager != null) dialogueManager.NotifyRoomAssigned(callGuest);
             }
         }
 
@@ -622,17 +662,24 @@ namespace AnimalHotel.Counter
             }
 
             bool callActive = roomManager != null && roomManager.IsCallActive;
+
+            // The guest currently on the phone can be assigned a room WHILE the call is still active —
+            // this is what unlocks the phone dialogue's "빈 방으로 옮겨 드릴게요" choice. Mirrors the
+            // exception carved out in OnAssignButtonClicked.
+            bool activeCallGuestReady = callActive && dialogueManager != null && dialogueManager.IsPhoneCallActive
+                && dialogueManager.CurrentGuest != null && roomManager.GuestAwaitingMove == null;
+
             var guest = counterFlow != null ? counterFlow.GetCurrentGuest() : null;
             // Don't count as a valid assign target until this guest's dialogue has actually started
             // (see the matching guard in OnAssignButtonClicked for why) — otherwise the button would
             // light up as "ready" during the entrance animation, before there's anywhere for the
-            // assignment to actually register.
-            bool guestReady = guest != null && (dialogueManager == null || dialogueManager.CurrentGuest == guest);
+            // assignment to actually register. Also blocked entirely while a call is active — that
+            // guest has to wait, same as the click handler.
+            bool guestReady = !callActive && guest != null && (dialogueManager == null || dialogueManager.CurrentGuest == guest);
             bool hasMoveTarget = roomManager != null && roomManager.GuestAwaitingMove != null;
-            bool canAssign = !callActive
-                && selectedRoom != null
+            bool canAssign = selectedRoom != null
                 && selectedRoom.status == RoomStatus.Vacant
-                && (hasMoveTarget || (guestReady && roomManager.GetRoomByOccupant(guest) == null));
+                && (activeCallGuestReady || hasMoveTarget || (guestReady && roomManager.GetRoomByOccupant(guest) == null));
             bool canClean = selectedRoom != null && selectedRoom.status == RoomStatus.NeedsExamination;
             bool canAdvancedClean = IsMaintenanceRoom(selectedRoom);
 

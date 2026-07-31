@@ -69,3 +69,6 @@ crashlytics-build.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# build 과정 생긴 찌꺼기 파일 무시
+.utmp/

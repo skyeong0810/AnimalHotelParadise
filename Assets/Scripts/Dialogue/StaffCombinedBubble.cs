@@ -249,19 +249,22 @@ namespace AnimalHotel.Counter
             return go;
         }
 
+        /// <summary>
+        /// Unlocks whichever currently-spawned choice buttons were disabled pending a room assignment.
+        /// The only thing that ever disables a button in this bubble is DialogueChoice.requiresRoomAssignment
+        /// (see DialogueManager.ProcessChoice), so "currently disabled" and "waiting on a room" are the
+        /// same condition — no need to re-derive it from button text (which used to silently miss any
+        /// choice phrased differently than "방 배정"/"배정해", e.g. the phone call's "빈 방으로 옮겨드릴게요").
+        /// </summary>
         public void EnableAssignChoices()
         {
             foreach (var go in _spawnedButtons)
             {
                 if (go == null) continue;
                 var btn = go.GetComponent<SimpleOptionButton>();
-                if (btn != null)
+                if (btn != null && !btn.IsEnabled)
                 {
-                    string text = btn.GetText();
-                    if (text.Contains("방 배정") || text.Contains("배정해"))
-                    {
-                        btn.SetEnabled(true);
-                    }
+                    btn.SetEnabled(true);
                 }
             }
         }

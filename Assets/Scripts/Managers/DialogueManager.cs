@@ -28,6 +28,11 @@ namespace AnimalHotel.Counter
         [SerializeField] private float delayAfterLine = 1.2f;
         [SerializeField] private float tabletCheckMinDelay = 0.5f;
 
+        [Header("Return From Call")]
+        [Tooltip("전화 응대로 중단됐던 체크인 손님에게 돌아올 때 직원이 먼저 하는 대사. " +
+                 "중단된 지점에서 이어가지 않고, 이 대사를 보여준 뒤 대화를 처음부터(start 노드) 다시 진행한다.")]
+        [SerializeField] private string returnFromCallLine = "기다려 주셔서 감사합니다.";
+
         public event Action<string> OnDialogueEnd;
         public event Action<string> OnChoiceResolved;
 
@@ -47,11 +52,12 @@ namespace AnimalHotel.Counter
         private bool _isPhoneCall;
         private bool _roomAssigned = false;
 
-        // Saved Check-in state during phone call
+        // Saved Check-in state during phone call. Note: no "which node it paused on" is kept — when
+        // the counter dialogue comes back after a call, it always restarts from "start" rather than
+        // resuming mid-node (see RestartCheckInAfterCall).
         private bool _hasSavedCheckIn;
         private Animal _savedGuest;
         private Dictionary<string, DialogueNode> _savedNodes;
-        private DialogueNode _savedCurrentNode;
         private bool _savedRoomAssigned;
 
         // Pending fresh start requested while a phone call is in progress (no counter dialogue was
@@ -64,6 +70,12 @@ namespace AnimalHotel.Counter
         /// <summary>현재 진행 중인 대화 종류(카운터/전화)에 맞는 Bubble을 반환한다.</summary>
         private SpeechBubble ActiveCustomerBubble => _isPhoneCall ? phoneCustomerBubble : customerBubble;
         private StaffCombinedBubble ActiveStaffBubble => _isPhoneCall ? phoneStaffBubble : staffBubble;
+
+        /// <summary>True while a phone-call dialogue is currently running (as opposed to the counter
+        /// check-in dialogue, or nothing at all). RoomUI uses this to allow assigning a room to the
+        /// guest currently on the phone even while RoomManager.IsCallActive would otherwise lock room
+        /// assignment out entirely.</summary>
+        public bool IsPhoneCallActive => _isPhoneCall;
 
         /// <summary>
         /// Call this whenever a room gets assigned to <paramref name="guest"/>, so the "방 배정"
@@ -125,7 +137,6 @@ namespace AnimalHotel.Counter
             _hasSavedCheckIn = false;
             _savedGuest = null;
             _savedNodes = null;
-            _savedCurrentNode = null;
             _savedRoomAssigned = false;
             _hasPendingStart = false;
             _pendingGuest = null;
@@ -149,7 +160,6 @@ namespace AnimalHotel.Counter
                 _hasSavedCheckIn = true;
                 _savedGuest = CurrentGuest;
                 _savedNodes = _nodes;
-                _savedCurrentNode = _currentNode;
                 _savedRoomAssigned = _roomAssigned;
             }
 
@@ -177,15 +187,12 @@ namespace AnimalHotel.Counter
             StartCoroutine(RunPhoneCallDialogue());
         }
 
-        private IEnumerator RunDialogue(bool resumeFromCurrent = false)
+        private IEnumerator RunDialogue()
         {
             _isRunning = true;
             _isPhoneCall = false;
-            if (!resumeFromCurrent)
-            {
-                HideCounterBubbles();
-                _currentNode = GetNode("start");
-            }
+            HideCounterBubbles();
+            _currentNode = GetNode("start");
 
             while (_currentNode != null)
             {
@@ -253,15 +260,20 @@ namespace AnimalHotel.Counter
             {
                 CurrentGuest = _savedGuest;
                 _nodes = _savedNodes;
-                _currentNode = _savedCurrentNode;
-                _roomAssigned = _savedRoomAssigned || _roomAssigned;
+
+                // Deliberately NOT `_savedRoomAssigned || _roomAssigned` — the `_roomAssigned` on the
+                // right would be whatever was left over from the PHONE call that just ended (e.g. true
+                // if the player pre-assigned a room to the calling guest via AssignRoomForActivePhoneCall).
+                // That has nothing to do with this counter guest; leaking it in made the "방 배정" choice
+                // look unlocked for a guest who never actually got a room. The counter guest's own
+                // assignment state lives entirely in _savedRoomAssigned.
+                _roomAssigned = _savedRoomAssigned;
 
                 _hasSavedCheckIn = false;
                 _savedGuest = null;
                 _savedNodes = null;
-                _savedCurrentNode = null;
 
-                StartCoroutine(RunDialogue(resumeFromCurrent: true));
+                StartCoroutine(RestartCheckInAfterCall());
             }
             else if (_hasPendingStart)
             {
@@ -275,6 +287,24 @@ namespace AnimalHotel.Counter
 
                 StartDialogue(pendingGuest, pendingClaims);
             }
+        }
+
+        /// <summary>
+        /// 전화 응대로 중단됐던 체크인 손님에게 돌아올 때 호출된다. 중단된 노드에서 이어가지 않고
+        /// (그 상태를 그대로 되살리면 "몇 번째 대사였는지"를 유추해야 해서 부자연스럽다), 직원이
+        /// 먼저 사과/안내 대사(<see cref="returnFromCallLine"/>)를 한 번 하고, 그 다음 대화 전체를
+        /// start 노드부터 다시 진행한다. 이때 트리(_nodes)는 원래 손님 정보로 이미 만들어둔 것을
+        /// 재사용하므로(재빌드 아님) 예약 여부 등 분기는 그대로 유지된다.
+        /// </summary>
+        private IEnumerator RestartCheckInAfterCall()
+        {
+            _isRunning = true;
+            if (ActiveStaffBubble != null && !string.IsNullOrEmpty(returnFromCallLine))
+            {
+                yield return ActiveStaffBubble.ShowLine(returnFromCallLine);
+                yield return new WaitForSeconds(delayAfterLine);
+            }
+            StartCoroutine(RunDialogue());
         }
 
         private IEnumerator ProcessNode(DialogueNode node)
@@ -321,8 +351,7 @@ namespace AnimalHotel.Counter
             foreach (var choice in node.choices)
             {
                 options.Add(choice.text);
-                bool isAssignChoice = choice.text.Contains("방 배정") || choice.text.Contains("배정해");
-                bool isEnabled = !isAssignChoice || _roomAssigned;
+                bool isEnabled = !choice.requiresRoomAssignment || _roomAssigned;
                 optionStates.Add(isEnabled);
             }
             yield return staff.ShowLineWithChoices(lineText, options, optionStates);

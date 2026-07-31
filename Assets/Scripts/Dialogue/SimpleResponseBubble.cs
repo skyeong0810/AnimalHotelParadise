@@ -187,6 +187,8 @@ private void PlaySfx(AudioClip clip, float volume = 1f)
         private Color _textNormalColor;
         private Collider2D _collider;
 
+        public bool IsEnabled => _isEnabled;
+
         public void Setup(int index, SpriteRenderer sr, Color normal, Color hover, Action<int> onClick)
         {
             _index = index;
